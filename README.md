@@ -1,6 +1,15 @@
-# glenn
+# Meet Glenn
 
-A new Flutter project.
+❤️ Your new balance buddy ❤️
+
+## Project Description
+
+This project was made as a part of the course *Advanced Software Engineering*, held by the Seoul National University of Science and Technology in the Fall 2023 Semester.
+
+We were tasked to develop a to-do app that allows users to create and organize tasks based on a set of mandatory and custom requirements in the form of user stories.
+
+The development focuses on using an agile methodology assisted by the use of generative AI to improve the software engineering process.
+
 
 ## Getting Started
 
