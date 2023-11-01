@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'task_detail_page.dart'; // Import the task_detail_page.dart file
+
+
 
 class Task {
   final String id;
@@ -114,8 +117,6 @@ class TaskList extends StatelessWidget {
   }
 }
 
-
-// Displays Fields
 class TaskCard extends StatelessWidget {
   final Task task;
 
@@ -125,29 +126,39 @@ class TaskCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       margin: EdgeInsets.all(10),
-      child: Column(
-        children: <Widget>[
-          ListTile(
-            title: Text(task.name),
-            subtitle: Text(task.description),
-          ),
-          if (task.fields.isNotEmpty)
-            Container(
-              padding: EdgeInsets.all(10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: task.fields.map((field) {
-                  return ListTile(
-                    title: Text(field.name),
-                    subtitle: Text(field.value),
-                  );
-                }).toList(),
-              ),
+      child: GestureDetector(
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => TaskDetailPage(task: task),
             ),
-        ],
+          );
+        },
+        child: Column(
+          children: <Widget>[
+            ListTile(
+              title: Text(task.name),
+              subtitle: Text(task.description),
+            ),
+            if (task.fields.isNotEmpty)
+              Container(
+                padding: EdgeInsets.all(10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: task.fields.map((field) {
+                    return ListTile(
+                      title: Text(field.name),
+                      subtitle: Text(field.value),
+                    );
+                  }).toList(),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
 }
+
 
 
