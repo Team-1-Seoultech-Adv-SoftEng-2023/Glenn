@@ -1,6 +1,24 @@
 import 'package:flutter/material.dart';
 import 'task_detail_page.dart'; // Import the task_detail_page.dart file
+import 'task_creation_page.dart'; // Import the task_creation_page.dart file
 
+// Define the tasks list with sample data
+final List<Task> tasks = [
+  Task(
+    id: '1',
+    name: 'Sample Task 1',
+    description: 'Description for Sample Task 1',
+    parentId: '',
+    fields: [],
+  ),
+  Task(
+    id: '2',
+    name: 'Sample Task 2',
+    description: 'Description for Sample Task 2',
+    parentId: '',
+    fields: [],
+  ),
+];
 
 
 class Task {
@@ -29,29 +47,30 @@ class TaskField {
   });
 }
 
-void main() {
-  runApp(MyApp());
-}
-
+void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
   @override
   Widget build(BuildContext context) {
-    // Replace this with your list of tasks
-    final List<Task> tasks = [
-      Task(id: '1', name: 'Task 1', description: 'Description for Task 1', parentId: '0', fields: [
-        TaskField(name: 'Field1', value: 'Value1'),
-        TaskField(name: 'Field3', value: 'Value3'),
-      ]),
-      Task(id: '2', name: 'Task 2', description: 'Description for Task 2', parentId: '1', fields: []),
-    ];
-
     return MaterialApp(
+      navigatorKey: navigatorKey, // Set the navigatorKey
       home: Scaffold(
         appBar: AppBar(
           title: Text('Task List'),
         ),
         body: TaskList(tasks: tasks),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            navigatorKey.currentState?.push(
+              MaterialPageRoute(
+                builder: (context) => TaskCreationPage(),
+              ),
+            );
+          },
+          child: Icon(Icons.add),
+        ),
       ),
     );
   }
