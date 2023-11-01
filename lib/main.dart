@@ -30,49 +30,6 @@ class TaskField {
 }
 
 void main() {
-  // Create tasks with fields
-  final task1 = Task(
-    id: '1',
-    name: 'Task 1',
-    description: 'Description for Task 1',
-    parentId: '0',
-    fields: [
-      TaskField(name: 'Field1', value: 'Value1'),
-      TaskField(name: 'Field2', value: 'Value2'),
-    ],
-  );
-
-  final task2 = Task(
-    id: '2',
-    name: 'Task 2',
-    description: 'Description for Task 2',
-    parentId: '1',
-    fields: [
-      TaskField(name: 'Field1', value: 'Value1'),
-      TaskField(name: 'Field3', value: 'Value3'),
-    ],
-  );
-
-  // Display task information
-  print('Task 1:');
-  print('ID: ${task1.id}');
-  print('Name: ${task1.name}');
-  print('Description: ${task1.description}');
-  print('Parent ID: ${task1.parentId}');
-  print('Fields:');
-  for (var field in task1.fields) {
-    print('${field.name}: ${field.value}');
-  }
-
-  print('\nTask 2:');
-  print('ID: ${task2.id}');
-  print('Name: ${task2.name}');
-  print('Description: ${task2.description}');
-  print('Parent ID: ${task2.parentId}');
-  print('Fields:');
-  for (var field in task2.fields) {
-    print('${field.name}: ${field.value}');
-  }
   runApp(MyApp());
 }
 
