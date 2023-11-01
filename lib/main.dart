@@ -49,23 +49,37 @@ class TaskField {
 
 void main() => runApp(MyApp());
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  final List<Task> tasks = []; // List to store tasks
+
+  // Callback function to handle newly created tasks
+  void handleTaskCreated(Task newTask) {
+    setState(() {
+      tasks.add(newTask);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      navigatorKey: navigatorKey, // Set the navigatorKey
+      navigatorKey: navigatorKey,
       home: Scaffold(
         appBar: AppBar(
           title: Text('Task List'),
         ),
         body: TaskList(tasks: tasks),
         floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            navigatorKey.currentState?.push(
+          onPressed: () async {
+            // Navigate to the TaskCreationPage and pass the callback function
+            final newTask = await navigatorKey.currentState?.push(
               MaterialPageRoute(
-                builder: (context) => TaskCreationPage(),
+                builder: (context) => TaskCreationPage(onTaskCreated: handleTaskCreated),
               ),
             );
           },
@@ -75,6 +89,8 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
+
 
 class TaskList extends StatelessWidget {
   final List<Task> tasks;

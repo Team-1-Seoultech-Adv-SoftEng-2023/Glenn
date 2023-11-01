@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'main.dart';
 
 class TaskCreationPage extends StatefulWidget {
+  final Function(Task) onTaskCreated;
+
+  TaskCreationPage({required this.onTaskCreated});
+
   @override
   _TaskCreationPageState createState() => _TaskCreationPageState();
 }
@@ -28,22 +32,19 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
               controller: _descriptionController,
               decoration: InputDecoration(labelText: 'Task Description'),
             ),
-            SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
                 // Create a new task object with the provided details
                 final Task newTask = Task(
-                  id: UniqueKey()
-                      .toString(), // You can generate a unique ID here
+                  id: UniqueKey().toString(),
                   name: _nameController.text,
                   description: _descriptionController.text,
-                  parentId: '', // Set the parent ID if needed
+                  parentId: '',
                   fields: [],
                 );
 
-                // You can handle saving the task, e.g., to a list, database, or API.
-                // For now, we'll print the task details as an example.
-                print('New Task: ${newTask.name}, ${newTask.description}');
+                // Notify the main page about the newly created task
+                widget.onTaskCreated(newTask);
 
                 // Clear the form
                 _nameController.clear();
