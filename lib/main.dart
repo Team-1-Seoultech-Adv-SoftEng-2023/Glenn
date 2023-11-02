@@ -23,8 +23,8 @@ final List<Task> tasks = [
 
 class Task {
   final String id;
-  final String name;
-  final String description;
+  String name;
+  String description;
   final String parentId;
   final List<TaskField> fields;
 
