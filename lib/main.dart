@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'task_detail_page.dart'; // Import the task_detail_page.dart file
 
-
-
 class Task {
   final String id;
   final String name;
@@ -76,17 +74,26 @@ void main() {
   runApp(MyApp());
 }
 
-
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Replace this with your list of tasks
     final List<Task> tasks = [
-      Task(id: '1', name: 'Task 1', description: 'Description for Task 1', parentId: '0', fields: [
-        TaskField(name: 'Field1', value: 'Value1'),
-        TaskField(name: 'Field3', value: 'Value3'),
-      ]),
-      Task(id: '2', name: 'Task 2', description: 'Description for Task 2', parentId: '1', fields: []),
+      Task(
+          id: '1',
+          name: 'Task 1',
+          description: 'Description for Task 1',
+          parentId: '0',
+          fields: [
+            TaskField(name: 'Field1', value: 'Value1'),
+            TaskField(name: 'Field3', value: 'Value3'),
+          ]),
+      Task(
+          id: '2',
+          name: 'Task 2',
+          description: 'Description for Task 2',
+          parentId: '1',
+          fields: []),
     ];
 
     return MaterialApp(
@@ -159,6 +166,3 @@ class TaskCard extends StatelessWidget {
     );
   }
 }
-
-
-
