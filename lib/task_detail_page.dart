@@ -5,7 +5,9 @@ import 'task_edit_page.dart';
 class TaskDetailPage extends StatefulWidget {
   final Task task;
 
-  TaskDetailPage({required this.task});
+  final Function(Task) onTaskUpdated; // Add the callback
+
+  TaskDetailPage({required this.task, required this.onTaskUpdated}); // Update the constructor
 
   @override
   _TaskDetailPageState createState() => _TaskDetailPageState();
@@ -23,10 +25,15 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
             onPressed: () async {
               final updatedTask = await Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (context) => EditTaskPage(task: widget.task),
+                  builder: (context) => EditTaskPage(
+                    task: widget.task,
+                    onTaskUpdated: (updatedTask) {
+                      // Handle the updated task here
+                      // Optionally, you can update the UI or perform other actions.
+                    },
+                  ),
                 ),
               );
-
               if (updatedTask != null) {
                 // Update the task with the updated task received from EditTaskPage
                 setState(() {

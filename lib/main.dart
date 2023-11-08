@@ -65,6 +65,17 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  // Define the callback function to handle task updates
+  void handleTaskUpdated(Task updatedTask) {
+    setState(() {
+      // Update the task in the tasks list
+      final index = tasks.indexWhere((task) => task.id == updatedTask.id);
+      if (index != -1) {
+        tasks[index] = updatedTask;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -73,7 +84,12 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: Text('Task List'),
         ),
-        body: TaskList(tasks: tasks),
+        body: TaskList(tasks: tasks,
+            onTaskUpdated: (updatedTask) {
+              // Handle the updated task here
+              // Optionally, you can update the UI or perform other actions.
+            },
+          ),
         floatingActionButton: FloatingActionButton(
           onPressed: () async {
             // Navigate to the TaskCreationPage and pass the callback function
@@ -94,8 +110,9 @@ class _MyAppState extends State<MyApp> {
 
 class TaskList extends StatelessWidget {
   final List<Task> tasks;
+  final Function(Task) onTaskUpdated; // Add the callback
 
-  TaskList({required this.tasks});
+  TaskList({required this.tasks, required this.onTaskUpdated}); // Update the constructor
 
   @override
   Widget build(BuildContext context) {
@@ -103,26 +120,41 @@ class TaskList extends StatelessWidget {
       itemCount: tasks.length,
       itemBuilder: (context, index) {
         final task = tasks[index];
-        return TaskCard(task: task);
+        return TaskCard(task: task, allTasks: tasks, onTaskUpdated: onTaskUpdated); // Pass the callback to TaskCard
       },
     );
   }
 }
 
+
 class TaskCard extends StatelessWidget {
   final Task task;
 
-  TaskCard({required this.task});
+  final List<Task> allTasks;
+  final Function(Task) onTaskUpdated; // Add the callback
+
+  TaskCard({required this.task, required this.allTasks, required this.onTaskUpdated});
+
 
   @override
   Widget build(BuildContext context) {
+    // Function to find child tasks for the current task
+    List<Task> getChildTasks() {
+      return allTasks.where((t) => t.parentId == task.id).toList();
+    }
     return Card(
       margin: EdgeInsets.all(10),
       child: GestureDetector(
         onTap: () {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => TaskDetailPage(task: task),
+              builder: (context) => TaskDetailPage(
+                task: task,
+                onTaskUpdated: (updatedTask) {
+                  // Handle the updated task here
+                  // Optionally, you can update the UI or perform other actions.
+                },
+              ),
             ),
           );
         },
@@ -145,12 +177,29 @@ class TaskCard extends StatelessWidget {
                   }).toList(),
                 ),
               ),
+            // Display child tasks under the main task
+            if (getChildTasks().isNotEmpty)
+              Column(
+                children: <Widget>[
+                  Text('Child Tasks:'),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: getChildTasks().length,
+                    itemBuilder: (context, index) {
+                      return TaskCard(task: getChildTasks()[index], allTasks: allTasks,
+                      onTaskUpdated: (updatedTask) {
+                        // Handle the updated task here
+                        // Optionally, you can update the UI or perform other actions.
+                      },);
+                    },
+                  ),
+                ],
+              ),
           ],
         ),
       ),
     );
   }
 }
-
 
 

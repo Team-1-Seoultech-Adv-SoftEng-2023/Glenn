@@ -3,8 +3,12 @@ import 'main.dart';
 
 class TaskCreationPage extends StatefulWidget {
   final Function(Task) onTaskCreated;
-
-  TaskCreationPage({required this.onTaskCreated});
+  final String parentId; // Add the parentId parameter
+  
+  TaskCreationPage({
+    required this.onTaskCreated,
+    this.parentId = '', // Set the default value
+  });
 
   @override
   _TaskCreationPageState createState() => _TaskCreationPageState();
@@ -39,7 +43,7 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                   id: UniqueKey().toString(),
                   name: _nameController.text,
                   description: _descriptionController.text,
-                  parentId: '',
+                  parentId: widget.parentId, // Use the parentId from the widget
                   fields: [],
                 );
 
