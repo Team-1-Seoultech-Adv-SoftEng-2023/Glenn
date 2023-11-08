@@ -6,8 +6,13 @@ class TaskDetailPage extends StatefulWidget {
   final Task task;
 
   final Function(Task) onTaskUpdated; // Add the callback
+  final Function(Task) onTaskCreated; // Add the callback
 
-  TaskDetailPage({required this.task, required this.onTaskUpdated}); // Update the constructor
+  TaskDetailPage({
+    required this.task,
+    required this.onTaskUpdated,
+    required this.onTaskCreated, // Update the constructor
+  });
 
   @override
   _TaskDetailPageState createState() => _TaskDetailPageState();
@@ -31,6 +36,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                       // Handle the updated task here
                       // Optionally, you can update the UI or perform other actions.
                     },
+                    onTaskCreated: widget.onTaskCreated
                   ),
                 ),
               );

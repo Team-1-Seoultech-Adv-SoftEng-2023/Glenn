@@ -6,8 +6,9 @@ class EditTaskPage extends StatefulWidget {
   final Task task;
 
   final Function(Task) onTaskUpdated; // Add this callback
+  final Function(Task) onTaskCreated; // Add this callback
 
-  EditTaskPage({required this.task, required this.onTaskUpdated}); // Update the constructor
+  EditTaskPage({required this.task, required this.onTaskUpdated, required this.onTaskCreated}); // Update the constructor
 
   @override
   _EditTaskPageState createState() => _EditTaskPageState();
@@ -41,10 +42,7 @@ class _EditTaskPageState extends State<EditTaskPage> {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) => TaskCreationPage(
-                      onTaskCreated: (newTask) {
-                        // Handle the created task here (e.g., adding it to the parent task's sub-tasks)
-                        // Optionally, you can also update the UI or perform other actions.
-                      },
+                      onTaskCreated: widget.onTaskCreated,
                       parentId: widget.task.id,
                     ),
                   ),

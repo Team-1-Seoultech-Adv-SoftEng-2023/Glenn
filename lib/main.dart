@@ -89,6 +89,7 @@ class _MyAppState extends State<MyApp> {
               // Handle the updated task here
               // Optionally, you can update the UI or perform other actions.
             },
+            onTaskCreated: handleTaskCreated,
           ),
         floatingActionButton: FloatingActionButton(
           onPressed: () async {
@@ -111,8 +112,9 @@ class _MyAppState extends State<MyApp> {
 class TaskList extends StatelessWidget {
   final List<Task> tasks;
   final Function(Task) onTaskUpdated; // Add the callback
+  final Function(Task) onTaskCreated; // Add the callback
 
-  TaskList({required this.tasks, required this.onTaskUpdated}); // Update the constructor
+  TaskList({required this.tasks, required this.onTaskUpdated, required this.onTaskCreated}); // Update the constructor
 
   @override
   Widget build(BuildContext context) {
@@ -120,7 +122,7 @@ class TaskList extends StatelessWidget {
       itemCount: tasks.length,
       itemBuilder: (context, index) {
         final task = tasks[index];
-        return TaskCard(task: task, allTasks: tasks, onTaskUpdated: onTaskUpdated); // Pass the callback to TaskCard
+        return TaskCard(task: task, allTasks: tasks, onTaskUpdated: onTaskUpdated, onTaskCreated: onTaskCreated,); // Pass the callback to TaskCard
       },
     );
   }
@@ -132,8 +134,9 @@ class TaskCard extends StatelessWidget {
 
   final List<Task> allTasks;
   final Function(Task) onTaskUpdated; // Add the callback
+  final Function(Task) onTaskCreated; // Add the callback
 
-  TaskCard({required this.task, required this.allTasks, required this.onTaskUpdated});
+  TaskCard({required this.task, required this.allTasks, required this.onTaskUpdated, required this.onTaskCreated});
 
 
   @override
@@ -154,6 +157,7 @@ class TaskCard extends StatelessWidget {
                   // Handle the updated task here
                   // Optionally, you can update the UI or perform other actions.
                 },
+                  onTaskCreated: onTaskCreated, // Pass the callback
               ),
             ),
           );
@@ -181,7 +185,7 @@ class TaskCard extends StatelessWidget {
             if (getChildTasks().isNotEmpty)
               Column(
                 children: <Widget>[
-                  Text('Child Tasks:'),
+                  Text('Sub Tasks:'),
                   ListView.builder(
                     shrinkWrap: true,
                     itemCount: getChildTasks().length,
@@ -190,7 +194,9 @@ class TaskCard extends StatelessWidget {
                       onTaskUpdated: (updatedTask) {
                         // Handle the updated task here
                         // Optionally, you can update the UI or perform other actions.
-                      },);
+                      },
+                      onTaskCreated: onTaskCreated,
+                      );
                     },
                   ),
                 ],
