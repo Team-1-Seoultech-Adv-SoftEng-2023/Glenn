@@ -118,15 +118,22 @@ class TaskList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final mainTasks = tasks.where((task) => task.parentId == '').toList();
     return ListView.builder(
-      itemCount: tasks.length,
+      itemCount: mainTasks.length,
       itemBuilder: (context, index) {
-        final task = tasks[index];
-        return TaskCard(task: task, allTasks: tasks, onTaskUpdated: onTaskUpdated, onTaskCreated: onTaskCreated,); // Pass the callback to TaskCard
+        final task = mainTasks[index];
+        return TaskCard(
+          task: task,
+          allTasks: tasks,
+          onTaskUpdated: onTaskUpdated,
+          onTaskCreated: onTaskCreated,
+        );
       },
     );
   }
 }
+
 
 
 class TaskCard extends StatelessWidget {
