@@ -4,12 +4,14 @@ import 'task_edit_page.dart';
 
 class TaskDetailPage extends StatefulWidget {
   final Task task;
+  final List<Task> subtasks; // Add the list of subtasks
 
   final Function(Task) onTaskUpdated; // Add the callback
   final Function(Task) onTaskCreated; // Add the callback
 
   TaskDetailPage({
     required this.task,
+    required this.subtasks,
     required this.onTaskUpdated,
     required this.onTaskCreated, // Update the constructor
   });
@@ -31,13 +33,14 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
               final updatedTask = await Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => EditTaskPage(
-                    task: widget.task,
-                    onTaskUpdated: (updatedTask) {
-                      // Handle the updated task here
-                      // Optionally, you can update the UI or perform other actions.
-                    },
-                    onTaskCreated: widget.onTaskCreated
-                  ),
+                      task: widget.task,
+                      onTaskUpdated: (updatedTask) {
+                        // Handle the updated task here
+                        // Optionally, you can update the UI or perform other actions.
+                      },
+                      onTaskCreated: (newTask) {
+                        widget.onTaskCreated(newTask);
+                      }),
                 ),
               );
               if (updatedTask != null) {
@@ -57,7 +60,8 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
         children: <Widget>[
           ListTile(
             title: Text(widget.task.name), // Access task using widget.task
-            subtitle: Text(widget.task.description), // Access task using widget.task
+            subtitle:
+                Text(widget.task.description), // Access task using widget.task
           ),
           if (widget.task.fields.isNotEmpty)
             Container(
@@ -72,8 +76,26 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                 }).toList(),
               ),
             ),
-        ],
-      ),
+            if (widget.subtasks.isNotEmpty) // Check if there are subtasks
+              Column(
+                children: <Widget>[
+                  Text('Subtasks:'),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: widget.subtasks.length,
+                    itemBuilder: (context, index) {
+                      final subtask = widget.subtasks[index];
+                      return ListTile(
+                        title: Text(subtask.name),
+                        subtitle: Text(subtask.description),
+                        // Add any other subtask details you want to display
+                      );
+                    },
+                  ),
+                ],
+              ),
+          ],
+        ),
     );
   }
 }

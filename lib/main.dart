@@ -165,6 +165,7 @@ class TaskCard extends StatelessWidget {
                   // Optionally, you can update the UI or perform other actions.
                 },
                   onTaskCreated: onTaskCreated, // Pass the callback
+                  subtasks: getChildTasks(),
               ),
             ),
           );
