@@ -3,7 +3,6 @@ import 'task_detail_page.dart'; // Import the task_detail_page.dart file
 import 'task_creation_page.dart'; // Import the task_creation_page.dart file
 import 'completed_tasks_page.dart'; // Import the CompletedTasksPage widget
 
-
 // Define the tasks list with sample data
 final List<Task> tasks = [
   Task(
@@ -11,7 +10,12 @@ final List<Task> tasks = [
     name: 'Sample Task 1',
     description: 'Description for Sample Task 1',
     parentId: '',
-    fields: [],
+    fields: [
+      DueDateField(
+        dueDate: DateTime(2023, 11, 15), // Sample date (year, month, day)
+        dueTime: TimeOfDay(hour: 14, minute: 30), // Sample time (hour, minute)
+      ),
+    ],
   ),
   Task(
     id: '2',
@@ -50,7 +54,6 @@ class TaskField {
   });
 }
 
-
 class DueDateField extends TaskField {
   DateTime _dueDate;
   TimeOfDay _dueTime;
@@ -58,9 +61,11 @@ class DueDateField extends TaskField {
   DueDateField({
     required DateTime dueDate,
     required TimeOfDay dueTime,
-  })   : _dueDate = dueDate,
+  })  : _dueDate = dueDate,
         _dueTime = dueTime,
-        super(name: 'Due Date', value: '${_formatDate(dueDate)} ${_formatTime(dueTime)}');
+        super(
+            name: 'Due Date',
+            value: '${_formatDate(dueDate)} ${_formatTime(dueTime)}');
 
   DateTime get dueDate => _dueDate;
   set dueDate(DateTime value) {
@@ -85,6 +90,11 @@ class DueDateField extends TaskField {
   static String _formatTime(TimeOfDay time) {
     return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
   }
+}
+
+void main() {
+  runApp(MyApp(tasks: tasks));
+}
 
 class MyApp extends StatefulWidget {
   final List<Task> tasks;
@@ -95,21 +105,9 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
-
-<<<<<<< HEAD
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatefulWidget {
-  @override
-  _MyAppState createState() => _MyAppState();
-}
-
 class _MyAppState extends State<MyApp> {
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   List<Task> incompleteTasks = [];
-
 
   // Callback function to handle newly created tasks
   void handleTaskCreated(Task newTask) {
@@ -128,34 +126,7 @@ class _MyAppState extends State<MyApp> {
       }
     });
   }
-@override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      navigatorKey: navigatorKey,
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Task List'),
-        ),
-        body: TaskList(
-          tasks: tasks,
-          onTaskUpdated: (updatedTask) {
-            // Handle the updated task here
-            // Optionally, you can update the UI or perform other actions.
-          },
-          onTaskCreated: handleTaskCreated,
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () async {
-            // Navigate to the TaskCreationPage and pass the callback function
-            final newTask = await navigatorKey.currentState?.push(
-              MaterialPageRoute(
-                builder: (context) => TaskCreationPage(onTaskCreated: handleTaskCreated),
-              ),
-            );
-          },
-          child: Icon(Icons.add),
-        ),
-=======
+
   @override
   void initState() {
     super.initState();
@@ -190,32 +161,49 @@ class _MyAppState extends State<MyApp> {
           body: TabBarView(
             children: [
               TaskList(
-                  tasks: incompleteTasks,
-                  updateTaskCompletionStatus: _updateTaskCompletionStatus),
+                tasks: incompleteTasks,
+                updateTaskCompletionStatus: _updateTaskCompletionStatus,
+                onTaskUpdated: (updatedTask) {
+                  // Handle the updated task here
+                  // Optionally, you can update the UI or perform other actions.
+                },
+                onTaskCreated: handleTaskCreated,
+              ),
               CompletedTasksPage(
                 tasks: widget.tasks,
+                onTaskCreated: handleTaskCreated,
+                onTaskUpdated: handleTaskUpdated,
               ),
             ],
           ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () async {
+              // Navigate to the TaskCreationPage and pass the callback function
+              final newTask = await navigatorKey.currentState?.push(
+                MaterialPageRoute(
+                  builder: (context) =>
+                      TaskCreationPage(onTaskCreated: handleTaskCreated),
+                ),
+              );
+            },
+            child: Icon(Icons.add),
+          ),
         ),
->>>>>>> arnold-dev
       ),
     );
   }
 }
 
-
-class TaskList extends StatelessWidget {
+class TaskList extends StatefulWidget {
   final List<Task> tasks;
   final Function(Task) onTaskUpdated; // Add the callback
   final Function(Task) onTaskCreated; // Add the callback
   final Function(Task, bool) updateTaskCompletionStatus;
-  List<Task> incompleteTasks = [];
 
   TaskList({
     required this.tasks,
     required this.updateTaskCompletionStatus,
-    required this.onTaskUpdated, 
+    required this.onTaskUpdated,
     required this.onTaskCreated,
   });
 
@@ -224,6 +212,7 @@ class TaskList extends StatelessWidget {
 }
 
 class _TaskListState extends State<TaskList> {
+  List<Task> incompleteTasks = [];
 
   @override
   void initState() {
@@ -242,7 +231,8 @@ class _TaskListState extends State<TaskList> {
 
   @override
   Widget build(BuildContext context) {
-    final mainTasks = incompleteTasks.where((task) => task.parentId == '').toList();
+    final mainTasks =
+        incompleteTasks.where((task) => task.parentId == '').toList();
     return ListView.builder(
       itemCount: mainTasks.length,
       itemBuilder: (context, index) {
@@ -250,8 +240,8 @@ class _TaskListState extends State<TaskList> {
         return TaskCard(
           task: task,
           allTasks: tasks,
-          onTaskUpdated: onTaskUpdated,
-          onTaskCreated: onTaskCreated,
+          onTaskUpdated: widget.onTaskUpdated,
+          onTaskCreated: widget.onTaskCreated,
           onUpdateDueDateTime: (dueDateField) {
             // Handle the update logic here
             print('Due date and time updated: ${dueDateField.value}');
@@ -263,7 +253,6 @@ class _TaskListState extends State<TaskList> {
   }
 }
 
-
 class TaskCard extends StatefulWidget {
   final Task task;
   final Function(DueDateField) onUpdateDueDateTime;
@@ -273,14 +262,22 @@ class TaskCard extends StatefulWidget {
   final Function(Task) onTaskUpdated; // Add the callback
   final Function(Task) onTaskCreated; // Add the callback
 
-  TaskCard({required this.task, required this.allTasks, required this.onTaskUpdated, required this.onTaskCreated, required this.onUpdateDueDateTime,
-  this.updateTaskCompletionStatus = _dummyFunction});
+  TaskCard(
+      {required this.task,
+      required this.allTasks,
+      required this.onTaskUpdated,
+      required this.onTaskCreated,
+      required this.onUpdateDueDateTime,
+      this.updateTaskCompletionStatus = _dummyFunction});
 
   @override
   _TaskCardState createState() => _TaskCardState();
 }
 
-<<<<<<< HEAD
+void _dummyFunction(Task task, bool isComplete) {
+  // This is a placeholder function that does nothing.
+}
+
 class _TaskCardState extends State<TaskCard> {
   late TextEditingController dateController;
   late TextEditingController timeController;
@@ -289,17 +286,18 @@ class _TaskCardState extends State<TaskCard> {
   @override
   void initState() {
     super.initState();
-    if (widget.task.fields.isNotEmpty && widget.task.fields.first is DueDateField) {
+    if (widget.task.fields.isNotEmpty &&
+        widget.task.fields.first is DueDateField) {
       canEditDateTime = false; // Set to false for TaskCard
-      dateController = TextEditingController(text: _formatDate((widget.task.fields.first as DueDateField).dueDate));
-      timeController = TextEditingController(text: _formatTime((widget.task.fields.first as DueDateField).dueTime));
+      dateController = TextEditingController(
+          text:
+              _formatDate((widget.task.fields.first as DueDateField).dueDate));
+      timeController = TextEditingController(
+          text:
+              _formatTime((widget.task.fields.first as DueDateField).dueTime));
     }
-=======
-void _dummyFunction(Task task, bool isComplete) {
-  // This is a placeholder function that does nothing.
-}
+  }
 
-class _TaskCardState extends State<TaskCard> {
   Future<void> _showConfirmationDialog(BuildContext context, bool value) async {
     return showDialog(
       context: context,
@@ -325,15 +323,17 @@ class _TaskCardState extends State<TaskCard> {
         );
       },
     );
->>>>>>> arnold-dev
   }
 
   @override
   Widget build(BuildContext context) {
     // Function to find child tasks for the current task
     List<Task> getChildTasks() {
-      return widget.allTasks.where((t) => t.parentId == widget.task.id).toList();
+      return widget.allTasks
+          .where((t) => t.parentId == widget.task.id)
+          .toList();
     }
+
     return Card(
       margin: EdgeInsets.all(10),
       child: GestureDetector(
@@ -347,16 +347,18 @@ class _TaskCardState extends State<TaskCard> {
                   // Handle the updated task here
                   // Optionally, you can update the UI or perform other actions.
                 },
-                  onTaskCreated: widget.onTaskCreated, // Pass the callback
-                  subtasks: getChildTasks(),
-                  onUpdateDueDateTime: widget.onUpdateDueDateTime,
+                onTaskCreated: widget.onTaskCreated, // Pass the callback
+                subtasks: getChildTasks(),
+                onUpdateDueDateTime: widget.onUpdateDueDateTime,
               ),
             ),
           );
           setState(() {
             // Update the date and time on TaskCard when returning from TaskDetailPage
-            dateController.text = _formatDate((widget.task.fields.first as DueDateField).dueDate);
-            timeController.text = _formatTime((widget.task.fields.first as DueDateField).dueTime);
+            dateController.text =
+                _formatDate((widget.task.fields.first as DueDateField).dueDate);
+            timeController.text =
+                _formatTime((widget.task.fields.first as DueDateField).dueTime);
           });
         },
         child: Column(
@@ -378,7 +380,6 @@ class _TaskCardState extends State<TaskCard> {
                 padding: EdgeInsets.all(10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-<<<<<<< HEAD
                   children: <Widget>[
                     ListTile(
                       title: Text('Due Date'),
@@ -389,22 +390,30 @@ class _TaskCardState extends State<TaskCard> {
                               controller: dateController,
                               keyboardType: TextInputType.datetime,
                               decoration: InputDecoration(labelText: 'Date'),
-                              enabled: canEditDateTime, // Disable editing on TaskCard
+                              enabled:
+                                  canEditDateTime, // Disable editing on TaskCard
                               onTap: canEditDateTime
                                   ? () async {
-                                      DateTime? selectedDate = await showDatePicker(
+                                      DateTime? selectedDate =
+                                          await showDatePicker(
                                         context: context,
-                                        initialDate: (widget.task.fields.first as DueDateField).dueDate,
+                                        initialDate: (widget.task.fields.first
+                                                as DueDateField)
+                                            .dueDate,
                                         firstDate: DateTime(2000),
                                         lastDate: DateTime(2101),
                                       );
                                       if (selectedDate != null) {
                                         setState(() {
-                                          (widget.task.fields.first as DueDateField).dueDate = selectedDate;
-                                          dateController.text = _formatDate(selectedDate);
+                                          (widget.task.fields.first
+                                                  as DueDateField)
+                                              .dueDate = selectedDate;
+                                          dateController.text =
+                                              _formatDate(selectedDate);
                                         });
                                         // Pass the updated DueDateField to the callback function
-                                        widget.onUpdateDueDateTime(widget.task.fields.first as DueDateField);
+                                        widget.onUpdateDueDateTime(widget
+                                            .task.fields.first as DueDateField);
                                       }
                                     }
                                   : null,
@@ -416,20 +425,28 @@ class _TaskCardState extends State<TaskCard> {
                               controller: timeController,
                               keyboardType: TextInputType.datetime,
                               decoration: InputDecoration(labelText: 'Time'),
-                              enabled: canEditDateTime, // Disable editing on TaskCard
+                              enabled:
+                                  canEditDateTime, // Disable editing on TaskCard
                               onTap: canEditDateTime
                                   ? () async {
-                                      TimeOfDay? selectedTime = await showTimePicker(
+                                      TimeOfDay? selectedTime =
+                                          await showTimePicker(
                                         context: context,
-                                        initialTime: (widget.task.fields.first as DueDateField).dueTime,
+                                        initialTime: (widget.task.fields.first
+                                                as DueDateField)
+                                            .dueTime,
                                       );
                                       if (selectedTime != null) {
                                         setState(() {
-                                          (widget.task.fields.first as DueDateField).dueTime = selectedTime;
-                                          timeController.text = _formatTime(selectedTime);
+                                          (widget.task.fields.first
+                                                  as DueDateField)
+                                              .dueTime = selectedTime;
+                                          timeController.text =
+                                              _formatTime(selectedTime);
                                         });
                                         // Pass the updated DueDateField to the callback function
-                                        widget.onUpdateDueDateTime(widget.task.fields.first as DueDateField);
+                                        widget.onUpdateDueDateTime(widget
+                                            .task.fields.first as DueDateField);
                                       }
                                     }
                                   : null,
@@ -447,14 +464,12 @@ class _TaskCardState extends State<TaskCard> {
                       subtitle: Text('Value3'),
                     ),
                   ],
-=======
-                  children: widget.task.fields.map((field) {
-                    return ListTile(
-                      title: Text(field.name),
-                      subtitle: Text(field.value),
-                    );
-                  }).toList(),
->>>>>>> arnold-dev
+                  // children: widget.task.fields.map((field) {
+                  //   return ListTile(
+                  //     title: Text(field.name),
+                  //     subtitle: Text(field.value),
+                  //   );
+                  // }).toList(),
                 ),
               ),
             // Display child tasks under the main task
@@ -466,14 +481,15 @@ class _TaskCardState extends State<TaskCard> {
                     shrinkWrap: true,
                     itemCount: getChildTasks().length,
                     itemBuilder: (context, index) {
-                      return TaskCard(task: getChildTasks()[index], allTasks: widget.allTasks,
-                      onTaskUpdated: (updatedTask) {
-                        // Handle the updated task here
-                        // Optionally, you can update the UI or perform other actions.
-                      },
-                      onTaskCreated: widget.onTaskCreated,
-                      onUpdateDueDateTime: widget.onUpdateDueDateTime
-                      );
+                      return TaskCard(
+                          task: getChildTasks()[index],
+                          allTasks: widget.allTasks,
+                          onTaskUpdated: (updatedTask) {
+                            // Handle the updated task here
+                            // Optionally, you can update the UI or perform other actions.
+                          },
+                          onTaskCreated: widget.onTaskCreated,
+                          onUpdateDueDateTime: widget.onUpdateDueDateTime);
                     },
                   ),
                 ],
@@ -483,12 +499,12 @@ class _TaskCardState extends State<TaskCard> {
       ),
     );
   }
+}
 
-  String _formatDate(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-  }
+String _formatDate(DateTime date) {
+  return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+}
 
-  String _formatTime(TimeOfDay time) {
-    return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
-  }
+String _formatTime(TimeOfDay time) {
+  return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
 }
