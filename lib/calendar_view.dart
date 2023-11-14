@@ -39,16 +39,39 @@ class _CalendarViewState extends State<CalendarView> {
 
   @override
   Widget build(BuildContext context) {
-    return TableCalendar(
-      firstDay: DateTime.utc(2023, 1, 1),
-      lastDay: DateTime.utc(2023, 12, 31),
-      focusedDay: _selectedDay,
-      calendarFormat: CalendarFormat.month,
-      eventLoader: _getEventsForDay,
-      onDaySelected: (selectedDay, focusedDay) {
-        setState(() {
-          _selectedDay = selectedDay;
-        });
+    return Column(
+      children: [
+        TableCalendar(
+          firstDay: DateTime.utc(2023, 1, 1),
+          lastDay: DateTime.utc(2023, 12, 31),
+          focusedDay: _selectedDay,
+          calendarFormat: CalendarFormat.month,
+          eventLoader: _getEventsForDay,
+          onDaySelected: (selectedDay, focusedDay) {
+            setState(() {
+              _selectedDay = selectedDay;
+            });
+          },
+        ),
+        Expanded(
+          child: _buildTaskList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTaskList() {
+    final tasksForSelectedDay = _getEventsForDay(_selectedDay);
+
+    return ListView.builder(
+      itemCount: tasksForSelectedDay.length,
+      itemBuilder: (context, index) {
+        final task = tasksForSelectedDay[index];
+        return ListTile(
+          title: Text(task.name),
+          subtitle: Text(task.description),
+          // Add more details as needed
+        );
       },
     );
   }
