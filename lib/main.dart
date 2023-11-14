@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'task_detail_page.dart'; // Import the task_detail_page.dart file
 import 'task_creation_page.dart'; // Import the task_creation_page.dart file
 import 'completed_tasks_page.dart'; // Import the CompletedTasksPage widget
+import 'calendar_view.dart';
 
 // Define the tasks list with sample data
 final List<Task> tasks = [
@@ -147,13 +148,15 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: DefaultTabController(
-        length: 2,
+        length: 4,
         child: Scaffold(
           appBar: AppBar(
             title: Text('Task List'),
             bottom: TabBar(
               tabs: [
-                Tab(text: 'Incomplete'),
+                Tab(text: 'Due Date'),
+                Tab(text: 'Priority'),
+                Tab(text: 'Calendar'),
                 Tab(text: 'Completed'),
               ],
             ),
@@ -169,6 +172,18 @@ class _MyAppState extends State<MyApp> {
                 },
                 onTaskCreated: handleTaskCreated,
               ),
+
+              TaskList(
+                tasks: incompleteTasks,
+                updateTaskCompletionStatus: _updateTaskCompletionStatus,
+                onTaskUpdated: (updatedTask) {
+                  // Handle the updated task here
+                  // Optionally, you can update the UI or perform other actions.
+                },
+                onTaskCreated: handleTaskCreated,
+              ),
+
+              CalendarView(tasks: widget.tasks), // Added CalendarView
               CompletedTasksPage(
                 tasks: widget.tasks,
                 onTaskCreated: handleTaskCreated,
