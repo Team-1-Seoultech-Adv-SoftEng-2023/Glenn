@@ -3,27 +3,63 @@ import 'task_detail_page.dart'; // Import the task_detail_page.dart file
 import 'task_creation_page.dart'; // Import the task_creation_page.dart file
 import 'completed_tasks_page.dart'; // Import the CompletedTasksPage widget
 import 'calendar_view.dart';
+import 'fields/priority_field.dart';
+import 'utilities/task_sorter.dart';
 
 // Define the tasks list with sample data
 final List<Task> tasks = [
   Task(
     id: '1',
-    name: 'Sample Task 1',
-    description: 'Description for Sample Task 1',
+    name: 'Task with Due Date and Priority',
+    description: 'This task has both due date and priority',
     parentId: '',
     fields: [
       DueDateField(
-        dueDate: DateTime(2023, 11, 17), // Sample date (year, month, day)
-        dueTime: TimeOfDay(hour: 14, minute: 30), // Sample time (hour, minute)
+        dueDate: DateTime(2023, 11, 15),
+        dueTime: TimeOfDay(hour: 14, minute: 30),
       ),
+      PriorityField(priority: 2), // Medium priority
     ],
   ),
   Task(
     id: '2',
-    name: 'Sample Task 2',
-    description: 'Description for Sample Task 2',
+    name: 'Task with Due Date Only',
+    description: 'This task has only a due date',
+    parentId: '',
+    fields: [
+      DueDateField(
+        dueDate: DateTime(2023, 11, 20),
+        dueTime: TimeOfDay(hour: 10, minute: 0),
+      ),
+    ],
+  ),
+  Task(
+    id: '3',
+    name: 'Task with Priority Only',
+    description: 'This task has only a priority',
+    parentId: '',
+    fields: [
+      PriorityField(priority: 3), // High priority
+    ],
+  ),
+  Task(
+    id: '4',
+    name: 'Task with No Due Date or Priority',
+    description: 'This task has neither due date nor priority',
     parentId: '',
     fields: [],
+  ),
+  Task(
+    id: '5',
+    name: 'Task with Past Due Date',
+    description: 'This task has a past due date',
+    parentId: '',
+    fields: [
+      DueDateField(
+        dueDate: DateTime(2023, 11, 10),
+        dueTime: TimeOfDay(hour: 12, minute: 0),
+      ),
+    ],
   ),
 ];
 
@@ -43,6 +79,40 @@ class Task {
     required this.fields,
     this.isComplete = false, // Initialize as incomplete
   });
+
+  int? getPriority() {
+    final priorityField = fields.firstWhere(
+      (field) => field is PriorityField,
+      orElse: () => PriorityField(priority: -1), // Default if not found
+    ) as PriorityField;
+
+    return priorityField.priority;
+  }
+
+  bool get hasPriority {
+    return fields.any((field) => field is PriorityField);
+  }
+
+  bool get hasDueDate {
+    return fields.any((field) => field is DueDateField);
+  }
+
+  DateTime? getDueDate() {
+    final dueDateField = fields.whereType<DueDateField>().firstOrNull;
+
+    if (dueDateField != null) {
+      return dueDateField.dueDate;
+    } else {
+      // Return null if no due date field is found
+      return null;
+    }
+  }
+}
+
+extension IterableExtensions<E> on Iterable<E> {
+  E? get firstOrNull {
+    return isEmpty ? null : first;
+  }
 }
 
 class TaskField {
@@ -164,7 +234,7 @@ class _MyAppState extends State<MyApp> {
           body: TabBarView(
             children: [
               TaskList(
-                tasks: incompleteTasks,
+                tasks: TaskSorter.sortByDueDate(widget.tasks),
                 updateTaskCompletionStatus: _updateTaskCompletionStatus,
                 onTaskUpdated: (updatedTask) {
                   // Handle the updated task here
@@ -174,7 +244,7 @@ class _MyAppState extends State<MyApp> {
               ),
 
               TaskList(
-                tasks: incompleteTasks,
+                tasks: TaskSorter.sortByPriority(widget.tasks),
                 updateTaskCompletionStatus: _updateTaskCompletionStatus,
                 onTaskUpdated: (updatedTask) {
                   // Handle the updated task here
@@ -182,7 +252,6 @@ class _MyAppState extends State<MyApp> {
                 },
                 onTaskCreated: handleTaskCreated,
               ),
-
               CalendarView(tasks: widget.tasks), // Added CalendarView
               CompletedTasksPage(
                 tasks: widget.tasks,
@@ -301,15 +370,16 @@ class _TaskCardState extends State<TaskCard> {
   @override
   void initState() {
     super.initState();
+    dateController = TextEditingController(text: '');
+    timeController = TextEditingController(text: '');
+
     if (widget.task.fields.isNotEmpty &&
         widget.task.fields.first is DueDateField) {
       canEditDateTime = false; // Set to false for TaskCard
-      dateController = TextEditingController(
-          text:
-              _formatDate((widget.task.fields.first as DueDateField).dueDate));
-      timeController = TextEditingController(
-          text:
-              _formatTime((widget.task.fields.first as DueDateField).dueTime));
+      dateController.text =
+          _formatDate((widget.task.fields.first as DueDateField).dueDate);
+      timeController.text =
+          _formatTime((widget.task.fields.first as DueDateField).dueTime);
     }
   }
 
@@ -337,6 +407,50 @@ class _TaskCardState extends State<TaskCard> {
           ],
         );
       },
+    );
+  }
+
+  Widget _buildPriorityBlock(int priority) {
+    Color blockColor;
+    String priorityText;
+
+    switch (priority) {
+      case 0:
+        blockColor = Colors.blue;
+        priorityText = 'None';
+        break;
+      case 1:
+        blockColor = Colors.green;
+        priorityText = 'Low';
+        break;
+      case 2:
+        blockColor = Colors.yellow;
+        priorityText = 'Medium';
+        break;
+      case 3:
+        blockColor = Colors.orange;
+        priorityText = 'High';
+        break;
+      case 4:
+        blockColor = Colors.red;
+        priorityText = 'Critical';
+        break;
+      default:
+        blockColor = Colors.grey;
+        priorityText = 'Unknown';
+    }
+
+    return Container(
+      margin: EdgeInsets.only(top: 8, right: 8),
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: blockColor,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        priorityText,
+        style: TextStyle(color: Colors.white),
+      ),
     );
   }
 
@@ -376,138 +490,158 @@ class _TaskCardState extends State<TaskCard> {
                 _formatTime((widget.task.fields.first as DueDateField).dueTime);
           });
         },
-        child: Column(
-          children: <Widget>[
-            ListTile(
-              title: Text(widget.task.name),
-              subtitle: Text(widget.task.description),
-            ),
-            if (!widget.task.isComplete)
-              CheckboxListTile(
-                title: Text("Mark as Complete"),
-                value: widget.task.isComplete,
-                onChanged: (value) {
-                  _showConfirmationDialog(context, value!);
-                },
-              ),
-            if (widget.task.fields.isNotEmpty)
-              Container(
-                padding: EdgeInsets.all(10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    ListTile(
-                      title: Text('Due Date'),
-                      subtitle: Row(
-                        children: [
-                          Expanded(
-                            child: TextFormField(
-                              controller: dateController,
-                              keyboardType: TextInputType.datetime,
-                              decoration: InputDecoration(labelText: 'Date'),
-                              enabled:
-                                  canEditDateTime, // Disable editing on TaskCard
-                              onTap: canEditDateTime
-                                  ? () async {
-                                      DateTime? selectedDate =
-                                          await showDatePicker(
-                                        context: context,
-                                        initialDate: (widget.task.fields.first
-                                                as DueDateField)
-                                            .dueDate,
-                                        firstDate: DateTime(2000),
-                                        lastDate: DateTime(2101),
-                                      );
-                                      if (selectedDate != null) {
-                                        setState(() {
-                                          (widget.task.fields.first
-                                                  as DueDateField)
-                                              .dueDate = selectedDate;
-                                          dateController.text =
-                                              _formatDate(selectedDate);
-                                        });
-                                        // Pass the updated DueDateField to the callback function
-                                        widget.onUpdateDueDateTime(widget
-                                            .task.fields.first as DueDateField);
-                                      }
-                                    }
-                                  : null,
-                            ),
-                          ),
-                          SizedBox(width: 16),
-                          Expanded(
-                            child: TextFormField(
-                              controller: timeController,
-                              keyboardType: TextInputType.datetime,
-                              decoration: InputDecoration(labelText: 'Time'),
-                              enabled:
-                                  canEditDateTime, // Disable editing on TaskCard
-                              onTap: canEditDateTime
-                                  ? () async {
-                                      TimeOfDay? selectedTime =
-                                          await showTimePicker(
-                                        context: context,
-                                        initialTime: (widget.task.fields.first
-                                                as DueDateField)
-                                            .dueTime,
-                                      );
-                                      if (selectedTime != null) {
-                                        setState(() {
-                                          (widget.task.fields.first
-                                                  as DueDateField)
-                                              .dueTime = selectedTime;
-                                          timeController.text =
-                                              _formatTime(selectedTime);
-                                        });
-                                        // Pass the updated DueDateField to the callback function
-                                        widget.onUpdateDueDateTime(widget
-                                            .task.fields.first as DueDateField);
-                                      }
-                                    }
-                                  : null,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    ListTile(
-                      title: Text('Field1'),
-                      subtitle: Text('Value1'),
-                    ),
-                    ListTile(
-                      title: Text('Field3'),
-                      subtitle: Text('Value3'),
-                    ),
-                  ],
-                  // children: widget.task.fields.map((field) {
-                  //   return ListTile(
-                  //     title: Text(field.name),
-                  //     subtitle: Text(field.value),
-                  //   );
-                  // }).toList(),
+        child: Stack(
+          children: [
+            // Title and subtitle in a column
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ListTile(
+                  title: Text(widget.task.name),
+                  subtitle: Text(widget.task.description),
                 ),
-              ),
-            // Display child tasks under the main task
-            if (getChildTasks().isNotEmpty)
-              Column(
-                children: <Widget>[
-                  Text('Sub Tasks:'),
-                  ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: getChildTasks().length,
-                    itemBuilder: (context, index) {
-                      return TaskCard(
-                          task: getChildTasks()[index],
-                          allTasks: widget.allTasks,
-                          onTaskUpdated: (updatedTask) {
-                            // Handle the updated task here
-                            // Optionally, you can update the UI or perform other actions.
-                          },
-                          onTaskCreated: widget.onTaskCreated,
-                          onUpdateDueDateTime: widget.onUpdateDueDateTime);
+                if (!widget.task.isComplete)
+                  CheckboxListTile(
+                    title: Text("Mark as Complete"),
+                    value: widget.task.isComplete,
+                    onChanged: (value) {
+                      _showConfirmationDialog(context, value!);
                     },
                   ),
-                ],
+                if (widget.task.fields.isNotEmpty)
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        ListTile(
+                          title: Text('Due Date'),
+                          subtitle: Row(
+                            children: [
+                              Expanded(
+                                child: TextFormField(
+                                  controller: dateController,
+                                  keyboardType: TextInputType.datetime,
+                                  decoration:
+                                      InputDecoration(labelText: 'Date'),
+                                  enabled:
+                                      canEditDateTime, // Disable editing on TaskCard
+                                  onTap: canEditDateTime
+                                      ? () async {
+                                          DateTime? selectedDate =
+                                              await showDatePicker(
+                                            context: context,
+                                            initialDate: (widget.task.fields
+                                                    .first as DueDateField)
+                                                .dueDate,
+                                            firstDate: DateTime(2000),
+                                            lastDate: DateTime(2101),
+                                          );
+                                          if (selectedDate != null) {
+                                            setState(() {
+                                              (widget.task.fields.first
+                                                      as DueDateField)
+                                                  .dueDate = selectedDate;
+                                              dateController.text =
+                                                  _formatDate(selectedDate);
+                                            });
+                                            // Pass the updated DueDateField to the callback function
+                                            widget.onUpdateDueDateTime(widget
+                                                .task
+                                                .fields
+                                                .first as DueDateField);
+                                          }
+                                        }
+                                      : null,
+                                ),
+                              ),
+                              SizedBox(width: 16),
+                              Expanded(
+                                child: TextFormField(
+                                  controller: timeController,
+                                  keyboardType: TextInputType.datetime,
+                                  decoration:
+                                      InputDecoration(labelText: 'Time'),
+                                  enabled:
+                                      canEditDateTime, // Disable editing on TaskCard
+                                  onTap: canEditDateTime
+                                      ? () async {
+                                          TimeOfDay? selectedTime =
+                                              await showTimePicker(
+                                            context: context,
+                                            initialTime: (widget.task.fields
+                                                    .first as DueDateField)
+                                                .dueTime,
+                                          );
+                                          if (selectedTime != null) {
+                                            setState(() {
+                                              (widget.task.fields.first
+                                                      as DueDateField)
+                                                  .dueTime = selectedTime;
+                                              timeController.text =
+                                                  _formatTime(selectedTime);
+                                            });
+                                            // Pass the updated DueDateField to the callback function
+                                            widget.onUpdateDueDateTime(widget
+                                                .task
+                                                .fields
+                                                .first as DueDateField);
+                                          }
+                                        }
+                                      : null,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        ListTile(
+                          title: Text('Field1'),
+                          subtitle: Text('Value1'),
+                        ),
+                        ListTile(
+                          title: Text('Field3'),
+                          subtitle: Text('Value3'),
+                        ),
+                      ],
+                      // children: widget.task.fields.map((field) {
+                      //   return ListTile(
+                      //     title: Text(field.name),
+                      //     subtitle: Text(field.value),
+                      //   );
+                      // }).toList(),
+                    ),
+                  ),
+                // Display child tasks under the main task
+                if (getChildTasks().isNotEmpty)
+                  Column(
+                    children: <Widget>[
+                      Text('Sub Tasks:'),
+                      ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: getChildTasks().length,
+                        itemBuilder: (context, index) {
+                          return TaskCard(
+                              task: getChildTasks()[index],
+                              allTasks: widget.allTasks,
+                              onTaskUpdated: (updatedTask) {
+                                // Handle the updated task here
+                                // Optionally, you can update the UI or perform other actions.
+                              },
+                              onTaskCreated: widget.onTaskCreated,
+                              onUpdateDueDateTime: widget.onUpdateDueDateTime);
+                        },
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+
+            // Display priority block in the top-right corner
+            if (widget.task.hasPriority)
+              Positioned(
+                top: 0,
+                right: 0,
+                child: _buildPriorityBlock(widget.task.getPriority()!),
               ),
           ],
         ),

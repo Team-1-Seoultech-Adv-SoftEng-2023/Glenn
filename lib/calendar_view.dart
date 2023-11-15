@@ -14,6 +14,7 @@ class CalendarView extends StatefulWidget {
 class _CalendarViewState extends State<CalendarView> {
   late DateTime _selectedDay;
   Map<DateTime, List<Task>> _events = {};
+  CalendarFormat _calendarFormat = CalendarFormat.month;
 
   @override
   void initState() {
@@ -28,27 +29,78 @@ class _CalendarViewState extends State<CalendarView> {
     for (final task in widget.tasks) {
       if (task.fields.isNotEmpty && task.fields.first is DueDateField) {
         final dueDate = (task.fields.first as DueDateField).dueDate;
-        //print(dueDate);
         final formattedDueDate =
             DateTime(dueDate.year, dueDate.month, dueDate.day);
-        _events[formattedDueDate] = _events[formattedDueDate] ?? [];
-        //_events[formattedDueDate]!.add(task);
+
+        // Check if the task is complete
+        if (task.isComplete != true) {
+          _events[formattedDueDate] = _events[formattedDueDate] ?? [];
+          _events[formattedDueDate]!.add(task);
+        }
       }
     }
-    var _list = _events.values.toList();
-    print(_list[0]);
   }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
+        Row(
+          mainAxisAlignment:
+              MainAxisAlignment.spaceBetween, // Align to the top right
+          children: [
+            Spacer(), // Add a Spacer to push the following widgets to the right
+            // The Select View text and DropdownButton
+            Row(
+              children: [
+                Text('Select View:'),
+                SizedBox(width: 10),
+                DropdownButton<CalendarFormat>(
+                  value: _calendarFormat,
+                  items: [
+                    DropdownMenuItem(
+                      value: CalendarFormat.month,
+                      child: Text('Month'),
+                    ),
+                    DropdownMenuItem(
+                      value: CalendarFormat.week,
+                      child: Text('Week'),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    setState(() {
+                      _calendarFormat = value!;
+                    });
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
         TableCalendar(
           firstDay: DateTime.utc(2023, 1, 1),
-          lastDay: DateTime.utc(2023, 12, 31),
+          lastDay: DateTime.utc(2025, 12, 31),
           focusedDay: _selectedDay,
-          calendarFormat: CalendarFormat.month,
+          calendarFormat: _calendarFormat,
+          selectedDayPredicate: (day) => isSameDay(day, _selectedDay),
+          availableCalendarFormats: {
+            CalendarFormat.month: 'Month',
+            CalendarFormat.week: 'Week',
+          },
           eventLoader: _getEventsForDay,
+          headerStyle: HeaderStyle(
+            formatButtonVisible: false, // Hide the two-weeks/format button
+            titleCentered: true,
+          ),
+          calendarStyle: CalendarStyle(
+            weekendTextStyle:
+                TextStyle(color: Colors.red), // Set the color for weekend days
+          ),
+          daysOfWeekStyle: DaysOfWeekStyle(
+            weekendStyle: TextStyle(
+                color:
+                    Colors.red), // Set the color for weekend days in the header
+          ),
           calendarBuilders: CalendarBuilders(
             markerBuilder:
                 (BuildContext context, DateTime date, List<dynamic> events) {
@@ -80,12 +132,11 @@ class _CalendarViewState extends State<CalendarView> {
               );
             },
           ),
-
-          // Helper method to build the marker widget
-
           onDaySelected: (selectedDay, focusedDay) {
             setState(() {
               _selectedDay = selectedDay;
+              // Set the focusedDay to the selected day
+              //focusedDay = selectedDay;
             });
           },
         ),
@@ -103,16 +154,36 @@ class _CalendarViewState extends State<CalendarView> {
       itemCount: tasksForSelectedDay.length,
       itemBuilder: (context, index) {
         final task = tasksForSelectedDay[index];
-        return ListTile(
-          title: Text(task.name),
-          subtitle: Text(task.description),
-          // Add more details as needed
+        final taskTime = _formatTime((task.fields.first as DueDateField)
+            .dueTime); // Modify this based on your data structure;
+
+        return Card(
+          elevation: 2,
+          margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          child: ListTile(
+            title: Text('${index + 1}. ${task.name}'),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 8), // Space before description
+                Text(task.description),
+                SizedBox(height: 8), // Additional space
+                Text('Time: $taskTime'),
+              ],
+            ),
+            // Add more details as needed
+          ),
         );
       },
     );
   }
 
   List<Task> _getEventsForDay(DateTime day) {
-    return _events[day] ?? [];
+    var newday = DateTime(day.year, day.month, day.day);
+    return _events[newday] ?? [];
   }
+}
+
+String _formatTime(TimeOfDay time) {
+  return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
 }
