@@ -18,10 +18,7 @@ class _CalendarViewState extends State<CalendarView> {
   @override
   void initState() {
     super.initState();
-
     _selectedDay = DateTime.now();
-
-    // Prepare the events for the calendar
     _prepareEvents();
   }
 
@@ -31,10 +28,15 @@ class _CalendarViewState extends State<CalendarView> {
     for (final task in widget.tasks) {
       if (task.fields.isNotEmpty && task.fields.first is DueDateField) {
         final dueDate = (task.fields.first as DueDateField).dueDate;
-        _events[dueDate] = _events[dueDate] ?? [];
-        _events[dueDate]!.add(task);
+        //print(dueDate);
+        final formattedDueDate =
+            DateTime(dueDate.year, dueDate.month, dueDate.day);
+        _events[formattedDueDate] = _events[formattedDueDate] ?? [];
+        //_events[formattedDueDate]!.add(task);
       }
     }
+    var _list = _events.values.toList();
+    print(_list[0]);
   }
 
   @override
@@ -47,6 +49,40 @@ class _CalendarViewState extends State<CalendarView> {
           focusedDay: _selectedDay,
           calendarFormat: CalendarFormat.month,
           eventLoader: _getEventsForDay,
+          calendarBuilders: CalendarBuilders(
+            markerBuilder:
+                (BuildContext context, DateTime date, List<dynamic> events) {
+              return Stack(
+                children: [
+                  if (events.isNotEmpty)
+                    Positioned(
+                      right: 1,
+                      bottom: 1,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: const Color.fromARGB(255, 68, 255, 77),
+                        ),
+                        width: 20.0,
+                        height: 20.0,
+                        child: Center(
+                          child: Text(
+                            '${events.length}',
+                            style: TextStyle(
+                              color: Color.fromARGB(255, 150, 17, 17),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
+
+          // Helper method to build the marker widget
+
           onDaySelected: (selectedDay, focusedDay) {
             setState(() {
               _selectedDay = selectedDay;
