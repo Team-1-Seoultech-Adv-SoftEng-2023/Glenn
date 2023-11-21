@@ -5,6 +5,7 @@ import 'completed_tasks_page.dart'; // Import the CompletedTasksPage widget
 import 'calendar_view.dart';
 import 'fields/priority_field.dart';
 import 'utilities/task_sorter.dart';
+import 'user_progress_screen.dart';
 
 // Define the tasks list with sample data
 final List<Task> tasks = [
@@ -15,7 +16,7 @@ final List<Task> tasks = [
     parentId: '',
     fields: [
       DueDateField(
-        dueDate: DateTime(2023, 11, 15),
+        dueDate: DateTime(2023, 11, 22),
         dueTime: TimeOfDay(hour: 14, minute: 30),
       ),
       PriorityField(priority: 2), // Medium priority
@@ -28,7 +29,7 @@ final List<Task> tasks = [
     parentId: '',
     fields: [
       DueDateField(
-        dueDate: DateTime(2023, 11, 20),
+        dueDate: DateTime(2023, 11, 24),
         dueTime: TimeOfDay(hour: 10, minute: 0),
       ),
     ],
@@ -63,13 +64,17 @@ final List<Task> tasks = [
   ),
 ];
 
+List<Map<String, dynamic>> progressHistory = [];
+double overallScore = 0.0;
+
 class Task {
   final String id;
   String name;
   String description;
   final String parentId;
   final List<TaskField> fields;
-  bool isComplete; // Add this property
+  bool isComplete;
+  bool isCompletedOnTime; // Add this property
 
   Task({
     required this.id,
@@ -77,7 +82,8 @@ class Task {
     required this.description,
     required this.parentId,
     required this.fields,
-    this.isComplete = false, // Initialize as incomplete
+    this.isComplete = false,
+    this.isCompletedOnTime = true, // Initialize as incomplete
   });
 
   int? getPriority() {
@@ -208,9 +214,8 @@ class _MyAppState extends State<MyApp> {
   void _updateTaskCompletionStatus(Task task, bool isComplete) {
     setState(() {
       task.isComplete = isComplete;
-      if (isComplete) {
-        incompleteTasks.removeWhere((element) => element == task);
-      }
+
+      print("Updated");
     });
   }
 
@@ -218,7 +223,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: DefaultTabController(
-        length: 4,
+        length: 5,
         child: Scaffold(
           appBar: AppBar(
             title: Text('Task List'),
@@ -228,6 +233,43 @@ class _MyAppState extends State<MyApp> {
                 Tab(text: 'Priority'),
                 Tab(text: 'Calendar'),
                 Tab(text: 'Completed'),
+                Tab(text: 'Progress')
+              ],
+            ),
+          ),
+          drawer: Drawer(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                DrawerHeader(
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                  ),
+                  child: Text('Menu'),
+                ),
+                ListTile(
+                  title: Text('User Progress'),
+                  onTap: () {
+                    Navigator.pop(context); // Close the drawer
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => UserProgressScreen(
+                          overallScore: overallScore,
+                          progressHistory: progressHistory,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                ListTile(
+                  title: Text('Item 2'),
+                  onTap: () {
+                    // Handle menu item 2 click
+                    Navigator.pop(context); // Close the drawer
+                  },
+                ),
+                // Add more menu items as needed
               ],
             ),
           ),
@@ -258,6 +300,8 @@ class _MyAppState extends State<MyApp> {
                 onTaskCreated: handleTaskCreated,
                 onTaskUpdated: handleTaskUpdated,
               ),
+              UserProgressScreen(
+                  overallScore: overallScore, progressHistory: progressHistory),
             ],
           ),
           floatingActionButton: FloatingActionButton(
@@ -383,8 +427,65 @@ class _TaskCardState extends State<TaskCard> {
     }
   }
 
+  void _showCongratulationsDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Congratulations!'),
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('You completed the task on time. Keep up the good work!'),
+              SizedBox(height: 8),
+              Text('Your score is now: $overallScore'),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showMotivationalSnackbar(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+                'You missed the deadline, but don\'t give up! Keep pushing forward.'),
+            SizedBox(height: 8),
+            Text('Your score is now: $overallScore'),
+          ],
+        ),
+        duration: Duration(seconds: 5),
+      ),
+    );
+  }
+
+  bool _isCompletedOnTime(Task task) {
+    // Get the current date and time
+    DateTime now = DateTime.now();
+
+    // Get the due date and time of the task
+    DateTime dueDate = task.getDueDate() ?? DateTime.now();
+
+    // Check if the task is completed before the due date
+    return now.isBefore(dueDate);
+  }
+
   Future<void> _showConfirmationDialog(BuildContext context, bool value) async {
-    return showDialog(
+    bool shouldUpdateTask = await showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
@@ -394,20 +495,57 @@ class _TaskCardState extends State<TaskCard> {
             TextButton(
               child: Text("Cancel"),
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(context).pop(false);
               },
             ),
             TextButton(
               child: Text("Confirm"),
               onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-                widget.updateTaskCompletionStatus(widget.task, value);
+                Navigator.of(context).pop(true);
               },
             ),
           ],
         );
       },
     );
+
+    if (shouldUpdateTask != null && shouldUpdateTask) {
+      widget.updateTaskCompletionStatus(widget.task, value);
+
+      if (widget.task.isComplete) {
+        //incompleteTasks.removeWhere((element) => element == task);
+
+        // Check if the task was completed on time
+        bool completedOnTime = _isCompletedOnTime(widget.task);
+
+        // Add entry to progress history
+        DateTime completionDate = DateTime.now();
+        int scoreChange = completedOnTime ? 1 : -1;
+
+        progressHistory.add({
+          'date': completionDate,
+          'scoreChange': scoreChange,
+        });
+
+        print(progressHistory);
+
+        // Update overall score
+        overallScore += scoreChange;
+
+        // Update task's completion on time status
+        widget.task.isCompletedOnTime = completedOnTime;
+      }
+
+      // Check if the task was completed on time
+      bool completedOnTime = widget.task.isCompletedOnTime;
+
+      // Show congratulatory or motivational message
+      if (completedOnTime) {
+        _showCongratulationsDialog(context);
+      } else {
+        _showMotivationalSnackbar(context);
+      }
+    }
   }
 
   Widget _buildPriorityBlock(int priority) {
@@ -465,7 +603,8 @@ class _TaskCardState extends State<TaskCard> {
 
     return Card(
       margin: EdgeInsets.all(10),
-      child: GestureDetector(
+      child: InkWell(
+        // Wrap GestureDetector with InkWell
         onTap: () async {
           // Pass the callback function to TaskDetailPage
           await Navigator.of(context).push(
