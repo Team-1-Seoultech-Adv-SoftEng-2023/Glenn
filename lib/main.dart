@@ -5,6 +5,8 @@ import 'completed_tasks_page.dart'; // Import the CompletedTasksPage widget
 import 'calendar_view.dart';
 import 'fields/priority_field.dart';
 import 'utilities/task_sorter.dart';
+import 'tasks/self_care_tasks.dart';
+
 
 // Define the tasks list with sample data
 final List<Task> tasks = [
