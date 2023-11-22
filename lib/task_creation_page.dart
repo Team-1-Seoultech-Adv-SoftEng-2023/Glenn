@@ -6,8 +6,8 @@ import 'main.dart';
 class TaskCreationPage extends StatefulWidget {
   final Function(Task) onTaskCreated;
   final String parentId; // Add the parentId parameter
-  
-  TaskCreationPage({
+
+  const TaskCreationPage({super.key, 
     required this.onTaskCreated,
     this.parentId = '', // Set the default value
   });
@@ -24,7 +24,7 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Create New Task'),
+        title: const Text('Create New Task'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -32,11 +32,11 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
           children: <Widget>[
             TextField(
               controller: _nameController,
-              decoration: InputDecoration(labelText: 'Task Name'),
+              decoration: const InputDecoration(labelText: 'Task Name'),
             ),
             TextField(
               controller: _descriptionController,
-              decoration: InputDecoration(labelText: 'Task Description'),
+              decoration: const InputDecoration(labelText: 'Task Description'),
             ),
             ElevatedButton(
               onPressed: () {
@@ -56,7 +56,7 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                 _nameController.clear();
                 _descriptionController.clear();
               },
-              child: Text('Create Task'),
+              child: const Text('Create Task'),
             ),
           ],
         ),
