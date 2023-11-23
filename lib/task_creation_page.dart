@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'main.dart';
 
+import 'task/task.dart';
+
 // TODO: Add 'Add Due Date' Button
 
 class TaskCreationPage extends StatefulWidget {

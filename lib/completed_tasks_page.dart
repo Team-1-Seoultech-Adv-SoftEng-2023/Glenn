@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'task/task.dart';
+import 'task/task_card.dart';
 import 'main.dart'; // Import the Task class and any other necessary imports from the main.dart file
 
 class CompletedTasksPage extends StatelessWidget {

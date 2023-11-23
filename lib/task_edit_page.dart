@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'main.dart';
 import 'task_creation_page.dart';
 
+import 'task/task.dart';
+
 class EditTaskPage extends StatefulWidget {
   final Task task;
 

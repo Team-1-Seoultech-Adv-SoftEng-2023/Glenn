@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'main.dart'; // Import the main.dart file
 import 'task_edit_page.dart';
 
+import 'task/task.dart';
+
+import 'fields/due_date_field.dart';
+
 class TaskDetailPage extends StatefulWidget {
   final Task task;
   final List<Task> subtasks; // Add the list of subtasks

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'main.dart';
+import 'task/task.dart';
+import 'fields/due_date_field.dart';
 
 class CalendarView extends StatefulWidget {
   final List<Task> tasks;

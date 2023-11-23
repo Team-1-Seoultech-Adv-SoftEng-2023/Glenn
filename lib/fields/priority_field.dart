@@ -1,4 +1,4 @@
-import '../main.dart';
+import 'task_field.dart';
 
 class PriorityField extends TaskField {
   int _priority;

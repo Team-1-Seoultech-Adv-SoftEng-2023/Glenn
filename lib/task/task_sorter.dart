@@ -1,4 +1,4 @@
-import '../main.dart';
+import 'task.dart';
 
 class TaskSorter {
   static List<Task> sortByDueDate(List<Task> tasks) {
