@@ -5,11 +5,14 @@ class CompletedTasksPage extends StatelessWidget {
   final List<Task> tasks;
   final Function(Task) onTaskUpdated; // Add the callback
   final Function(Task) onTaskCreated; // Add the callback
+  final Function(Task) onTaskDeleted; // Add the callback
 
-  CompletedTasksPage({
+  const CompletedTasksPage({
+    super.key,
     required this.tasks,
     required this.onTaskCreated,
     required this.onTaskUpdated,
+    required this.onTaskDeleted,
   });
 
   @override
@@ -26,6 +29,7 @@ class CompletedTasksPage extends StatelessWidget {
             allTasks: tasks,
             onTaskUpdated: onTaskUpdated,
             onTaskCreated: onTaskCreated,
+            onTaskDeleted: onTaskDeleted,
             onUpdateDueDateTime: (dueDateField) {
               // Handle the update logic here
               print('Due date and time updated: ${dueDateField.value}');

@@ -7,8 +7,14 @@ class EditTaskPage extends StatefulWidget {
 
   final Function(Task) onTaskUpdated; // Add this callback
   final Function(Task) onTaskCreated; // Add this callback
+  final Function(Task) onTaskDeleted; // Add this callback
 
-  EditTaskPage({required this.task, required this.onTaskUpdated, required this.onTaskCreated}); // Update the constructor
+  const EditTaskPage({super.key, 
+    required this.task,
+    required this.onTaskUpdated,
+    required this.onTaskCreated,
+    required this.onTaskDeleted, // Update the constructor
+  });
 
   @override
   _EditTaskPageState createState() => _EditTaskPageState();
@@ -29,11 +35,19 @@ class _EditTaskPageState extends State<EditTaskPage> {
     super.dispose();
   }
 
+  // Function to handle task deletion
+  void _deleteTask() {
+    // Call the onTaskDeleted callback to notify the parent widget about the deletion
+    widget.onTaskDeleted(widget.task);
+    // Navigate back to the previous screen
+    Navigator.pop(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Task'),
+        title: const Text('Edit Task'),
         actions: [
           PopupMenuButton<String>(
             onSelected: (value) {
@@ -47,15 +61,23 @@ class _EditTaskPageState extends State<EditTaskPage> {
                     ),
                   ),
                 );
+              } else if (value == "delete_task") {
+                // Call the function to handle task deletion
+
+                _deleteTask();
               }
             },
             itemBuilder: (BuildContext context) {
               return <PopupMenuEntry<String>>[
-                PopupMenuItem<String>(
+                const PopupMenuItem<String>(
                   value: 'add_sub_task',
                   child: Text('Add Sub-Task'),
                 ),
                 // You can add more options here if needed
+                const PopupMenuItem<String>(
+                  value: 'delete_task',
+                  child: Text('Delete'),
+                )
               ];
             },
           ),
@@ -67,7 +89,7 @@ class _EditTaskPageState extends State<EditTaskPage> {
           children: <Widget>[
             TextFormField(
               controller: _nameController,
-              decoration: InputDecoration(labelText: 'Task Name'),
+              decoration: const InputDecoration(labelText: 'Task Name'),
             ),
             ElevatedButton(
               onPressed: () {
@@ -78,7 +100,7 @@ class _EditTaskPageState extends State<EditTaskPage> {
                 // Return the updated task to the previous page
                 Navigator.pop(context, widget.task);
               },
-              child: Text('Save'),
+              child: const Text('Save'),
             ),
           ],
         ),

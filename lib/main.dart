@@ -58,7 +58,7 @@ final List<Task> tasks = [
     fields: [
       DueDateField(
         dueDate: DateTime(2023, 11, 10),
-        dueTime: TimeOfDay(hour: 12, minute: 0),
+        dueTime: const TimeOfDay(hour: 12, minute: 0),
       ),
     ],
   ),
@@ -75,6 +75,14 @@ class Task {
   final List<TaskField> fields;
   bool isComplete;
   bool isCompletedOnTime; // Add this property
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Task && runtimeType == other.runtimeType && id == other.id;
+
+  @override
+  int get hashCode => id.hashCode;
 
   Task({
     required this.id,
@@ -176,7 +184,7 @@ void main() {
 class MyApp extends StatefulWidget {
   final List<Task> tasks;
 
-  MyApp({required this.tasks});
+  const MyApp({super.key, required this.tasks});
 
   @override
   _MyAppState createState() => _MyAppState();
@@ -190,6 +198,12 @@ class _MyAppState extends State<MyApp> {
   void handleTaskCreated(Task newTask) {
     setState(() {
       tasks.add(newTask); // Add the newly created task to the global tasks list
+    });
+  }
+
+  void handleTaskDeleted(Task deleteTask) {
+    setState(() {
+      tasks.remove(deleteTask); // Remove the task from the global task list
     });
   }
 
@@ -226,8 +240,8 @@ class _MyAppState extends State<MyApp> {
         length: 5,
         child: Scaffold(
           appBar: AppBar(
-            title: Text('Task List'),
-            bottom: TabBar(
+            title: const Text('Task List'),
+            bottom: const TabBar(
               tabs: [
                 Tab(text: 'Due Date'),
                 Tab(text: 'Priority'),
@@ -283,6 +297,7 @@ class _MyAppState extends State<MyApp> {
                   // Optionally, you can update the UI or perform other actions.
                 },
                 onTaskCreated: handleTaskCreated,
+                onTaskDeleted: handleTaskDeleted,
               ),
 
               TaskList(
@@ -293,12 +308,14 @@ class _MyAppState extends State<MyApp> {
                   // Optionally, you can update the UI or perform other actions.
                 },
                 onTaskCreated: handleTaskCreated,
+                onTaskDeleted: handleTaskDeleted,
               ),
               CalendarView(tasks: widget.tasks), // Added CalendarView
               CompletedTasksPage(
                 tasks: widget.tasks,
                 onTaskCreated: handleTaskCreated,
                 onTaskUpdated: handleTaskUpdated,
+                onTaskDeleted: handleTaskDeleted,
               ),
               UserProgressScreen(
                   overallScore: overallScore, progressHistory: progressHistory),
@@ -314,7 +331,7 @@ class _MyAppState extends State<MyApp> {
                 ),
               );
             },
-            child: Icon(Icons.add),
+            child: const Icon(Icons.add),
           ),
         ),
       ),
@@ -326,13 +343,16 @@ class TaskList extends StatefulWidget {
   final List<Task> tasks;
   final Function(Task) onTaskUpdated; // Add the callback
   final Function(Task) onTaskCreated; // Add the callback
+  final Function(Task) onTaskDeleted; // Add the callback
   final Function(Task, bool) updateTaskCompletionStatus;
 
-  TaskList({
+  const TaskList({
+    super.key,
     required this.tasks,
     required this.updateTaskCompletionStatus,
     required this.onTaskUpdated,
     required this.onTaskCreated,
+    required this.onTaskDeleted,
   });
 
   @override
@@ -370,6 +390,7 @@ class _TaskListState extends State<TaskList> {
           allTasks: tasks,
           onTaskUpdated: widget.onTaskUpdated,
           onTaskCreated: widget.onTaskCreated,
+          onTaskDeleted: widget.onTaskDeleted,
           onUpdateDueDateTime: (dueDateField) {
             // Handle the update logic here
             print('Due date and time updated: ${dueDateField.value}');
@@ -389,12 +410,15 @@ class TaskCard extends StatefulWidget {
   final List<Task> allTasks;
   final Function(Task) onTaskUpdated; // Add the callback
   final Function(Task) onTaskCreated; // Add the callback
+  final Function(Task) onTaskDeleted; // Add the callback
 
-  TaskCard(
-      {required this.task,
+  const TaskCard(
+      {super.key,
+      required this.task,
       required this.allTasks,
       required this.onTaskUpdated,
       required this.onTaskCreated,
+      required this.onTaskDeleted,
       required this.onUpdateDueDateTime,
       this.updateTaskCompletionStatus = _dummyFunction});
 
@@ -489,17 +513,17 @@ class _TaskCardState extends State<TaskCard> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Confirm Task Completion"),
-          content: Text("Do you want to mark this task as complete?"),
+          title: const Text("Confirm Task Completion"),
+          content: const Text("Do you want to mark this task as complete?"),
           actions: <Widget>[
             TextButton(
-              child: Text("Cancel"),
+              child: const Text("Cancel"),
               onPressed: () {
                 Navigator.of(context).pop(false);
               },
             ),
             TextButton(
-              child: Text("Confirm"),
+              child: const Text("Confirm"),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
@@ -579,15 +603,15 @@ class _TaskCardState extends State<TaskCard> {
     }
 
     return Container(
-      margin: EdgeInsets.only(top: 8, right: 8),
-      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      margin: const EdgeInsets.only(top: 8, right: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: blockColor,
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
         priorityText,
-        style: TextStyle(color: Colors.white),
+        style: const TextStyle(color: Colors.white),
       ),
     );
   }
@@ -602,9 +626,8 @@ class _TaskCardState extends State<TaskCard> {
     }
 
     return Card(
-      margin: EdgeInsets.all(10),
-      child: InkWell(
-        // Wrap GestureDetector with InkWell
+      margin: const EdgeInsets.all(10),
+      child: GestureDetector(
         onTap: () async {
           // Pass the callback function to TaskDetailPage
           await Navigator.of(context).push(
@@ -615,6 +638,7 @@ class _TaskCardState extends State<TaskCard> {
                   // Handle the updated task here
                   // Optionally, you can update the UI or perform other actions.
                 },
+                onTaskDeleted: widget.onTaskDeleted,
                 onTaskCreated: widget.onTaskCreated, // Pass the callback
                 subtasks: getChildTasks(),
                 onUpdateDueDateTime: widget.onUpdateDueDateTime,
@@ -641,7 +665,7 @@ class _TaskCardState extends State<TaskCard> {
                 ),
                 if (!widget.task.isComplete)
                   CheckboxListTile(
-                    title: Text("Mark as Complete"),
+                    title: const Text("Mark as Complete"),
                     value: widget.task.isComplete,
                     onChanged: (value) {
                       _showConfirmationDialog(context, value!);
@@ -649,12 +673,12 @@ class _TaskCardState extends State<TaskCard> {
                   ),
                 if (widget.task.fields.isNotEmpty)
                   Container(
-                    padding: EdgeInsets.all(10),
+                    padding: const EdgeInsets.all(10),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         ListTile(
-                          title: Text('Due Date'),
+                          title: const Text('Due Date'),
                           subtitle: Row(
                             children: [
                               Expanded(
@@ -662,7 +686,7 @@ class _TaskCardState extends State<TaskCard> {
                                   controller: dateController,
                                   keyboardType: TextInputType.datetime,
                                   decoration:
-                                      InputDecoration(labelText: 'Date'),
+                                      const InputDecoration(labelText: 'Date'),
                                   enabled:
                                       canEditDateTime, // Disable editing on TaskCard
                                   onTap: canEditDateTime
@@ -694,13 +718,13 @@ class _TaskCardState extends State<TaskCard> {
                                       : null,
                                 ),
                               ),
-                              SizedBox(width: 16),
+                              const SizedBox(width: 16),
                               Expanded(
                                 child: TextFormField(
                                   controller: timeController,
                                   keyboardType: TextInputType.datetime,
                                   decoration:
-                                      InputDecoration(labelText: 'Time'),
+                                      const InputDecoration(labelText: 'Time'),
                                   enabled:
                                       canEditDateTime, // Disable editing on TaskCard
                                   onTap: canEditDateTime
@@ -733,11 +757,11 @@ class _TaskCardState extends State<TaskCard> {
                             ],
                           ),
                         ),
-                        ListTile(
+                        const ListTile(
                           title: Text('Field1'),
                           subtitle: Text('Value1'),
                         ),
-                        ListTile(
+                        const ListTile(
                           title: Text('Field3'),
                           subtitle: Text('Value3'),
                         ),
@@ -754,7 +778,7 @@ class _TaskCardState extends State<TaskCard> {
                 if (getChildTasks().isNotEmpty)
                   Column(
                     children: <Widget>[
-                      Text('Sub Tasks:'),
+                      const Text('Sub Tasks:'),
                       ListView.builder(
                         shrinkWrap: true,
                         itemCount: getChildTasks().length,
@@ -766,6 +790,7 @@ class _TaskCardState extends State<TaskCard> {
                                 // Handle the updated task here
                                 // Optionally, you can update the UI or perform other actions.
                               },
+                              onTaskDeleted: widget.onTaskDeleted,
                               onTaskCreated: widget.onTaskCreated,
                               onUpdateDueDateTime: widget.onUpdateDueDateTime);
                         },

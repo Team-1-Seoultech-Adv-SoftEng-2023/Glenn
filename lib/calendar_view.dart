@@ -5,7 +5,7 @@ import 'main.dart';
 class CalendarView extends StatefulWidget {
   final List<Task> tasks;
 
-  CalendarView({required this.tasks});
+  const CalendarView({super.key, required this.tasks});
 
   @override
   _CalendarViewState createState() => _CalendarViewState();
@@ -49,15 +49,15 @@ class _CalendarViewState extends State<CalendarView> {
           mainAxisAlignment:
               MainAxisAlignment.spaceBetween, // Align to the top right
           children: [
-            Spacer(), // Add a Spacer to push the following widgets to the right
+            const Spacer(), // Add a Spacer to push the following widgets to the right
             // The Select View text and DropdownButton
             Row(
               children: [
-                Text('Select View:'),
-                SizedBox(width: 10),
+                const Text('Select View:'),
+                const SizedBox(width: 10),
                 DropdownButton<CalendarFormat>(
                   value: _calendarFormat,
-                  items: [
+                  items: const [
                     DropdownMenuItem(
                       value: CalendarFormat.month,
                       child: Text('Month'),
@@ -83,20 +83,20 @@ class _CalendarViewState extends State<CalendarView> {
           focusedDay: _selectedDay,
           calendarFormat: _calendarFormat,
           selectedDayPredicate: (day) => isSameDay(day, _selectedDay),
-          availableCalendarFormats: {
+          availableCalendarFormats: const {
             CalendarFormat.month: 'Month',
             CalendarFormat.week: 'Week',
           },
           eventLoader: _getEventsForDay,
-          headerStyle: HeaderStyle(
+          headerStyle: const HeaderStyle(
             formatButtonVisible: false, // Hide the two-weeks/format button
             titleCentered: true,
           ),
-          calendarStyle: CalendarStyle(
+          calendarStyle: const CalendarStyle(
             weekendTextStyle:
                 TextStyle(color: Colors.red), // Set the color for weekend days
           ),
-          daysOfWeekStyle: DaysOfWeekStyle(
+          daysOfWeekStyle: const DaysOfWeekStyle(
             weekendStyle: TextStyle(
                 color:
                     Colors.red), // Set the color for weekend days in the header
@@ -111,16 +111,16 @@ class _CalendarViewState extends State<CalendarView> {
                       right: 1,
                       bottom: 1,
                       child: Container(
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           shape: BoxShape.circle,
-                          color: const Color.fromARGB(255, 68, 255, 77),
+                          color: Color.fromARGB(255, 68, 255, 77),
                         ),
                         width: 20.0,
                         height: 20.0,
                         child: Center(
                           child: Text(
                             '${events.length}',
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: Color.fromARGB(255, 150, 17, 17),
                               fontWeight: FontWeight.bold,
                             ),
@@ -159,15 +159,15 @@ class _CalendarViewState extends State<CalendarView> {
 
         return Card(
           elevation: 2,
-          margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
           child: ListTile(
             title: Text('${index + 1}. ${task.name}'),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 8), // Space before description
+                const SizedBox(height: 8), // Space before description
                 Text(task.description),
-                SizedBox(height: 8), // Additional space
+                const SizedBox(height: 8), // Additional space
                 Text('Time: $taskTime'),
               ],
             ),

@@ -8,13 +8,16 @@ class TaskDetailPage extends StatefulWidget {
 
   final Function(Task) onTaskUpdated; // Add the callback
   final Function(Task) onTaskCreated; // Add the callback
+  final Function(Task) onTaskDeleted; // Add the callback
   final Function(DueDateField) onUpdateDueDateTime;
 
-  TaskDetailPage({
+  const TaskDetailPage({
+    super.key,
     required this.task,
     required this.subtasks,
     required this.onTaskUpdated,
-    required this.onTaskCreated, 
+    required this.onTaskCreated,
+    required this.onTaskDeleted,
     required this.onUpdateDueDateTime, // Update the constructor
   });
 
@@ -29,9 +32,14 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
   @override
   void initState() {
     super.initState();
-    if (widget.task.fields.isNotEmpty && widget.task.fields.first is DueDateField) {
-      dateController = TextEditingController(text: _formatDate((widget.task.fields.first as DueDateField).dueDate));
-      timeController = TextEditingController(text: _formatTime((widget.task.fields.first as DueDateField).dueTime));
+    if (widget.task.fields.isNotEmpty &&
+        widget.task.fields.first is DueDateField) {
+      dateController = TextEditingController(
+          text:
+              _formatDate((widget.task.fields.first as DueDateField).dueDate));
+      timeController = TextEditingController(
+          text:
+              _formatTime((widget.task.fields.first as DueDateField).dueTime));
     }
   }
 
@@ -42,10 +50,10 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Task Detail'),
+        title: const Text('Task Detail'),
         actions: <Widget>[
           IconButton(
-            icon: Icon(Icons.edit),
+            icon: const Icon(Icons.edit),
             onPressed: () async {
               final updatedTask = await Navigator.of(context).push(
                 MaterialPageRoute(
@@ -54,6 +62,9 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                       onTaskUpdated: (updatedTask) {
                         // Handle the updated task here
                         // Optionally, you can update the UI or perform other actions.
+                      },
+                      onTaskDeleted: (deleteTask) {
+                        widget.onTaskDeleted(deleteTask);
                       },
                       onTaskCreated: (newTask) {
                         widget.onTaskCreated(newTask);
@@ -82,56 +93,68 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
           ),
           if (widget.task.fields.isNotEmpty)
             Container(
-              padding: EdgeInsets.all(10),
+              padding: const EdgeInsets.all(10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   if (widget.task.fields.first is DueDateField)
                     ListTile(
-                      title: Text('Due Date'),
+                      title: const Text('Due Date'),
                       subtitle: Row(
                         children: [
                           Expanded(
                             child: TextFormField(
                               controller: dateController,
                               keyboardType: TextInputType.datetime,
-                              decoration: InputDecoration(labelText: 'Date'),
+                              decoration:
+                                  const InputDecoration(labelText: 'Date'),
                               onTap: () async {
                                 DateTime? selectedDate = await showDatePicker(
                                   context: context,
-                                  initialDate: (widget.task.fields.first as DueDateField).dueDate,
+                                  initialDate:
+                                      (widget.task.fields.first as DueDateField)
+                                          .dueDate,
                                   firstDate: DateTime(2000),
                                   lastDate: DateTime(2101),
                                 );
                                 if (selectedDate != null) {
                                   setState(() {
-                                    (widget.task.fields.first as DueDateField).dueDate = selectedDate;
-                                    dateController.text = _formatDate(selectedDate);
+                                    (widget.task.fields.first as DueDateField)
+                                        .dueDate = selectedDate;
+                                    dateController.text =
+                                        _formatDate(selectedDate);
                                   });
                                   // Call the callback function with the updated DueDateField
-                                  widget.onUpdateDueDateTime(widget.task.fields.first as DueDateField);
+                                  widget.onUpdateDueDateTime(
+                                      widget.task.fields.first as DueDateField);
                                 }
                               },
                             ),
                           ),
-                          SizedBox(width: 16),
+                          const SizedBox(width: 16),
                           Expanded(
                             child: TextFormField(
                               controller: timeController,
                               keyboardType: TextInputType.datetime,
-                              decoration: InputDecoration(labelText: 'Time'),
+                              decoration:
+                                  const InputDecoration(labelText: 'Time'),
                               onTap: () async {
                                 TimeOfDay? selectedTime = await showTimePicker(
                                   context: context,
-                                  initialTime: (widget.task.fields.first as DueDateField).dueTime,
+                                  initialTime:
+                                      (widget.task.fields.first as DueDateField)
+                                          .dueTime,
                                 );
                                 if (selectedTime != null) {
                                   setState(() {
-                                    (widget.task.fields.first as DueDateField).dueTime = selectedTime;
-                                    timeController.text = _formatTime(selectedTime);
+                                    (widget.task.fields.first as DueDateField)
+                                        .dueTime = selectedTime;
+                                    timeController.text =
+                                        _formatTime(selectedTime);
                                   });
                                   // Call the callback function with the updated DueDateField
-                                  widget.onUpdateDueDateTime(widget.task.fields.first as DueDateField);
+                                  widget.onUpdateDueDateTime(
+                                      widget.task.fields.first as DueDateField);
                                 }
                               },
                             ),
@@ -152,26 +175,26 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                 ],
               ),
             ),
-            if (widget.subtasks.isNotEmpty) // Check if there are subtasks
-              Column(
-                children: <Widget>[
-                  Text('Subtasks:'),
-                  ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: widget.subtasks.length,
-                    itemBuilder: (context, index) {
-                      final subtask = widget.subtasks[index];
-                      return ListTile(
-                        title: Text(subtask.name),
-                        subtitle: Text(subtask.description),
-                        // Add any other subtask details you want to display
-                      );
-                    },
-                  ),
-                ],
-              ),
-          ],
-        ),
+          if (widget.subtasks.isNotEmpty) // Check if there are subtasks
+            Column(
+              children: <Widget>[
+                const Text('Subtasks:'),
+                ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: widget.subtasks.length,
+                  itemBuilder: (context, index) {
+                    final subtask = widget.subtasks[index];
+                    return ListTile(
+                      title: Text(subtask.name),
+                      subtitle: Text(subtask.description),
+                      // Add any other subtask details you want to display
+                    );
+                  },
+                ),
+              ],
+            ),
+        ],
+      ),
     );
   }
 
