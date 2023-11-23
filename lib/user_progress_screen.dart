@@ -1,7 +1,7 @@
-// user_progress_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/intl.dart';
+import 'main.dart';
 
 class UserProgressScreen extends StatefulWidget {
   final double overallScore;
@@ -31,7 +31,7 @@ class _UserProgressScreenState extends State<UserProgressScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Overall Score: ${widget.overallScore}',
+              'Overall Score: ${overallScore}',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 16),
@@ -59,26 +59,45 @@ class _UserProgressScreenState extends State<UserProgressScreen> {
             Expanded(
               child: LineChart(
                 LineChartData(
-                  // ... (your other chart configuration remains unchanged)
                   minX: 0,
-                  maxX:
-                      _calculateMaxX(), // Adjust based on the selected interval
-                  minY: -20,
-                  maxY: 100, // Assuming the score is between 0 and 1
+                  maxX: _calculateMaxX(),
+                  minY: _calculateMinY(),
+                  maxY: _calculateMaxY(),
                   lineBarsData: [
                     LineChartBarData(
                       spots: List.generate(
                         _getFilteredData().length,
-                        (index) => FlSpot(
-                          index.toDouble(),
-                          _getFilteredData()[index]['scoreChange'] == 1 ? 1 : 0,
-                        ),
+                        (index) {
+                          final data = _getFilteredData()[index];
+                          final date = data['date'];
+                          final xValue = _getXValue(date) - 1;
+                          return FlSpot(
+                            xValue,
+                            data['scoreChange'].toDouble(),
+                          );
+                        },
                       ),
-                      isCurved: true,
-                      dotData: FlDotData(show: false),
+                      isCurved: false,
+                      dotData: FlDotData(show: true),
                       belowBarData: BarAreaData(show: false),
                     ),
                   ],
+                  titlesData: FlTitlesData(
+                    show: true,
+                    rightTitles:
+                        AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    topTitles:
+                        AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        interval: 1,
+                        getTitlesWidget: (value, meta) {
+                          return Text(_getXAxisLabel(value.toInt()));
+                        },
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -88,35 +107,131 @@ class _UserProgressScreenState extends State<UserProgressScreen> {
     );
   }
 
-  double _calculateMaxX() {
-    // Calculate maxX based on the selected interval
+  double _getXValue(DateTime date) {
     if (selectedInterval == 'Week') {
-      // Assuming each week has 7 days
-      return widget.progressHistory.length / 7;
+      return date.weekday.toDouble();
     } else if (selectedInterval == 'Month') {
-      // Assuming each month has about 30 days
-      return widget.progressHistory.length / 30;
+      return date.month.toDouble();
     }
-    return widget.progressHistory.length.toDouble();
+    return 0; // Default value
+  }
+
+  String _getXAxisLabel(int value) {
+    if (selectedInterval == 'Week') {
+      return _getDayLabel(value);
+    } else if (selectedInterval == 'Month') {
+      return _getMonthLabel(value);
+    }
+    return value.toString();
+  }
+
+  String _getDayLabel(int value) {
+    //DateTime date = DateTime.now().subtract(Duration(days: value - 1));
+    final List<String> dayData = [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thur",
+      "Fri",
+      "Sat",
+      "Sun"
+    ];
+
+    return dayData[value];
+    //return DateFormat('E').format(date);
+  }
+
+  String _getMonthLabel(int value) {
+    final List<String> monthData = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "June",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec"
+    ];
+    return monthData[value];
+    //return DateFormat('MMM').format(DateTime(2023, value, 1));
+  }
+
+  double _calculateMaxX() {
+    return selectedInterval == 'Week' ? 6.0 : 11.0;
+  }
+
+  double _calculateMinY() {
+    if (widget.progressHistory.isEmpty) {
+      return 0.0; // Default value when there is no completed task
+    }
+
+    int minScore = widget.progressHistory
+        .map<int>((entry) => entry['scoreChange'])
+        .reduce((min, score) => min < score ? min : score);
+
+    return minScore.toDouble() - 5;
+  }
+
+  double _calculateMaxY() {
+    if (widget.progressHistory.isEmpty) {
+      return 10.0; // Default value when there is no completed task
+    }
+
+    int maxScore = widget.progressHistory
+        .map<int>((entry) => entry['scoreChange'])
+        .reduce((max, score) => max > score ? max : score);
+
+    return maxScore.toDouble() + 5;
   }
 
   List<Map<String, dynamic>> _getFilteredData() {
-    // Filter the data based on the selected interval
+    final currentDate = DateTime.now();
+
+    List<Map<String, dynamic>> result;
+
     if (selectedInterval == 'Week') {
-      // You may need to adjust this based on your date format
-      return widget.progressHistory
-          .where(
-            (entry) => DateTime.now().difference(entry['date']).inDays <= 7,
-          )
+      result = _groupAndCalculateDailyScores(7)
+          .where((entry) => currentDate.difference(entry['date']).inDays <= 7)
           .toList();
     } else if (selectedInterval == 'Month') {
-      // You may need to adjust this based on your date format
-      return widget.progressHistory
-          .where(
-            (entry) => DateTime.now().difference(entry['date']).inDays <= 30,
-          )
+      result = _groupAndCalculateDailyScores(30)
+          .where((entry) => currentDate.difference(entry['date']).inDays <= 30)
           .toList();
+    } else {
+      result = widget.progressHistory;
     }
-    return widget.progressHistory;
+
+    return result;
+  }
+
+  List<Map<String, dynamic>> _groupAndCalculateDailyScores(int days) {
+    final currentDate = DateTime.now();
+    final filteredData = widget.progressHistory
+        .where((entry) => currentDate.difference(entry['date']).inDays <= days)
+        .toList();
+
+    final groupedData = <DateTime, num>{};
+    for (var entry in filteredData) {
+      final date = entry['date'];
+      final truncatedDate = DateTime(date.year, date.month, date.day);
+      groupedData[truncatedDate] =
+          (groupedData[truncatedDate] ?? 0) + entry['scoreChange'];
+    }
+
+    final result = <Map<String, dynamic>>[];
+    for (var entry in groupedData.entries) {
+      result.add({
+        'date': entry.key,
+        'scoreChange': entry.value,
+      });
+    }
+
+    print(result);
+
+    return result;
   }
 }
