@@ -4,9 +4,11 @@ import 'task_creation_page.dart'; // Import the task_creation_page.dart file
 import 'completed_tasks_page.dart'; // Import the CompletedTasksPage widget
 import 'calendar_view.dart';
 import 'fields/priority_field.dart';
+import 'fields/self_care_field.dart';
 import 'utilities/task_sorter.dart';
 import 'tasks/self_care_tasks.dart';
-
+import 'self_care_popup.dart';
+import 'dart:math'; // Import the dart:math library for Random
 
 // Define the tasks list with sample data
 final List<Task> tasks = [
@@ -186,6 +188,28 @@ class _MyAppState extends State<MyApp> {
   void handleTaskCreated(Task newTask) {
     setState(() {
       tasks.add(newTask); // Add the newly created task to the global tasks list
+
+      // Check if the newly created task is a self-care task
+      final bool isNewTaskSelfCare =
+          newTask.fields.any((field) => field is SelfCareField);
+
+      // Check if there are existing self-care tasks for the current day
+      final bool hasSelfCareTasksForToday = tasks.any((task) {
+        // Filter tasks with a due date for today
+        if (task.hasDueDate) {
+          final today = DateTime.now();
+          final taskDueDate = task.getDueDate()!;
+          return taskDueDate.year == today.year &&
+              taskDueDate.month == today.month &&
+              taskDueDate.day == today.day;
+        }
+        return false;
+      });
+
+      // If the new task is a self-care task and there are no existing self-care tasks for today, show the popup
+      if (isNewTaskSelfCare && !hasSelfCareTasksForToday) {
+        _showSelfCareRecommendationPopup(context);
+      }
     });
   }
 
@@ -214,6 +238,25 @@ class _MyAppState extends State<MyApp> {
         incompleteTasks.removeWhere((element) => element == task);
       }
     });
+  }
+
+  void _showSelfCareRecommendationPopup(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SelfCarePopup(
+          selfCareTasks: generateSelfCareTasks(),
+          onTaskCreated:
+              handleTaskCreated, // Pass the handleTaskCreated function
+        );
+      },
+    );
+  }
+
+  List<Task> generateSelfCareTasks() {
+    final Random random = Random();
+    final int randomIndex = random.nextInt(selfCareTasks.length);
+    return [selfCareTasks[randomIndex]];
   }
 
   @override
