@@ -4,12 +4,12 @@ import 'main.dart';
 import 'task/task.dart';
 import 'fields/due_date_field.dart';
 
-
 class TaskCreationPage extends StatefulWidget {
   final Function(Task) onTaskCreated;
   final String parentId; // Add the parentId parameter
 
-  const TaskCreationPage({super.key, 
+  const TaskCreationPage({
+    super.key,
     required this.onTaskCreated,
     this.parentId = '', // Set the default value
   });
@@ -58,35 +58,50 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
             ),
             ElevatedButton(
               onPressed: () {
-                // Create a new task object with the provided details
-                final Task newTask = Task(
-                  id: UniqueKey().toString(),
-                  name: _nameController.text,
-                  description: _descriptionController.text,
-                  parentId: widget.parentId, // Use the parentId from the widget
-                  fields: [
-                    DueDateField(
-                      dueDate: _dateController.text.isNotEmpty
-                          ? DateTime.parse(_dateController.text)
-                          : DateTime.now(),
-                      dueTime: _timeController.text.isNotEmpty
-                          ? TimeOfDay(
-                              hour: int.parse(_timeController.text.split(":")[0]),
-                              minute: int.parse(_timeController.text.split(":")[1]),
-                            )
-                          : TimeOfDay.now(),
+                // Check if the task name is not empty before creating the task
+                if (_nameController.text.isNotEmpty) {
+                  // Create a new task object with the provided details
+                  final Task newTask = Task(
+                    id: UniqueKey().toString(),
+                    name: _nameController.text,
+                    description: _descriptionController.text,
+                    parentId:
+                        widget.parentId, // Use the parentId from the widget
+                    fields: [
+                      DueDateField(
+                        dueDate: _dateController.text.isNotEmpty
+                            ? DateTime.parse(_dateController.text)
+                            : DateTime.now(),
+                        dueTime: _timeController.text.isNotEmpty
+                            ? TimeOfDay(
+                                hour: int.parse(
+                                    _timeController.text.split(":")[0]),
+                                minute: int.parse(
+                                    _timeController.text.split(":")[1]),
+                              )
+                            : TimeOfDay.now(),
+                      ),
+                    ],
+                  );
+
+                  // Notify the main page about the newly created task
+                  widget.onTaskCreated(newTask);
+
+                  // Clear the form
+                  _nameController.clear();
+                  _descriptionController.clear();
+                  _dateController.clear();
+                  _timeController.clear();
+                } else {
+                  // Show an error message or handle the case where the task name is empty
+                  // Show a SnackBar with the error message
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                          'Task name cannot be empty. Please enter a task name.'),
                     ),
-                  ],
-                );
-
-                // Notify the main page about the newly created task
-                widget.onTaskCreated(newTask);
-
-                // Clear the form
-                _nameController.clear();
-                _descriptionController.clear();
-                _dateController.clear();
-                _timeController.clear();
+                  );
+                }
               },
               child: const Text('Create Task'),
             ),
@@ -96,7 +111,7 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
     );
   }
 
-    Widget _buildDateField() {
+  Widget _buildDateField() {
     return TextFormField(
       controller: _dateController,
       keyboardType: TextInputType.datetime,
@@ -123,7 +138,7 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
     );
     if (selectedDate != null) {
       setState(() {
-        _dateController.text = _formatDate(selectedDate);
+        _dateController.text = formatDate(selectedDate);
       });
     }
   }
@@ -135,17 +150,8 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
     );
     if (selectedTime != null) {
       setState(() {
-        _timeController.text = _formatTime(selectedTime);
+        _timeController.text = formatTime(selectedTime);
       });
     }
   }
-
-  String _formatDate(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-  }
-
-  String _formatTime(TimeOfDay time) {
-    return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
-  }
-
 }
