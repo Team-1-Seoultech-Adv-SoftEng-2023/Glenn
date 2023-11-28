@@ -10,9 +10,9 @@ class TaskDetailPage extends StatefulWidget {
   final Task task;
   final List<Task> subtasks; // Add the list of subtasks
 
-  final Function(Task) onTaskUpdated; // Add the callback
-  final Function(Task) onTaskCreated; // Add the callback
-  final Function(Task) onTaskDeleted; // Add the callback
+  final Function(Task) onTaskUpdated; 
+  final Function(Task) onTaskCreated; 
+  final Function(Task) onTaskDeleted; 
   final Function(DueDateField) onUpdateDueDateTime;
 
   const TaskDetailPage({
@@ -30,22 +30,22 @@ class TaskDetailPage extends StatefulWidget {
 }
 
 class _TaskDetailPageState extends State<TaskDetailPage> {
-  late TextEditingController dateController;
-  late TextEditingController timeController;
+  // late TextEditingController dateController;
+  // late TextEditingController timeController;
 
-  @override
-  void initState() {
-    super.initState();
-    if (widget.task.fields.isNotEmpty &&
-        widget.task.fields.first is DueDateField) {
-      dateController = TextEditingController(
-          text:
-              _formatDate((widget.task.fields.first as DueDateField).dueDate));
-      timeController = TextEditingController(
-          text:
-              _formatTime((widget.task.fields.first as DueDateField).dueTime));
-    }
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   if (widget.task.fields.isNotEmpty &&
+  //       widget.task.fields.first is DueDateField) {
+  //     dateController = TextEditingController(
+  //         text:
+  //             _formatDate((widget.task.fields.first as DueDateField).dueDate));
+  //     timeController = TextEditingController(
+  //         text:
+  //             _formatTime((widget.task.fields.first as DueDateField).dueTime));
+  //   }
+  // }
 
   @override
   _TaskDetailPageState createState() => _TaskDetailPageState();
@@ -64,9 +64,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                   builder: (context) => EditTaskPage(
                       task: widget.task,
                       onTaskUpdated: (updatedTask) {
-                        // Handle the updated task here
-                        // Optionally, you can update the UI or perform other actions.
-                      },
+                        },
                       onTaskDeleted: (deleteTask) {
                         widget.onTaskDeleted(deleteTask);
                       },
@@ -101,73 +99,85 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  if (widget.task.fields.first is DueDateField)
-                    ListTile(
-                      title: const Text('Due Date'),
-                      subtitle: Row(
-                        children: [
-                          Expanded(
-                            child: TextFormField(
-                              controller: dateController,
-                              keyboardType: TextInputType.datetime,
-                              decoration:
-                                  const InputDecoration(labelText: 'Date'),
-                              onTap: () async {
-                                DateTime? selectedDate = await showDatePicker(
-                                  context: context,
-                                  initialDate:
-                                      (widget.task.fields.first as DueDateField)
-                                          .dueDate,
-                                  firstDate: DateTime(2000),
-                                  lastDate: DateTime(2101),
-                                );
-                                if (selectedDate != null) {
-                                  setState(() {
-                                    (widget.task.fields.first as DueDateField)
-                                        .dueDate = selectedDate;
-                                    dateController.text =
-                                        _formatDate(selectedDate);
-                                  });
-                                  // Call the callback function with the updated DueDateField
-                                  widget.onUpdateDueDateTime(
-                                      widget.task.fields.first as DueDateField);
-                                }
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: TextFormField(
-                              controller: timeController,
-                              keyboardType: TextInputType.datetime,
-                              decoration:
-                                  const InputDecoration(labelText: 'Time'),
-                              onTap: () async {
-                                TimeOfDay? selectedTime = await showTimePicker(
-                                  context: context,
-                                  initialTime:
-                                      (widget.task.fields.first as DueDateField)
-                                          .dueTime,
-                                );
-                                if (selectedTime != null) {
-                                  setState(() {
-                                    (widget.task.fields.first as DueDateField)
-                                        .dueTime = selectedTime;
-                                    timeController.text =
-                                        _formatTime(selectedTime);
-                                  });
-                                  // Call the callback function with the updated DueDateField
-                                  widget.onUpdateDueDateTime(
-                                      widget.task.fields.first as DueDateField);
-                                }
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                  // if (widget.task.fields.first is DueDateField)
+                  //   ListTile(
+                  //     title: const Text('Due Date'),
+                  //     subtitle: Row(
+                  //       children: [
+                  //         Expanded(
+                  //           child: TextFormField(
+                  //             controller: dateController,
+                  //             keyboardType: TextInputType.datetime,
+                  //             decoration:
+                  //                 const InputDecoration(labelText: 'Date'),
+                  //             onTap: () async {
+                  //               DateTime? selectedDate = await showDatePicker(
+                  //                 context: context,
+                  //                 initialDate:
+                  //                     (widget.task.fields.first as DueDateField)
+                  //                         .dueDate,
+                  //                 firstDate: DateTime(2000),
+                  //                 lastDate: DateTime(2101),
+                  //               );
+                  //               if (selectedDate != null) {
+                  //                 setState(() {
+                  //                   (widget.task.fields.first as DueDateField)
+                  //                       .dueDate = selectedDate;
+                  //                   dateController.text =
+                  //                       _formatDate(selectedDate);
+                  //                 });
+                  //                 // Call the callback function with the updated DueDateField
+                  //                 widget.onUpdateDueDateTime(
+                  //                     widget.task.fields.first as DueDateField);
+                  //               }
+                  //             },
+                  //           ),
+                  //         ),
+                  //         const SizedBox(width: 16),
+                  //         Expanded(
+                  //           child: TextFormField(
+                  //             controller: timeController,
+                  //             keyboardType: TextInputType.datetime,
+                  //             decoration:
+                  //                 const InputDecoration(labelText: 'Time'),
+                  //             onTap: () async {
+                  //               TimeOfDay? selectedTime = await showTimePicker(
+                  //                 context: context,
+                  //                 initialTime:
+                  //                     (widget.task.fields.first as DueDateField)
+                  //                         .dueTime,
+                  //               );
+                  //               if (selectedTime != null) {
+                  //                 setState(() {
+                  //                   (widget.task.fields.first as DueDateField)
+                  //                       .dueTime = selectedTime;
+                  //                   timeController.text =
+                  //                       _formatTime(selectedTime);
+                  //                 });
+                  //                 // Call the callback function with the updated DueDateField
+                  //                 widget.onUpdateDueDateTime(
+                  //                     widget.task.fields.first as DueDateField);
+                  //               }
+                  //             },
+                  //           ),
+                  //         ),
+                  //       ],
+                  //     ),
+                  //   ),
                   ...widget.task.fields.map((field) {
-                    if (field is! DueDateField) {
+                    if (field is DueDateField) {
+                      // Display information for DueDateField
+                      return ListTile(
+                        title: Text('Due Date'),
+                        subtitle: Row(
+                          children: [
+                            Text('Date: ${_formatDate(field.dueDate)}'),
+                            SizedBox(width: 8),
+                            Text('Time: ${_formatTime(field.dueTime)}'),
+                          ],
+                        ),
+                      );
+                    } else if (field is! DueDateField) {
                       return ListTile(
                         title: Text(field.name),
                         subtitle: Text(field.value),
