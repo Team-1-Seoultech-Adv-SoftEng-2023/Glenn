@@ -56,4 +56,17 @@ class Task {
       return null;
     }
   }
+
+  void updateTask({
+    required String name,
+    required String description,
+    List<TaskField> fields = const [],
+    bool isComplete = false,
+  }) {
+    this.name = name;
+    this.description = description;
+    this.fields.clear();
+    this.fields.addAll(fields);
+    this.isComplete = isComplete;
+  }
 }
