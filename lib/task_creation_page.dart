@@ -149,6 +149,7 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
 
 Widget _buildRepeatPatternDropdown() {
   return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       const Text('Repeat Pattern'),
       DropdownButton<RepeatPeriod>(
@@ -170,23 +171,39 @@ Widget _buildRepeatPatternDropdown() {
             .toList(),
       ),
       if (_selectedRepeatPeriod != RepeatPeriod.Custom) // Additional check for custom
-        Column(
+        Row(
           children: [
-            const Text('Start Date'),
-            _buildStartDateField(),
-            const Text('End Date'),
-            _buildEndDateField(),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Start Date'),
+                  _buildStartDateField(),
+                ],
+              ),
+            ),
+            SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('End Date'),
+                  _buildEndDateField(),
+                ],
+              ),
+            ),
           ],
         ),
     ],
   );
 }
 
+
 Widget _buildStartDateField() {
   return TextFormField(
     controller: _startDateController,
     keyboardType: TextInputType.datetime,
-    decoration: InputDecoration(labelText: 'Start Date'),
+    //decoration: InputDecoration(labelText: 'Start Date'),
     onTap: () => _showStartDatePicker(),
   );
 }
@@ -195,7 +212,7 @@ Widget _buildEndDateField() {
   return TextFormField(
     controller: _endDateController,
     keyboardType: TextInputType.datetime,
-    decoration: InputDecoration(labelText: 'End Date'),
+    //decoration: InputDecoration(labelText: 'End Date'),
     onTap: () => _showEndDatePicker(),
   );
 }
