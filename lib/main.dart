@@ -1,3 +1,4 @@
+//main.dart
 import 'package:flutter/material.dart';
 import 'task_detail_page.dart'; // Import the task_detail_page.dart file
 import 'task_creation_page.dart'; // Import the task_creation_page.dart file
@@ -9,6 +10,7 @@ import 'user_progress_screen.dart';
 import 'task/task.dart';
 import 'task/task_list.dart';
 import 'task/task_sorter.dart';
+import 'task/collapsible_task_list.dart';
 
 // import fields
 import 'fields/task_field.dart';
@@ -80,9 +82,10 @@ extension IterableExtensions<E> on Iterable<E> {
     return isEmpty ? null : first;
   }
 }
-
 void main() {
-  runApp(MyApp(tasks: tasks));
+  runApp(MaterialApp(
+    home: MyApp(tasks: tasks),
+  ));
 }
 
 class MyApp extends StatefulWidget {
@@ -193,15 +196,22 @@ class _MyAppState extends State<MyApp> {
           ),
           body: TabBarView(
             children: [
-              TaskList(
-                tasks: TaskSorter.sortByDueDate(widget.tasks),
-                updateTaskCompletionStatus: _updateTaskCompletionStatus,
-                onTaskUpdated: (updatedTask) {
-                  // Handle the updated task here
-                  // Optionally, you can update the UI or perform other actions.
-                },
-                onTaskCreated: handleTaskCreated,
-                onTaskDeleted: handleTaskDeleted,
+              // Wrap CollapsibleTaskList with ListView
+              ListView(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                children: [
+                  CollapsibleTaskList(
+                    tasks: TaskSorter.sortByDueDate(widget.tasks),
+                    updateTaskCompletionStatus: _updateTaskCompletionStatus,
+                    onTaskUpdated: (updatedTask) {
+                      // Handle the updated task here
+                      // Optionally, you can update the UI or perform other actions.
+                    },
+                    onTaskCreated: handleTaskCreated,
+                    onTaskDeleted: handleTaskDeleted,
+                  ),
+                ],
               ),
 
               TaskList(
@@ -226,17 +236,25 @@ class _MyAppState extends State<MyApp> {
             ],
           ),
           floatingActionButton: FloatingActionButton(
-            onPressed: () async {
-              // Navigate to the TaskCreationPage and pass the callback function
-              final newTask = await navigatorKey.currentState?.push(
-                MaterialPageRoute(
-                  builder: (context) =>
-                      TaskCreationPage(onTaskCreated: handleTaskCreated),
-                ),
-              );
-            },
-            child: const Icon(Icons.add),
-          ),
+  onPressed: () async {
+    // Navigate to the TaskCreationPage
+    final newTask = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TaskCreationPage(
+          onTaskCreated: handleTaskCreated,
+        ),
+      ),
+    );
+
+    // Handle the result from the TaskCreationPage if needed
+    if (newTask != null) {
+      print('New task created: $newTask');
+    }
+  },
+  child: const Icon(Icons.add),
+),
+
         ),
       ),
     );
