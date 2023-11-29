@@ -112,44 +112,32 @@ class _MyAppState extends State<MyApp> {
   // Callback function to handle newly created tasks
   void handleTaskCreated(Task newTask) {
     setState(() {
-      // Handle the result from the TaskCreationPage if needed
       if (newTask != null) {
         print('New task created: $newTask');
+        tasks.add(newTask);
 
-        // Refresh the main page after creating a new task
-        Navigator.pop(context); // Pop the screen to refresh
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => MyApp(tasks: tasks),
-          ),
-        );
-      }
-      tasks.add(newTask); // Add the newly created task to the global tasks list
+        final bool isNewTaskSelfCare =
+            newTask.fields.any((field) => field is SelfCareField);
 
-      // Check if the newly created task is a self-care task
-      final bool isNewTaskSelfCare =
-          newTask.fields.any((field) => field is SelfCareField);
+        final bool hasSelfCareTasksForToday = tasks.any((task) {
+          if (task.hasDueDate) {
+            final today = DateTime.now();
+            final taskDueDate = task.getDueDate()!;
+            return taskDueDate.year == today.year &&
+                taskDueDate.month == today.month &&
+                taskDueDate.day == today.day;
+          }
+          return false;
+        });
 
-      // Check if there are existing self-care tasks for the current day
-      final bool hasSelfCareTasksForToday = tasks.any((task) {
-        // Filter tasks with a due date for today
-        if (task.hasDueDate) {
-          final today = DateTime.now();
-          final taskDueDate = task.getDueDate()!;
-          return taskDueDate.year == today.year &&
-              taskDueDate.month == today.month &&
-              taskDueDate.day == today.day;
+        if (!isNewTaskSelfCare && !hasSelfCareTasksForToday) {
+          // Do not pop the context here
+          _showSelfCareRecommendationPopup(context);
         }
-        return false;
-      });
-
-      // If the new task is a self-care task and there are no existing self-care tasks for today, show the popup
-      if (isNewTaskSelfCare && !hasSelfCareTasksForToday) {
-        _showSelfCareRecommendationPopup(context);
       }
     });
   }
+
 
   void handleTaskDeleted(Task deleteTask) {
     setState(() {
@@ -199,8 +187,19 @@ class _MyAppState extends State<MyApp> {
   List<Task> generateSelfCareTasks() {
     final Random random = Random();
     final int randomIndex = random.nextInt(selfCareTasks.length);
-    return [selfCareTasks[randomIndex]];
+
+    // Create a new self-care task
+    Task selfCareTask = Task.copy(selfCareTasks[randomIndex]);
+
+    // Set the due date of the self-care task to today
+    selfCareTask.fields.add(DueDateField(
+      dueDate: DateTime.now(),
+      dueTime: TimeOfDay(hour: 23, minute: 59), // Adjust the time as needed
+    ));
+
+    return [selfCareTask];
   }
+
 
   @override
   Widget build(BuildContext context) {

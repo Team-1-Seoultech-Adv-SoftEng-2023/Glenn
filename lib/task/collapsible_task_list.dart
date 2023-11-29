@@ -58,7 +58,7 @@ class _CollapsibleTaskListState extends State<CollapsibleTaskList> {
           },
           body: AnimatedContainer(
             duration: Duration(milliseconds: 500),
-            height: isExpanded ? 200.0 : 0.0,
+            height: isExpanded ? 300.0 : 0.0,
             child: TaskList(
               tasks: widget.tasks,
               updateTaskCompletionStatus: widget.updateTaskCompletionStatus,
