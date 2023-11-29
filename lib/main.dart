@@ -33,7 +33,7 @@ final List<Task> tasks = [
   Task(
     id: '2',
     name: 'Task with Due Date Only',
-    description: 'This task has only a due date',
+    description: 'https://www.youtube.com/',
     parentId: '',
     fields: [
       DueDateField(
@@ -75,13 +75,11 @@ final List<Task> tasks = [
 List<Map<String, dynamic>> progressHistory = [];
 double overallScore = 0.0;
 
-
 extension IterableExtensions<E> on Iterable<E> {
   E? get firstOrNull {
     return isEmpty ? null : first;
   }
 }
-
 
 void main() {
   runApp(MyApp(tasks: tasks));
@@ -244,5 +242,3 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
-
-

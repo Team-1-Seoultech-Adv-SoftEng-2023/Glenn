@@ -1,6 +1,7 @@
 import '../fields/task_field.dart';
 import '../fields/priority_field.dart';
 import '../fields/due_date_field.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class Task {
   final String id;
@@ -28,6 +29,27 @@ class Task {
     this.isComplete = false,
     this.isCompletedOnTime = true, // Initialize as incomplete
   });
+
+// Method to launch URL if the description contains one
+  void launchURL() async {
+    final String? url = getDescriptionUrl();
+    if (url != null) {
+      final Uri uri = Uri.parse(url);
+      await launchUrl(uri);
+    }
+  }
+
+  // Method to extract the URL from the description
+  String? getDescriptionUrl() {
+    final RegExp urlRegExp = RegExp(r'http[s]?:\/\/[^\s]+');
+    final Match? match = urlRegExp.firstMatch(description);
+
+    if (match != null) {
+      return match.group(0);
+    }
+
+    return null;
+  }
 
   int? getPriority() {
     final priorityField = fields.firstWhere(

@@ -9,7 +9,6 @@ import 'fields/due_date_field.dart';
 class TaskDetailPage extends StatefulWidget {
   final Task task;
   final List<Task> subtasks; // Add the list of subtasks
-
   final Function(Task) onTaskUpdated; // Add the callback
   final Function(Task) onTaskCreated; // Add the callback
   final Function(Task) onTaskDeleted; // Add the callback
@@ -92,8 +91,21 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
         children: <Widget>[
           ListTile(
             title: Text(widget.task.name), // Access task using widget.task
-            subtitle:
-                Text(widget.task.description), // Access task using widget.task
+            subtitle: GestureDetector(
+              // Add GestureDetector for handling taps on the description
+              child: Text(
+                widget.task.description,
+                style: const TextStyle(
+                  color:
+                      Colors.blue, // Make the text blue to indicate it's a link
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+              onTap: () {
+                // Call the launchURL method when the description is tapped
+                widget.task.launchURL();
+              },
+            ),
           ),
           if (widget.task.fields.isNotEmpty)
             Container(
