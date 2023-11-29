@@ -11,6 +11,7 @@ class Task {
   final List<TaskField> fields;
   bool isComplete;
   bool isCompletedOnTime; // Add this property
+  DateTime? reminderDate;
 
   @override
   bool operator ==(Object other) =>
@@ -28,6 +29,7 @@ class Task {
     required this.fields,
     this.isComplete = false,
     this.isCompletedOnTime = true, // Initialize as incomplete
+    this.reminderDate,
   });
 
 // Method to launch URL if the description contains one
