@@ -207,6 +207,12 @@ void _showStartDatePicker() async {
     firstDate: DateTime(2000),
     lastDate: DateTime(2101),
   );
+
+  if (selectedDate != null) {
+    setState(() {
+      _startDateController.text = formatDate(selectedDate);
+    });
+  }
 }
 
 void _showEndDatePicker() async {
@@ -216,6 +222,12 @@ void _showEndDatePicker() async {
     firstDate: DateTime(2000),
     lastDate: DateTime(2101),
   );
+
+    if (selectedDate != null) {
+    setState(() {
+      _endDateController.text = formatDate(selectedDate);
+    });
+  }
 }
 
   Widget _buildDateField() {

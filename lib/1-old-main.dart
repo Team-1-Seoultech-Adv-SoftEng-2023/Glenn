@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'task_detail_page.dart'; // Import the task_detail_page.dart file
-import 'task_creation_page.dart'; // Import the task_creation_page.dart file
-import 'completed_tasks_page.dart'; // Import the CompletedTasksPage widget
+import 'task_creation_page.dart'; 
+import 'completed_tasks_page.dart';
 import 'calendar_view.dart';
 import 'user_progress_screen.dart';
 
@@ -10,78 +9,9 @@ import 'task/task.dart';
 import 'task/task_list.dart';
 import 'task/task_sorter.dart';
 
-// import fields
-import 'fields/task_field.dart';
-import 'fields/priority_field.dart';
-import 'fields/due_date_field.dart';
 
 // Define the tasks list with sample data
-final List<Task> tasks = [
-  Task(
-    id: '1',
-    name: 'Task with Due Date and Priority',
-    description: 'This task has both due date and priority',
-    parentId: '',
-    fields: [
-      DueDateField(
-        dueDate: DateTime(2023, 11, 22),
-        dueTime: TimeOfDay(hour: 14, minute: 30),
-      ),
-      PriorityField(priority: 2), // Medium priority
-    ],
-  ),
-  Task(
-    id: '2',
-    name: 'Task with Due Date Only',
-    description: 'This task has only a due date',
-    parentId: '',
-    fields: [
-      DueDateField(
-        dueDate: DateTime(2023, 11, 24),
-        dueTime: TimeOfDay(hour: 10, minute: 0),
-      ),
-    ],
-  ),
-  Task(
-    id: '3',
-    name: 'Task with Priority Only',
-    description: 'This task has only a priority',
-    parentId: '',
-    fields: [
-      PriorityField(priority: 3), // High priority
-    ],
-  ),
-  Task(
-    id: '4',
-    name: 'Task with No Due Date or Priority',
-    description: 'This task has neither due date nor priority',
-    parentId: '',
-    fields: [],
-  ),
-  Task(
-    id: '5',
-    name: 'Task with Past Due Date',
-    description: 'This task has a past due date',
-    parentId: '',
-    fields: [
-      DueDateField(
-        dueDate: DateTime(2023, 11, 10),
-        dueTime: const TimeOfDay(hour: 12, minute: 0),
-      ),
-    ],
-  ),
-];
-
-List<Map<String, dynamic>> progressHistory = [];
-double overallScore = 0.0;
-
-
-extension IterableExtensions<E> on Iterable<E> {
-  E? get firstOrNull {
-    return isEmpty ? null : first;
-  }
-}
-
+final List<Task> tasks = [];
 
 
 void main() {
@@ -152,52 +82,8 @@ class _MyAppState extends State<MyApp> {
         child: Scaffold(
           appBar: AppBar(
             title: const Text('Task List'),
-            bottom: const TabBar(
-              tabs: [
-                Tab(text: 'Due Date'),
-                Tab(text: 'Priority'),
-                Tab(text: 'Calendar'),
-                Tab(text: 'Completed'),
-                Tab(text: 'Progress')
-              ],
-            ),
           ),
-          drawer: Drawer(
-            child: ListView(
-              padding: EdgeInsets.zero,
-              children: [
-                DrawerHeader(
-                  decoration: BoxDecoration(
-                    color: Colors.blue,
-                  ),
-                  child: Text('Menu'),
-                ),
-                ListTile(
-                  title: Text('User Progress'),
-                  onTap: () {
-                    Navigator.pop(context); // Close the drawer
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => UserProgressScreen(
-                          overallScore: overallScore,
-                          progressHistory: progressHistory,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                ListTile(
-                  title: Text('Item 2'),
-                  onTap: () {
-                    // Handle menu item 2 click
-                    Navigator.pop(context); // Close the drawer
-                  },
-                ),
-                // Add more menu items as needed
-              ],
-            ),
-          ),
+          
           body: TabBarView(
             children: [
               TaskList(
@@ -228,11 +114,10 @@ class _MyAppState extends State<MyApp> {
                 onTaskUpdated: handleTaskUpdated,
                 onTaskDeleted: handleTaskDeleted,
               ),
-              UserProgressScreen(
-                  overallScore: overallScore, progressHistory: progressHistory),
             ],
           ),
-          floatingActionButton: FloatingActionButton(
+
+         floatingActionButton: FloatingActionButton(
             onPressed: () {
               // Check if navigatorKey.currentState is not null before using it
               if (widget.navigatorKey.currentState != null) {
@@ -247,6 +132,7 @@ class _MyAppState extends State<MyApp> {
             },
             child: Icon(Icons.add),
           ),
+
         ),
       ),
     );
