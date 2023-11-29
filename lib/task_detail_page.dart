@@ -95,12 +95,16 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
               // Add GestureDetector for handling taps on the description
               child: Text(
                 widget.task.description,
-                style: const TextStyle(
-                  color:
-                      Colors.blue, // Make the text blue to indicate it's a link
-                  decoration: TextDecoration.underline,
+                style: TextStyle(
+                  color: widget.task.getDescriptionUrl() != null
+                      ? Colors.blue
+                      : Colors.black, // Use black color if no link is present
+                  decoration: widget.task.getDescriptionUrl() != null
+                      ? TextDecoration.underline
+                      : TextDecoration.none, // Underline if a link is present
                 ),
               ),
+
               onTap: () {
                 // Call the launchURL method when the description is tapped
                 widget.task.launchURL();
