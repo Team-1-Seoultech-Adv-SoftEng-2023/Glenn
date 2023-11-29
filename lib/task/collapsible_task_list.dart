@@ -27,29 +27,17 @@ class CollapsibleTaskList extends StatefulWidget {
 
 class _CollapsibleTaskListState extends State<CollapsibleTaskList> {
   late bool isExpanded;
-  double expandedHeight = 0.0;
 
   @override
   void initState() {
     super.initState();
     // Check if tasks list is not empty, then expand by default
     isExpanded = widget.tasks.isNotEmpty;
-    // Calculate the expanded height based on the number of tasks
-    expandedHeight = calculateExpandedHeight(widget.tasks.length);
-  }
-
-  double calculateExpandedHeight(int numberOfTasks) {
-    // Adjust this value based on your requirements
-    const taskHeight = 50.0;
-    const spacingHeight = 8.0;
-    return numberOfTasks * taskHeight + (numberOfTasks - 1) * spacingHeight;
   }
 
   void toggleExpansion() {
     setState(() {
       isExpanded = !isExpanded;
-      // Recalculate the expanded height when toggling
-      expandedHeight = calculateExpandedHeight(widget.tasks.length);
     });
   }
 
@@ -70,7 +58,7 @@ class _CollapsibleTaskListState extends State<CollapsibleTaskList> {
           },
           body: AnimatedContainer(
             duration: Duration(milliseconds: 500),
-            height: isExpanded ? expandedHeight : 0.0,
+            height: isExpanded ? 200.0 : 0.0,
             child: TaskList(
               tasks: widget.tasks,
               updateTaskCompletionStatus: widget.updateTaskCompletionStatus,
