@@ -229,12 +229,19 @@ class _MyAppState extends State<MyApp> {
           ),
           floatingActionButton: FloatingActionButton(
             onPressed: () async {
-              // Navigate to the TaskCreationPage and pass the callback function
+              // Navigator.of(context).push(
+              //   MaterialPageRoute(
+              //     builder: (context) => TaskCreationPage(
+              //       onTaskCreated: widget.onTaskCreated,
+              //     ),
+              //   ),
+              // );
+              //Navigate to the TaskCreationPage and pass the callback function
               await navigatorKey.currentState?.push(
-                MaterialPageRoute(
-                  builder: (context) =>
-                      TaskCreationPage(onTaskCreated: handleTaskCreated),
-                ),
+               MaterialPageRoute(
+                builder: (context) =>
+                   TaskCreationPage(onTaskCreated: handleTaskCreated),
+              ),
               );
             },
             child: const Icon(Icons.add),

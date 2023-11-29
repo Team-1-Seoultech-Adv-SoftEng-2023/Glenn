@@ -25,9 +25,11 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _timeController = TextEditingController();
 
+  
+  final TextEditingController _startDateController = TextEditingController();
+  final TextEditingController _endDateController = TextEditingController();
   bool _isRepeating = false;
   RepeatPeriod _selectedRepeatPeriod = RepeatPeriod.Daily;
-
 
   @override
   Widget build(BuildContext context) {
@@ -67,11 +69,21 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
               onChanged: (value) {
                 setState(() {
                   _isRepeating = value!;
+                  if (_isRepeating) {
+                    // If repeating is enabled, set due date to today if it's empty
+                    if (_dateController.text.isEmpty) {
+                      _dateController.text = formatDate(DateTime.now());
+                    }
+                    if (_timeController.text.isEmpty) {
+                      _timeController.text = formatTime(TimeOfDay.now());
+                    }
+                    _startDateController.text = formatDate(DateTime.now());
+                    _endDateController.text = formatDate(DateTime.now().add(Duration(days: 365)));
+                  }
                 });
               },
             ),
-            if (_isRepeating)
-              _buildRepeatPatternDropdown(),
+            if (_isRepeating) _buildRepeatPatternDropdown(),
             ElevatedButton(
               onPressed: () {
                 // Check if the task name is not empty before creating the task
@@ -135,6 +147,77 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
     );
   }
 
+Widget _buildRepeatPatternDropdown() {
+  return Column(
+    children: [
+      const Text('Repeat Pattern'),
+      DropdownButton<RepeatPeriod>(
+        value: _selectedRepeatPeriod,
+        onChanged: (RepeatPeriod? value) {
+          if (value != null) {
+            setState(() {
+              _selectedRepeatPeriod = value;
+            });
+          }
+        },
+        items: RepeatPeriod.values
+            .map<DropdownMenuItem<RepeatPeriod>>(
+              (RepeatPeriod value) => DropdownMenuItem<RepeatPeriod>(
+                value: value,
+                child: Text(value.toString().split('.').last),
+              ),
+            )
+            .toList(),
+      ),
+      if (_selectedRepeatPeriod != RepeatPeriod.Custom) // Additional check for custom
+        Column(
+          children: [
+            const Text('Start Date'),
+            _buildStartDateField(),
+            const Text('End Date'),
+            _buildEndDateField(),
+          ],
+        ),
+    ],
+  );
+}
+
+Widget _buildStartDateField() {
+  return TextFormField(
+    controller: _startDateController,
+    keyboardType: TextInputType.datetime,
+    decoration: InputDecoration(labelText: 'Start Date'),
+    onTap: () => _showStartDatePicker(),
+  );
+}
+
+Widget _buildEndDateField() {
+  return TextFormField(
+    controller: _endDateController,
+    keyboardType: TextInputType.datetime,
+    decoration: InputDecoration(labelText: 'End Date'),
+    onTap: () => _showEndDatePicker(),
+  );
+}
+
+void _showStartDatePicker() async {
+  DateTime? selectedDate = await showDatePicker(
+    context: context,
+    initialDate: DateTime.now(),
+    firstDate: DateTime(2000),
+    lastDate: DateTime(2101),
+  );
+}
+
+void _showEndDatePicker() async {
+  DateTime? selectedDate = await showDatePicker(
+    context: context,
+    initialDate: DateTime.now(), // Default to one year from now
+    firstDate: DateTime(2000),
+    lastDate: DateTime(2101),
+  );
+}
+
   Widget _buildDateField() {
     return TextFormField(
       controller: _dateController,
@@ -150,32 +233,6 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
       keyboardType: TextInputType.datetime,
       decoration: InputDecoration(labelText: 'Time'),
       onTap: () => _showTimePicker(),
-    );
-  }
-
-  Widget _buildRepeatPatternDropdown() {
-    return Column(
-      children: [
-        const Text('Repeat Pattern'),
-        DropdownButton<RepeatPeriod>(
-          value: _selectedRepeatPeriod,
-          onChanged: (RepeatPeriod? value) {
-            if (value != null) {
-              setState(() {
-                _selectedRepeatPeriod = value;
-              });
-            }
-          },
-          items: RepeatPeriod.values
-              .map<DropdownMenuItem<RepeatPeriod>>(
-                (RepeatPeriod value) => DropdownMenuItem<RepeatPeriod>(
-                  value: value,
-                  child: Text(value.toString().split('.').last),
-                ),
-              )
-              .toList(),
-        ),
-      ],
     );
   }
 
