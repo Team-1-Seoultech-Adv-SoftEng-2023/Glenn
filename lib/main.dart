@@ -1,10 +1,12 @@
 //main.dart
+//import main pages
 import 'package:flutter/material.dart';
 import 'task_detail_page.dart'; // Import the task_detail_page.dart file
 import 'task_creation_page.dart'; // Import the task_creation_page.dart file
 import 'completed_tasks_page.dart'; // Import the CompletedTasksPage widget
 import 'calendar_view.dart';
 import 'user_progress_screen.dart';
+import 'due_date_list.dart';
 
 // import task and utilities
 import 'task/task.dart';
@@ -82,6 +84,7 @@ extension IterableExtensions<E> on Iterable<E> {
     return isEmpty ? null : first;
   }
 }
+
 void main() {
   runApp(MaterialApp(
     home: MyApp(tasks: tasks),
@@ -196,23 +199,14 @@ class _MyAppState extends State<MyApp> {
           ),
           body: TabBarView(
             children: [
-              // Wrap CollapsibleTaskList with ListView
-              ListView(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                children: [
-                  CollapsibleTaskList(
-                    tasks: TaskSorter.sortByDueDate(widget.tasks),
-                    updateTaskCompletionStatus: _updateTaskCompletionStatus,
-                    onTaskUpdated: (updatedTask) {
-                      // Handle the updated task here
-                      // Optionally, you can update the UI or perform other actions.
-                    },
-                    onTaskCreated: handleTaskCreated,
-                    onTaskDeleted: handleTaskDeleted,
-                  ),
-                ],
+              DueDateListView(
+                tasks: widget.tasks,
+                updateTaskCompletionStatus: _updateTaskCompletionStatus,
+                onTaskUpdated: handleTaskUpdated,
+                onTaskCreated: handleTaskCreated,
+                onTaskDeleted: handleTaskDeleted,
               ),
+
 
               TaskList(
                 tasks: TaskSorter.sortByPriority(widget.tasks),
@@ -236,25 +230,24 @@ class _MyAppState extends State<MyApp> {
             ],
           ),
           floatingActionButton: FloatingActionButton(
-  onPressed: () async {
-    // Navigate to the TaskCreationPage
-    final newTask = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => TaskCreationPage(
-          onTaskCreated: handleTaskCreated,
-        ),
-      ),
-    );
+            onPressed: () async {
+              // Navigate to the TaskCreationPage
+              final newTask = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => TaskCreationPage(
+                    onTaskCreated: handleTaskCreated,
+                  ),
+                ),
+              );
 
-    // Handle the result from the TaskCreationPage if needed
-    if (newTask != null) {
-      print('New task created: $newTask');
-    }
-  },
-  child: const Icon(Icons.add),
-),
-
+              // Handle the result from the TaskCreationPage if needed
+              if (newTask != null) {
+                print('New task created: $newTask');
+              }
+            },
+            child: const Icon(Icons.add),
+          ),
         ),
       ),
     );

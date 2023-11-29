@@ -1,15 +1,15 @@
-//expandable_task_list.dart
+// collapsible_task_list.dart
 import 'package:flutter/material.dart';
 import 'task.dart';
-import 'task_card.dart';
 import 'task_list.dart';
 
 class CollapsibleTaskList extends StatefulWidget {
   final List<Task> tasks;
-  final Function(Task) onTaskUpdated; // Add the callback
-  final Function(Task) onTaskCreated; // Add the callback
-  final Function(Task) onTaskDeleted; // Add the callback
+  final Function(Task) onTaskUpdated;
+  final Function(Task) onTaskCreated;
+  final Function(Task) onTaskDeleted;
   final Function(Task, bool) updateTaskCompletionStatus;
+  final String name; // New property to store the category name
 
   const CollapsibleTaskList({
     Key? key,
@@ -18,6 +18,7 @@ class CollapsibleTaskList extends StatefulWidget {
     required this.onTaskUpdated,
     required this.onTaskCreated,
     required this.onTaskDeleted,
+    required this.name, // Added property
   }) : super(key: key);
 
   @override
@@ -25,11 +26,30 @@ class CollapsibleTaskList extends StatefulWidget {
 }
 
 class _CollapsibleTaskListState extends State<CollapsibleTaskList> {
-  bool isExpanded = false;
+  late bool isExpanded;
+  double expandedHeight = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    // Check if tasks list is not empty, then expand by default
+    isExpanded = widget.tasks.isNotEmpty;
+    // Calculate the expanded height based on the number of tasks
+    expandedHeight = calculateExpandedHeight(widget.tasks.length);
+  }
+
+  double calculateExpandedHeight(int numberOfTasks) {
+    // Adjust this value based on your requirements
+    const taskHeight = 50.0;
+    const spacingHeight = 8.0;
+    return numberOfTasks * taskHeight + (numberOfTasks - 1) * spacingHeight;
+  }
 
   void toggleExpansion() {
     setState(() {
       isExpanded = !isExpanded;
+      // Recalculate the expanded height when toggling
+      expandedHeight = calculateExpandedHeight(widget.tasks.length);
     });
   }
 
@@ -45,12 +65,12 @@ class _CollapsibleTaskListState extends State<CollapsibleTaskList> {
         ExpansionPanel(
           headerBuilder: (BuildContext context, bool isExpanded) {
             return ListTile(
-              title: Text('Tasks'),
+              title: Text(widget.name), // Display the category name
             );
           },
           body: AnimatedContainer(
             duration: Duration(milliseconds: 500),
-            height: isExpanded ? 200.0 : 0.0,
+            height: isExpanded ? expandedHeight : 0.0,
             child: TaskList(
               tasks: widget.tasks,
               updateTaskCompletionStatus: widget.updateTaskCompletionStatus,
