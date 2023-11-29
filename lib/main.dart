@@ -230,7 +230,7 @@ class _MyAppState extends State<MyApp> {
           floatingActionButton: FloatingActionButton(
             onPressed: () async {
               // Navigate to the TaskCreationPage and pass the callback function
-              final newTask = await navigatorKey.currentState?.push(
+              await navigatorKey.currentState?.push(
                 MaterialPageRoute(
                   builder: (context) =>
                       TaskCreationPage(onTaskCreated: handleTaskCreated),

@@ -3,6 +3,7 @@ import 'main.dart';
 
 import 'task/task.dart';
 import 'fields/due_date_field.dart';
+import 'fields/repeating_field.dart';
 
 class TaskCreationPage extends StatefulWidget {
   final Function(Task) onTaskCreated;
@@ -23,6 +24,10 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _timeController = TextEditingController();
+
+  bool _isRepeating = false;
+  RepeatPeriod _selectedRepeatPeriod = RepeatPeriod.Daily;
+
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +61,17 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                 ],
               ),
             ),
+            CheckboxListTile(
+              title: Text('Repeat Task'),
+              value: _isRepeating,
+              onChanged: (value) {
+                setState(() {
+                  _isRepeating = value!;
+                });
+              },
+            ),
+            if (_isRepeating)
+              _buildRepeatPatternDropdown(),
             ElevatedButton(
               onPressed: () {
                 // Check if the task name is not empty before creating the task
@@ -81,6 +97,10 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                               )
                             : TimeOfDay.now(),
                       ),
+                      if (_isRepeating)
+                        RepeatingTaskField(
+                          repeatPeriod: _selectedRepeatPeriod,
+                        ),
                     ],
                   );
 
@@ -92,6 +112,10 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                   _descriptionController.clear();
                   _dateController.clear();
                   _timeController.clear();
+                  setState(() {
+                    _isRepeating = false;
+                    _selectedRepeatPeriod = RepeatPeriod.Daily;
+                  });
                 } else {
                   // Show an error message or handle the case where the task name is empty
                   // Show a SnackBar with the error message
@@ -126,6 +150,32 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
       keyboardType: TextInputType.datetime,
       decoration: InputDecoration(labelText: 'Time'),
       onTap: () => _showTimePicker(),
+    );
+  }
+
+  Widget _buildRepeatPatternDropdown() {
+    return Column(
+      children: [
+        const Text('Repeat Pattern'),
+        DropdownButton<RepeatPeriod>(
+          value: _selectedRepeatPeriod,
+          onChanged: (RepeatPeriod? value) {
+            if (value != null) {
+              setState(() {
+                _selectedRepeatPeriod = value;
+              });
+            }
+          },
+          items: RepeatPeriod.values
+              .map<DropdownMenuItem<RepeatPeriod>>(
+                (RepeatPeriod value) => DropdownMenuItem<RepeatPeriod>(
+                  value: value,
+                  child: Text(value.toString().split('.').last),
+                ),
+              )
+              .toList(),
+        ),
+      ],
     );
   }
 

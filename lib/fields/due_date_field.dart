@@ -13,7 +13,7 @@ class DueDateField extends TaskField {
         _dueTime = dueTime,
         super(
             name: 'Due Date',
-            value: '${_formatDate(dueDate)} ${_formatTime(dueTime)}');
+            value: '${formatDate(dueDate)} ${formatTime(dueTime)}');
 
   DateTime get dueDate => _dueDate;
   set dueDate(DateTime value) {
@@ -28,16 +28,14 @@ class DueDateField extends TaskField {
   }
 
   void updateValue() {
-    super.value = '${_formatDate(_dueDate)} ${_formatTime(_dueTime)}';
+    super.value = '${formatDate(_dueDate)} ${formatTime(_dueTime)}';
   }
 }
 
-// TODO: make it so we don't need t copy and paste these in each file
-
-String _formatDate(DateTime date) {
+String formatDate (DateTime date) {
   return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 }
 
-String _formatTime(TimeOfDay time) {
+String formatTime (TimeOfDay time) {
   return '${time.hour.toString().padLeft(2, '0')}${time.minute.toString().padLeft(2, '0')}';
 }

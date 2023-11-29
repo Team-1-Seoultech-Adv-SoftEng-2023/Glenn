@@ -57,7 +57,7 @@ class _EditTaskPageState extends State<EditTaskPage> {
   // Method to get the formatted due date as a string
   String _getDueDateFormatted() {
     if (widget.task.hasDueDate) {
-      return _formatDate(widget.task.getDueDate()!);
+      return formatDate(widget.task.getDueDate()!);
     } else {
       return '';
     }
@@ -66,7 +66,7 @@ class _EditTaskPageState extends State<EditTaskPage> {
   // Method to get the formatted due time as a string
   String _getDueTimeFormatted() {
     if (widget.task.hasDueDate && widget.task.fields.first is DueDateField) {
-      return _formatTime((widget.task.fields.first as DueDateField).dueTime);
+      return formatTime((widget.task.fields.first as DueDateField).dueTime);
     } else {
       return '';
     }
@@ -227,7 +227,7 @@ class _EditTaskPageState extends State<EditTaskPage> {
         widget.task.fields.first is DueDateField) {
       DueDateField dueDateField = widget.task.fields.first as DueDateField;
       dueDateField.dueDate = selectedDate;
-      _dateController.text = _formatDate(selectedDate);
+      _dateController.text = formatDate(selectedDate);
     }
   }
 
@@ -236,17 +236,7 @@ class _EditTaskPageState extends State<EditTaskPage> {
         widget.task.fields.first is DueDateField) {
       DueDateField dueDateField = widget.task.fields.first as DueDateField;
       dueDateField.dueTime = selectedTime;
-      _timeController.text = _formatTime(selectedTime);
+      _timeController.text = formatTime(selectedTime);
     }
-  }
-
-  // Helper method to format a DateTime into a string
-  String _formatDate(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-  }
-
-  // Helper method to format a TimeOfDay into a string
-  String _formatTime(TimeOfDay time) {
-    return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
   }
 }
