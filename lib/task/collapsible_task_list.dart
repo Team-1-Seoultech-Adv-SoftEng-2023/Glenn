@@ -9,7 +9,7 @@ class CollapsibleTaskList extends StatefulWidget {
   final Function(Task) onTaskCreated;
   final Function(Task) onTaskDeleted;
   final Function(Task, bool) updateTaskCompletionStatus;
-  final String name; // New property to store the category name
+  final String name;
 
   const CollapsibleTaskList({
     Key? key,
@@ -18,7 +18,7 @@ class CollapsibleTaskList extends StatefulWidget {
     required this.onTaskUpdated,
     required this.onTaskCreated,
     required this.onTaskDeleted,
-    required this.name, // Added property
+    required this.name,
   }) : super(key: key);
 
   @override
@@ -53,7 +53,7 @@ class _CollapsibleTaskListState extends State<CollapsibleTaskList> {
         ExpansionPanel(
           headerBuilder: (BuildContext context, bool isExpanded) {
             return ListTile(
-              title: Text(widget.name), // Display the category name
+              title: Text(widget.name),
             );
           },
           body: AnimatedContainer(
