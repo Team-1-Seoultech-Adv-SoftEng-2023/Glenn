@@ -101,6 +101,20 @@ class _MyAppState extends State<MyApp> {
   // Callback function to handle newly created tasks
   void handleTaskCreated(Task newTask) {
     setState(() {
+      // Handle the result from the TaskCreationPage if needed
+      if (newTask != null) {
+        print('New task created: $newTask');
+
+        // Refresh the main page after creating a new task
+        Navigator.pop(context); // Pop the screen to refresh
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MyApp(tasks: tasks),
+          ),
+        );
+
+      }
       tasks.add(newTask); // Add the newly created task to the global tasks list
     });
   }
@@ -237,6 +251,7 @@ class _MyAppState extends State<MyApp> {
             },
             child: const Icon(Icons.add),
           ),
+
         ),
       ),
     );
