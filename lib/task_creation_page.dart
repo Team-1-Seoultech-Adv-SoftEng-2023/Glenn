@@ -100,6 +100,7 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                     description: _descriptionController.text,
                     parentId: widget.parentId,
                     fields: [
+                      if (widget.parentId == '')
                       DueDateField(
                         dueDate: _dateController.text.isNotEmpty
                             ? DateTime.parse(_dateController.text)
@@ -113,7 +114,7 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                               )
                             : TimeOfDay.now(),
                       ),
-                      if (_isRepeating)
+                      if (_isRepeating && widget.parentId == '')
                         RepeatingTaskField(
                           repeatPeriod: _selectedRepeatPeriod,
                         ),
@@ -132,6 +133,9 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                     _isRepeating = false;
                     _selectedRepeatPeriod = RepeatPeriod.Daily;
                   });
+
+                  Navigator.of(context).pop();
+                  
                 } else {
                   // Show an error message or handle the case where the task name is empty
                   // Show a SnackBar with the error message

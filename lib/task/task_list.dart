@@ -40,8 +40,18 @@ class _TaskListState extends State<TaskList> {
     });
   }
 
+  void _addTask(Task task) {
+    setState(() {
+      widget.tasks.add(task);
+      if (!task.isComplete) {
+        incompleteTasks.add(task);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    print("TaskList rebuilding");
     final mainTasks =
         incompleteTasks.where((task) => task.parentId == '').toList();
     return ListView.builder(
@@ -52,7 +62,10 @@ class _TaskListState extends State<TaskList> {
           task: task,
           allTasks: widget.tasks,
           onTaskUpdated: widget.onTaskUpdated,
-          onTaskCreated: widget.onTaskCreated,
+          onTaskCreated: (createdTask) {
+            widget.onTaskCreated(createdTask);
+            _addTask(createdTask); // Add the new task to the list
+          },
           onTaskDeleted: widget.onTaskDeleted,
           onUpdateDueDateTime: (dueDateField) {
             // Handle the update logic here

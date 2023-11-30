@@ -107,9 +107,13 @@ class _MyAppState extends State<MyApp> {
   // Callback function to handle newly created tasks
   void handleTaskCreated(Task newTask) {
     setState(() {
-      tasks.add(newTask); // Add the newly created task to the global tasks list
+      tasks.add(newTask);
+      incompleteTasks = tasks.where((task) => !task.isComplete).toList();
+      print("Tasks: $tasks");
+      print("Incomplete Tasks: $incompleteTasks");
     });
   }
+
 
   void handleTaskDeleted(Task deleteTask) {
     setState(() {
