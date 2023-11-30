@@ -1,9 +1,6 @@
 //task_creation_page.dart
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
 import 'package:file_picker/file_picker.dart';
-=======
->>>>>>> dev
 
 import 'task/task.dart';
 import 'fields/due_date_field.dart';
@@ -107,25 +104,6 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
             ),
             ElevatedButton(
               onPressed: () {
-<<<<<<< HEAD
-                // Create a new task object with the provided details
-                final Task newTask = Task(
-                  id: UniqueKey().toString(),
-                  name: _nameController.text,
-                  description: _descriptionController.text,
-                  parentId: widget.parentId,
-                  fields: [],
-                  // Add file paths or references as needed
-                  filePaths: [],
-                );
-
-                // Notify the main page about the newly created task
-                widget.onTaskCreated(newTask);
-
-                // Clear the form
-                _nameController.clear();
-                _descriptionController.clear();
-=======
                 // Check if the task name is not empty before creating the task
                 if (_nameController.text.isNotEmpty) {
                   // Create a new task object with the provided details
@@ -160,6 +138,7 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                               : DateTime.now(),
                         ),
                     ],
+                    filePaths: [],
                   );
 
                   // Notify the main page about the newly created task
@@ -186,7 +165,6 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                     ),
                   );
                 }
->>>>>>> dev
               },
               child: const Text('Create Task'),
             ),
@@ -195,9 +173,6 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
       ),
     );
   }
-<<<<<<< HEAD
-}
-=======
 
   Widget _buildRepeatPatternDropdown() {
     return Column(
@@ -343,4 +318,3 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
     }
   }
 }
->>>>>>> dev
