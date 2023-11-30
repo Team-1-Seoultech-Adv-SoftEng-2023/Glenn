@@ -8,7 +8,7 @@ class EditTaskPage extends StatefulWidget {
   final Task task;
 
   final Function(Task) onTaskUpdated; // Add this callback
-  final Function(Task) onTaskCreated; // Add this callback
+  final Function(dynamic) onTaskCreated; // Add this callback
   final Function(Task) onTaskDeleted; // Add this callback
 
   const EditTaskPage({

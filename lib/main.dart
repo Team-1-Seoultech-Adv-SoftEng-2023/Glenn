@@ -104,13 +104,17 @@ class _MyAppState extends State<MyApp> {
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   List<Task> incompleteTasks = [];
 
+  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   // Callback function to handle newly created tasks
-  void handleTaskCreated(Task newTask) {
+  void handleTaskCreated(dynamic newTasks) {
     setState(() {
-      tasks.add(newTask);
+      if (newTasks is Task) {
+        tasks.add(newTasks);
+      } else if (newTasks is List<Task>) {
+        tasks.addAll(newTasks);
+      }
+
       incompleteTasks = tasks.where((task) => !task.isComplete).toList();
-      print("Tasks: $tasks");
-      print("Incomplete Tasks: $incompleteTasks");
     });
   }
 

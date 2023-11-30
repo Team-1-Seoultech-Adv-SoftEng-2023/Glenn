@@ -57,52 +57,5 @@ class RepeatingTaskField extends TaskField {
         return 'Unknown';
     }
   }
-
-  List<Task> generateRepeatingTasks() {
-    List<Task> repeatingTasks = [];
-    DateTime currentDate = _startDate;
-
-    while (currentDate.isBefore(_endDate) || currentDate.isAtSameMomentAs(_endDate)) {
-      String taskId = UniqueKey().toString(); // Generate a unique ID for each task
-      String taskName = 'Task for ${DateFormat('yyyy-MM-dd').format(currentDate)}';
-      
-      // Create a new task
-      Task task = Task(
-        id: taskId,
-        name: taskName,
-        description: '',
-        parentId: '', // You may need to adjust this based on your application logic
-        fields: [], // Add any additional fields you need for each task
-        isComplete: false, // You can adjust this based on your requirements
-        isCompletedOnTime: true,
-      );
-
-      repeatingTasks.add(task);
-
-      // Increment the current date based on the repeat period
-      switch (_repeatPeriod) {
-        case RepeatPeriod.Daily:
-          currentDate = currentDate.add(Duration(days: 1));
-          break;
-        case RepeatPeriod.Weekly:
-          currentDate = currentDate.add(Duration(days: 7));
-          break;
-        case RepeatPeriod.Monthly:
-          currentDate = DateTime(currentDate.year, currentDate.month + 1, currentDate.day);
-          break;
-        case RepeatPeriod.Yearly:
-          currentDate = DateTime(currentDate.year + 1, currentDate.month, currentDate.day);
-          break;
-        case RepeatPeriod.Custom:
-          currentDate = currentDate.add(Duration(days: _customRepeatDays));
-          break;
-        default:
-          // Handle unknown repeat period
-          break;
-      }
-    }
-
-    return repeatingTasks;
-  }
 }
 

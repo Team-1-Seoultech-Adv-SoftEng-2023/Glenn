@@ -6,7 +6,7 @@ import 'fields/due_date_field.dart';
 import 'fields/repeating_field.dart';
 
 class TaskCreationPage extends StatefulWidget {
-  final Function(Task) onTaskCreated;
+  final Function(dynamic) onTaskCreated;
   final String parentId;
 
   const TaskCreationPage({
@@ -95,7 +95,8 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                 // Check if the task name is not empty before creating the task
                 if (_nameController.text.isNotEmpty) {
                   // Create a new task object with the provided details
-                  final Task newTask = Task(
+                  if(!_isRepeating){
+                    final Task newTask = Task(
                     id: UniqueKey().toString(),
                     name: _nameController.text,
                     description: _descriptionController.text,
@@ -115,21 +116,21 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                               )
                             : TimeOfDay.now(),
                       ),
-                      if (_isRepeating && widget.parentId == '')
-                        RepeatingTaskField(
-                          repeatPeriod: _selectedRepeatPeriod,
-                          startDate: _startDateController.text.isNotEmpty
-                            ? DateTime.parse(_startDateController.text)
-                            : DateTime.now(),
-                          endDate:  _endDateController.text.isNotEmpty
-                            ? DateTime.parse(_endDateController.text)
-                            : DateTime.now(),
-                        ),
-                    ],
-                  );
+                    ]
+                    );
 
-                  // Notify the main page about the newly created task
-                  widget.onTaskCreated(newTask);
+                    // Notify the main page about the newly created task
+                    widget.onTaskCreated(newTask);
+                  }
+                  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                  
+                  else if(_isRepeating){
+                    List<Task> newTasks = generateRepeatingTasks(DateTime.parse(_startDateController.text), DateTime.parse(_endDateController.text));
+                    widget.onTaskCreated(newTasks);
+                  }
+                  
+
+                  
 
                   // Clear the form
                   _nameController.clear();
@@ -304,5 +305,60 @@ void _showEndDatePicker() async {
         _timeController.text = formatTime(selectedTime);
       });
     }
+  }
+
+   List<Task> generateRepeatingTasks(DateTime startDate, DateTime endDate) {
+    List<Task> repeatingTasks = [];
+    DateTime currentDate = startDate;
+
+    while (currentDate.isBefore(endDate) || currentDate.isAtSameMomentAs(endDate)) {
+      final Task newTask = Task(
+                    id: UniqueKey().toString(),
+                    name: _nameController.text,
+                    description: _descriptionController.text,
+                    parentId: widget.parentId,
+                    fields: [
+                      if (!_isRepeating && widget.parentId == '')
+                      DueDateField(
+                        dueDate: _dateController.text.isNotEmpty
+                            ? DateTime.parse(_dateController.text)
+                            : DateTime.now(),
+                        dueTime: _timeController.text.isNotEmpty
+                            ? TimeOfDay(
+                                hour: int.parse(
+                                    _timeController.text.split(":")[0]),
+                                minute: int.parse(
+                                    _timeController.text.split(":")[1]),
+                              )
+                            : TimeOfDay.now(),
+                      ),
+                    ]
+      );
+
+      repeatingTasks.add(newTask);
+    }
+
+      // Increment the current date based on the repeat period
+      switch (_selectedRepeatPeriod) {
+        case RepeatPeriod.Daily:
+          currentDate = currentDate.add(Duration(days: 1));
+          break;
+        case RepeatPeriod.Weekly:
+          currentDate = currentDate.add(Duration(days: 7));
+          break;
+        case RepeatPeriod.Monthly:
+          currentDate = DateTime(currentDate.year, currentDate.month + 1, currentDate.day);
+          break;
+        case RepeatPeriod.Yearly:
+          currentDate = DateTime(currentDate.year + 1, currentDate.month, currentDate.day);
+          break;
+        case RepeatPeriod.Custom:
+          break;
+        default:
+          // Handle unknown repeat period
+          break;
+      }
+
+    return repeatingTasks;
   }
 }
