@@ -64,7 +64,8 @@ class _TaskCardState extends State<TaskCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('You completed the task on time. Keep up the good work!'),
+              const Text(
+                  'You completed the task on time. Keep up the good work!'),
               const SizedBox(height: 8),
               Text('Your score is now: $overallScore'),
             ],
@@ -416,7 +417,6 @@ class _TaskCardState extends State<TaskCard> {
     );
   }
 }
-
 
 String _formatDate(DateTime date) {
   return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
