@@ -4,10 +4,11 @@ import 'package:file_picker/file_picker.dart';
 
 import 'task/task.dart';
 import 'fields/due_date_field.dart';
-import 'fields/repeating_field.dart';
+import 'task/repeating_task.dart';
+import 'fields/task_field.dart';
 
 class TaskCreationPage extends StatefulWidget {
-  final Function(dynamic) onTaskCreated;
+  final Function(Task) onTaskCreated;
   final String parentId;
 
   const TaskCreationPage({
@@ -23,13 +24,14 @@ class TaskCreationPage extends StatefulWidget {
 class _TaskCreationPageState extends State<TaskCreationPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _dateController = TextEditingController();
-  final TextEditingController _timeController = TextEditingController();
+  
+  final TextEditingController _dueDateController = TextEditingController();
+  final TextEditingController _dueTimeController = TextEditingController();
 
-  final TextEditingController _startDateController = TextEditingController();
   final TextEditingController _endDateController = TextEditingController();
   bool _isRepeating = false;
-  RepeatPeriod _selectedRepeatPeriod = RepeatPeriod.Daily;
+  RepeatPeriod _selectedRepeatPeriod = RepeatPeriod.days;
+  final TextEditingController _repeatIntervalController =TextEditingController();
 
   // Method to handle file picking
   void _pickFile() async {
@@ -59,8 +61,8 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
               controller: _descriptionController,
               decoration: const InputDecoration(labelText: 'Task Description'),
             ),
-            if (widget.parentId == '')
-              ListTile(
+            //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! if (widget.parentId == '')
+            ListTile(
                 title: Text('Due Date'),
                 subtitle: Row(
                   children: [
@@ -73,8 +75,8 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                     ),
                   ],
                 ),
-              ),
-            if (widget.parentId == '')
+             ),
+            //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! if (widget.parentId == '')
               CheckboxListTile(
                 title: Text('Repeat Task'),
                 value: _isRepeating,
@@ -83,96 +85,87 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                     _isRepeating = value!;
                     if (_isRepeating) {
                       // If repeating is enabled, set due date to today if it's empty
-                      if (_dateController.text.isEmpty) {
-                        _dateController.text = formatDate(DateTime.now());
+                      if (_dueDateController.text.isEmpty) {
+                        _dueDateController.text = formatDate(DateTime.now());
                       }
-                      if (_timeController.text.isEmpty) {
-                        _timeController.text = formatTime(TimeOfDay.now());
+                      if (_dueTimeController.text.isEmpty){
+                        _dueTimeController.text = formatTime(TimeOfDay(hour: 23, minute: 59,));
                       }
-                      _startDateController.text = formatDate(DateTime.now());
-                      _endDateController.text =
-                          formatDate(DateTime.now().add(Duration(days: 365)));
                     }
                   });
                 },
               ),
-            if (_isRepeating && widget.parentId == '')
+            if (_isRepeating) //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  && widget.parentId == '')
               _buildRepeatPatternDropdown(),
+
             ElevatedButton(
               onPressed: _pickFile, // Add file picking button
               child: const Text('Add File'),
             ),
+            
             ElevatedButton(
               onPressed: () {
                 // Check if the task name is not empty before creating the task
-                if (_nameController.text.isNotEmpty) {
-                  if(!_isRepeating){
-                  // Create a new task object with the provided details
+                if (_nameController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar( content: Text('Task name cannot be empty. Please enter a task name.'),),
+                    );
+
+                }else{
                   final Task newTask = Task(
                     id: UniqueKey().toString(),
                     name: _nameController.text,
                     description: _descriptionController.text,
                     parentId: widget.parentId,
-                    fields: [
-                      if (!_isRepeating && widget.parentId == '')
-                        DueDateField(
-                          dueDate: _dateController.text.isNotEmpty
-                              ? DateTime.parse(_dateController.text)
-                              : DateTime.now(),
-                          dueTime: _timeController.text.isNotEmpty
-                              ? TimeOfDay(
-                                  hour: int.parse(
-                                      _timeController.text.split(":")[0]),
-                                  minute: int.parse(
-                                      _timeController.text.split(":")[1]),
-                                )
-                              : TimeOfDay.now(),
-                        ),
-                      if (_isRepeating && widget.parentId == '')
-                        RepeatingTaskField(
-                          repeatPeriod: _selectedRepeatPeriod,
-                          startDate: _startDateController.text.isNotEmpty
-                              ? DateTime.parse(_startDateController.text)
-                              : DateTime.now(),
-                          endDate: _endDateController.text.isNotEmpty
-                              ? DateTime.parse(_endDateController.text)
-                              : DateTime.now(),
-                        ),
-                    ],
+                    fields: [],
                     filePaths: [],
                   );
+                  if(widget.parentId != ''){
+                      // Notify the main page about the newly created task
+                      widget.onTaskCreated(newTask);
+                  } else if(widget.parentId == ''){
 
-                  // Notify the main page about the newly created task
-                  widget.onTaskCreated(newTask);
-                }
+                    
+                    // Create a new task object with the provided details
+                      if(_dueDateController.text.isNotEmpty){
+                        TaskField dueDateTime = DueDateField(
+                                  dueDate: DateTime.parse(_dueDateController.text),
+                                  dueTime: _dueTimeController.text.isNotEmpty
+                                      ? TimeOfDay(
+                                          hour: int.parse(_dueTimeController.text.split(":")[0]),
+                                          minute: int.parse(_dueTimeController.text.split(":")[1]),
+                                        )
+                                      : TimeOfDay(
+                                          hour: 23,
+                                          minute: 59,
+                                        )
+                        );
+                        newTask.updateTask(fields: [dueDateTime],);
+                      }
 
-                  else if(_isRepeating){
-                    List<Task> newTasks = generateRepeatingTasks(DateTime.parse(_startDateController.text), DateTime.parse(_endDateController.text));
-                    widget.onTaskCreated(newTasks);
+                      if(!_isRepeating){
+                        widget.onTaskCreated(newTask);
+
+                      }else if (_isRepeating){
+                        List<Task> newTasks = generateRepeatingTasks(
+                            originalTask: newTask,
+                            dueDateController: _dueDateController,
+                            endDateController: _endDateController,
+                            selectedRepeatPeriod: _selectedRepeatPeriod,
+                            repeatIntervalController: _repeatIntervalController,
+                        );
+                        print(newTasks);
+
+                        for (Task newTask in newTasks) {
+                          widget.onTaskCreated(newTask);
+                        }
+                      }
+                      
                   }
+                    resetForm();
+                    Navigator.of(context).pop();  
 
-
-                  // Clear the form
-                  _nameController.clear();
-                  _descriptionController.clear();
-                  _dateController.clear();
-                  _timeController.clear();
-                  setState(() {
-                    _isRepeating = false;
-                    _selectedRepeatPeriod = RepeatPeriod.Daily;
-                  });
-
-                  Navigator.of(context).pop();
-                } else {
-                  // Show an error message or handle the case where the task name is empty
-                  // Show a SnackBar with the error message
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                          'Task name cannot be empty. Please enter a task name.'),
-                    ),
-                  );
-                }
+                } 
               },
               child: const Text('Create Task'),
             ),
@@ -182,66 +175,95 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
     );
   }
 
-  Widget _buildRepeatPatternDropdown() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('Repeat Pattern'),
-        DropdownButton<RepeatPeriod>(
-          value: _selectedRepeatPeriod,
-          onChanged: (RepeatPeriod? value) {
-            if (value != null) {
-              setState(() {
-                _selectedRepeatPeriod = value;
-              });
-            }
-          },
-          items: RepeatPeriod.values
-              .map<DropdownMenuItem<RepeatPeriod>>(
-                (RepeatPeriod value) => DropdownMenuItem<RepeatPeriod>(
-                  value: value,
-                  child: Text(value.toString().split('.').last),
-                ),
-              )
-              .toList(),
-        ),
-        if (_selectedRepeatPeriod !=
-            RepeatPeriod.Custom) // Additional check for custom
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Start Date'),
-                    _buildStartDateField(),
-                  ],
-                ),
-              ),
-              SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('End Date'),
-                    _buildEndDateField(),
-                  ],
-                ),
-              ),
-            ],
-          ),
-      ],
-    );
-  }
+Widget _buildDateFields() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text('End Date'),
+      _buildEndDateField(),
+    ],
+  );
+}
 
-  Widget _buildStartDateField() {
-    return TextFormField(
-      controller: _startDateController,
-      keyboardType: TextInputType.datetime,
-      //decoration: InputDecoration(labelText: 'Start Date'),
-      onTap: () => _showStartDatePicker(),
-    );
-  }
+Widget _buildRepeatIntervalDropdown() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text('Repeats every...'),
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(
+                  right: 15.0,
+                  left: 100.0), // Add some right padding for spacing
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: 50, // Set the width of the TextFormField
+                    child: TextFormField(
+                      controller: _repeatIntervalController,
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                DropdownButton<RepeatPeriod>(
+                  value: _selectedRepeatPeriod,
+                  onChanged: (RepeatPeriod? value) {
+                    if (value != null) {
+                      setState(() {
+                        _selectedRepeatPeriod = value;
+                      });
+                    }
+                  },
+                  items: RepeatPeriod.values
+                      .map<DropdownMenuItem<RepeatPeriod>>(
+                        (RepeatPeriod value) => DropdownMenuItem<RepeatPeriod>(
+                          value: value,
+                          child: Text(value.toString().split('.').last),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ],
+  );
+}
+
+Widget _buildRepeatPatternDropdown() {
+  return Padding(
+    padding: EdgeInsets.all(0.0), // Add padding around the entire Container
+    child: Container(
+      color: Colors.grey.withOpacity(0.1), // Set a very faded light blue background color
+      child: Padding(
+        padding: EdgeInsets.all(16.0), // Add padding around the child Column
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildDateFields(),
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 25.0), // Add vertical padding between the two children
+              child: _buildRepeatIntervalDropdown(),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
 
   Widget _buildEndDateField() {
     return TextFormField(
@@ -250,21 +272,6 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
       //decoration: InputDecoration(labelText: 'End Date'),
       onTap: () => _showEndDatePicker(),
     );
-  }
-
-  void _showStartDatePicker() async {
-    DateTime? selectedDate = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-    );
-
-    if (selectedDate != null) {
-      setState(() {
-        _startDateController.text = formatDate(selectedDate);
-      });
-    }
   }
 
   void _showEndDatePicker() async {
@@ -284,18 +291,18 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
 
   Widget _buildDateField() {
     return TextFormField(
-      controller: _dateController,
+      controller: _dueDateController,
       keyboardType: TextInputType.datetime,
-      decoration: InputDecoration(labelText: 'Date'),
+      decoration: const InputDecoration(labelText: 'Date'),
       onTap: () => _showDatePicker(),
     );
   }
 
   Widget _buildTimeField() {
     return TextFormField(
-      controller: _timeController,
+      controller: _dueTimeController,
       keyboardType: TextInputType.datetime,
-      decoration: InputDecoration(labelText: 'Time'),
+      decoration: const InputDecoration(labelText: 'Time'),
       onTap: () => _showTimePicker(),
     );
   }
@@ -309,7 +316,12 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
     );
     if (selectedDate != null) {
       setState(() {
-        _dateController.text = formatDate(selectedDate);
+        _dueDateController.text = formatDate(selectedDate);
+
+        if (_dueTimeController.text.isEmpty) {
+        _dueTimeController.text = formatTime(TimeOfDay(hour: 23, minute: 59));
+        }
+
       });
     }
   }
@@ -321,44 +333,33 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
     );
     if (selectedTime != null) {
       setState(() {
-        _timeController.text = formatTime(selectedTime);
+        _dueTimeController.text = formatTime(selectedTime);
+
+        if (_dueTimeController.text.isEmpty) {
+          _dueDateController.text = formatDate(DateTime.now());
+        }
+
       });
     }
   }
 
-  List<Task> generateRepeatingTasks(DateTime startDate, DateTime endDate) {
-    List<Task> repeatingTasks = [];
-    DateTime currentDate = startDate;
+  void resetForm() {
+    _nameController.clear();
+    _descriptionController.clear();
+    _dueDateController.clear();
+    _dueTimeController.clear();
+    _endDateController.clear();
+    _repeatIntervalController.clear();
+    setState(() {
+      _isRepeating = false;
+      _selectedRepeatPeriod = RepeatPeriod.days;
+    });
+}
 
-    while (currentDate.isBefore(endDate) || currentDate.isAtSameMomentAs(endDate)) {
-      final Task newTask = Task(
-                    id: UniqueKey().toString(),
-                    name: _nameController.text,
-                    description: _descriptionController.text,
-                    parentId: widget.parentId,
-                    fields: [
-                      if (!_isRepeating && widget.parentId == '')
-                      DueDateField(
-                        dueDate: _dateController.text.isNotEmpty
-                            ? DateTime.parse(_dateController.text)
-                            : DateTime.now(),
-                        dueTime: _timeController.text.isNotEmpty
-                            ? TimeOfDay(
-                                hour: int.parse(
-                                    _timeController.text.split(":")[0]),
-                                minute: int.parse(
-                                    _timeController.text.split(":")[1]),
-                              )
-                            : TimeOfDay.now(),
-                      ),
-                    ]
-      );
 
-      repeatingTasks.add(newTask);
-
-      incrementCurrentDate(currentDate, _selectedRepeatPeriod);
-    }
-
-    return repeatingTasks;
-  }
+// if (_endDateController.text.isEmpty || DateTime.parse(_endDateController.text).isBefore(DateTime.parse(_dueDateController.text))) {
+//                       ScaffoldMessenger.of(context).showSnackBar(
+//                         SnackBar(content: Text('Please chose an end date that is in the future.'),),
+//                       );
+//                     } 
 }

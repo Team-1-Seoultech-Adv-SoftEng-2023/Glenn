@@ -8,7 +8,7 @@ class DueDateField extends TaskField {
 
   DueDateField({
     required DateTime dueDate,
-    required TimeOfDay dueTime,
+    TimeOfDay dueTime = const TimeOfDay(hour: 23, minute: 59),
   })  : _dueDate = dueDate,
         _dueTime = dueTime,
         super(
