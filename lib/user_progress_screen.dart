@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:intl/intl.dart';
 import 'main.dart';
 
 class UserProgressScreen extends StatefulWidget {
   final double overallScore;
   final List<Map<String, dynamic>> progressHistory;
 
-  UserProgressScreen({
+  const UserProgressScreen({super.key, 
     required this.overallScore,
     required this.progressHistory,
   });
@@ -23,7 +22,7 @@ class _UserProgressScreenState extends State<UserProgressScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('User Progress'),
+        title: const Text('User Progress'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -31,15 +30,15 @@ class _UserProgressScreenState extends State<UserProgressScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Overall Score: ${overallScore}',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              'Overall Score: $overallScore',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 16),
-            Text(
+            const SizedBox(height: 16),
+            const Text(
               'Progress History',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             DropdownButton<String>(
               value: selectedInterval,
               onChanged: (value) {
@@ -78,16 +77,16 @@ class _UserProgressScreenState extends State<UserProgressScreen> {
                         },
                       ),
                       isCurved: false,
-                      dotData: FlDotData(show: true),
+                      dotData: const FlDotData(show: true),
                       belowBarData: BarAreaData(show: false),
                     ),
                   ],
                   titlesData: FlTitlesData(
                     show: true,
                     rightTitles:
-                        AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                     topTitles:
-                        AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                     bottomTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
