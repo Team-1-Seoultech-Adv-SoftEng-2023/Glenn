@@ -10,9 +10,9 @@ class TaskDetailPage extends StatefulWidget {
   final Task task;
   final List<Task> subtasks; // Add the list of subtasks
 
-  final Function(Task) onTaskUpdated; 
-  final Function(Task) onTaskCreated; 
-  final Function(Task) onTaskDeleted; 
+  final Function(Task) onTaskUpdated;
+  final Function(Task) onTaskCreated;
+  final Function(Task) onTaskDeleted;
   final Function(DueDateField) onUpdateDueDateTime;
 
   const TaskDetailPage({
@@ -46,8 +46,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                 MaterialPageRoute(
                   builder: (context) => EditTaskPage(
                       task: widget.task,
-                      onTaskUpdated: (updatedTask) {
-                        },
+                      onTaskUpdated: (updatedTask) {},
                       onTaskDeleted: (deleteTask) {
                         widget.onTaskDeleted(deleteTask);
                       },
@@ -73,8 +72,25 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
         children: <Widget>[
           ListTile(
             title: Text(widget.task.name), // Access task using widget.task
-            subtitle:
-                Text(widget.task.description), // Access task using widget.task
+            subtitle: GestureDetector(
+              // Add GestureDetector for handling taps on the description
+              child: Text(
+                widget.task.description,
+                style: TextStyle(
+                  color: widget.task.getDescriptionUrl() != null
+                      ? Colors.blue
+                      : Colors.black, // Use black color if no link is present
+                  decoration: widget.task.getDescriptionUrl() != null
+                      ? TextDecoration.underline
+                      : TextDecoration.none, // Underline if a link is present
+                ),
+              ),
+
+              onTap: () {
+                // Call the launchURL method when the description is tapped
+                widget.task.launchURL();
+              },
+            ),
           ),
           if (widget.task.fields.isNotEmpty)
             Container(
@@ -129,5 +145,4 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
       ),
     );
   }
-
 }

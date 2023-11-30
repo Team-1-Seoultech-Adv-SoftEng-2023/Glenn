@@ -1,6 +1,8 @@
+//task.dart
 import '../fields/task_field.dart';
 import '../fields/priority_field.dart';
 import '../fields/due_date_field.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class Task {
   final String id;
@@ -10,6 +12,7 @@ class Task {
   final List<TaskField> fields;
   bool isComplete;
   bool isCompletedOnTime; // Add this property
+  DateTime? reminderDate;
 
   @override
   bool operator ==(Object other) =>
@@ -27,7 +30,39 @@ class Task {
     required this.fields,
     this.isComplete = false,
     this.isCompletedOnTime = true, // Initialize as incomplete
+    this.reminderDate,
   });
+
+  Task.copy(Task original)
+      : id = original.id,
+        name = original.name,
+        description = original.description,
+        parentId = original.parentId,
+        fields = List.from(original.fields),
+        isComplete = original.isComplete,
+        isCompletedOnTime = original.isCompletedOnTime;
+
+
+// Method to launch URL if the description contains one
+  void launchURL() async {
+    final String? url = getDescriptionUrl();
+    if (url != null) {
+      final Uri uri = Uri.parse(url);
+      await launchUrl(uri);
+    }
+  }
+
+  // Method to extract the URL from the description
+  String? getDescriptionUrl() {
+    final RegExp urlRegExp = RegExp(r'http[s]?:\/\/[^\s]+');
+    final Match? match = urlRegExp.firstMatch(description);
+
+    if (match != null) {
+      return match.group(0);
+    }
+
+    return null;
+  }
 
   int? getPriority() {
     final priorityField = fields.firstWhere(
