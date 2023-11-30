@@ -9,7 +9,8 @@ class TaskCreationPage extends StatefulWidget {
   final Function(Task) onTaskCreated;
   final String parentId; // Add the parentId parameter
 
-  const TaskCreationPage({super.key, 
+  const TaskCreationPage({
+    super.key,
     required this.onTaskCreated,
     this.parentId = '', // Set the default value
   });
