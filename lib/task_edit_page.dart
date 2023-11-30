@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'task_creation_page.dart';
+import 'fields/due_date_field.dart';
 import 'task/task.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -11,12 +12,12 @@ class EditTaskPage extends StatefulWidget {
   final Function(Task) onTaskDeleted;
 
   const EditTaskPage({
-    Key? key,
+    super.key,
     required this.task,
     required this.onTaskUpdated,
     required this.onTaskCreated,
     required this.onTaskDeleted,
-  }) : super(key: key);
+  });
 
   @override
   _EditTaskPageState createState() => _EditTaskPageState();
@@ -24,17 +25,51 @@ class EditTaskPage extends StatefulWidget {
 
 class _EditTaskPageState extends State<EditTaskPage> {
   late TextEditingController _nameController;
+  late TextEditingController _descriptionController;
+  late TextEditingController _dateController;
+  late TextEditingController _timeController;
 
   @override
   void initState() {
     super.initState();
+    //_nameController = TextEditingController(text: widget.task.name);
+    initializeControllers();
+  }
+
+  void initializeControllers() {
     _nameController = TextEditingController(text: widget.task.name);
+    _descriptionController =
+        TextEditingController(text: widget.task.description);
+    _dateController = TextEditingController(text: _getDueDateFormatted());
+    _timeController = TextEditingController(text: _getDueTimeFormatted());
   }
 
   @override
   void dispose() {
+    // Dispose controllers to avoid memory leaks
     _nameController.dispose();
+    _descriptionController.dispose();
+    _dateController.dispose();
+    _timeController.dispose();
     super.dispose();
+  }
+
+  // Method to get the formatted due date as a string
+  String _getDueDateFormatted() {
+    if (widget.task.hasDueDate) {
+      return formatDate(widget.task.getDueDate()!);
+    } else {
+      return '';
+    }
+  }
+
+  // Method to get the formatted due time as a string
+  String _getDueTimeFormatted() {
+    if (widget.task.hasDueDate && widget.task.fields.first is DueDateField) {
+      return formatTime((widget.task.fields.first as DueDateField).dueTime);
+    } else {
+      return '';
+    }
   }
 
   // Function to handle task deletion
@@ -45,40 +80,38 @@ class _EditTaskPageState extends State<EditTaskPage> {
     Navigator.pop(context);
   }
 
- // Function to handle file attachment
-void _attachFile() async {
-  // Check storage permission before proceeding
-  var status = await Permission.storage.status;
+  // Function to handle file attachment
+  void _attachFile() async {
+    // Check storage permission before proceeding
+    var status = await Permission.storage.status;
 
-  if (status.isDenied) {
-    // Here just ask for the permission for the first time
-    await Permission.storage.request();
+    if (status.isDenied) {
+      // Here just ask for the permission for the first time
+      await Permission.storage.request();
 
-    // Check again and go to app settings if permission is still denied
-    if (await Permission.storage.isDenied) {
+      // Check again and go to app settings if permission is still denied
+      if (await Permission.storage.isDenied) {
+        await openAppSettings();
+        return; // Return to avoid proceeding with file selection
+      }
+    } else if (status.isPermanentlyDenied) {
+      // Open app settings for the user to manually enable permission
       await openAppSettings();
       return; // Return to avoid proceeding with file selection
     }
-  } else if (status.isPermanentlyDenied) {
-    // Open app settings for the user to manually enable permission
-    await openAppSettings();
-    return; // Return to avoid proceeding with file selection
+
+    // Permission is granted, proceed with file selection
+    FilePickerResult? result = await FilePicker.platform.pickFiles();
+
+    if (result != null && mounted) {
+      String filePath = result.files.single.path!;
+      // Add logic to handle the file path as needed
+      // For example, you can update the task's file paths list
+      setState(() {
+        widget.task.filePaths.add(filePath);
+      });
+    }
   }
-
-  // Permission is granted, proceed with file selection
-  FilePickerResult? result = await FilePicker.platform.pickFiles();
-
-  if (result != null && mounted) {
-    String filePath = result.files.single.path!;
-    // Add logic to handle the file path as needed
-    // For example, you can update the task's file paths list
-    setState(() {
-      widget.task.filePaths.add(filePath);
-    });
-  }
-}
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -129,15 +162,48 @@ void _attachFile() async {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: <Widget>[
+            // Text form field for task name
             TextFormField(
               controller: _nameController,
               decoration: const InputDecoration(labelText: 'Task Name'),
+            ),
+            // Text form field for task description
+            TextFormField(
+              controller: _descriptionController,
+              decoration: const InputDecoration(labelText: 'Description'),
+            ),
+            // Date and Time form fields for due date
+            ListTile(
+              title: Text('Due Date'),
+              subtitle: Row(
+                children: [
+                  Expanded(
+                    child: _buildDateField(),
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: _buildTimeField(),
+                  ),
+                ],
+              ),
             ),
             ElevatedButton(
               onPressed: () {
                 // Update the task's name when the button is pressed
                 setState(() {
-                  widget.task.name = _nameController.text;
+                  widget.task.updateTask(
+                    name: _nameController.text,
+                    description: _descriptionController.text,
+                    fields: [
+                      DueDateField(
+                        dueDate: DateTime.parse(_dateController.text),
+                        dueTime: TimeOfDay(
+                          hour: int.parse(_timeController.text.split(":")[0]),
+                          minute: int.parse(_timeController.text.split(":")[1]),
+                        ),
+                      ),
+                    ],
+                  );
                 });
                 // Return the updated task to the previous page
                 Navigator.pop(context, widget.task);
@@ -148,5 +214,67 @@ void _attachFile() async {
         ),
       ),
     );
+  }
+
+  // Widget method to build the TextFormField for the date input
+  Widget _buildDateField() {
+    return TextFormField(
+      controller: _dateController,
+      keyboardType: TextInputType.datetime,
+      decoration: InputDecoration(labelText: 'Date'),
+      onTap: () => _showDatePicker(),
+    );
+  }
+
+  // Widget method to build the TextFormField for the time input
+  Widget _buildTimeField() {
+    return TextFormField(
+      controller: _timeController,
+      keyboardType: TextInputType.datetime,
+      decoration: InputDecoration(labelText: 'Time'),
+      onTap: () => _showTimePicker(),
+    );
+  }
+
+  // Method to show the date picker dialog and update the due date
+  void _showDatePicker() async {
+    DateTime? selectedDate = await showDatePicker(
+      context: context,
+      initialDate: widget.task.getDueDate() ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (selectedDate != null) {
+      _updateDueDate(selectedDate);
+    }
+  }
+
+  // Method to show the time picker dialog and update the due time
+  void _showTimePicker() async {
+    TimeOfDay? selectedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+    if (selectedTime != null) {
+      _updateDueTime(selectedTime);
+    }
+  }
+
+  void _updateDueDate(DateTime selectedDate) {
+    if (widget.task.fields.isNotEmpty &&
+        widget.task.fields.first is DueDateField) {
+      DueDateField dueDateField = widget.task.fields.first as DueDateField;
+      dueDateField.dueDate = selectedDate;
+      _dateController.text = formatDate(selectedDate);
+    }
+  }
+
+  void _updateDueTime(TimeOfDay selectedTime) {
+    if (widget.task.fields.isNotEmpty &&
+        widget.task.fields.first is DueDateField) {
+      DueDateField dueDateField = widget.task.fields.first as DueDateField;
+      dueDateField.dueTime = selectedTime;
+      _timeController.text = formatTime(selectedTime);
+    }
   }
 }

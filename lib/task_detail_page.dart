@@ -11,9 +11,9 @@ class TaskDetailPage extends StatefulWidget {
   final Task task;
   final List<Task> subtasks; // Add the list of subtasks
 
-  final Function(Task) onTaskUpdated; // Add the callback
-  final Function(Task) onTaskCreated; // Add the callback
-  final Function(Task) onTaskDeleted; // Add the callback
+  final Function(Task) onTaskUpdated;
+  final Function(Task) onTaskCreated;
+  final Function(Task) onTaskDeleted;
   final Function(DueDateField) onUpdateDueDateTime;
 
   const TaskDetailPage({
@@ -31,31 +31,16 @@ class TaskDetailPage extends StatefulWidget {
 }
 
 class _TaskDetailPageState extends State<TaskDetailPage> {
-  late TextEditingController dateController;
-  late TextEditingController timeController;
 
   List<String> attachedFiles = []; // New list to store attached file paths
 
   @override
   void initState() {
     super.initState();
-    if (widget.task.fields.isNotEmpty &&
-        widget.task.fields.first is DueDateField) {
-      dateController = TextEditingController(
-          text:
-              _formatDate((widget.task.fields.first as DueDateField).dueDate));
-      timeController = TextEditingController(
-          text:
-              _formatTime((widget.task.fields.first as DueDateField).dueTime));
-    }
-
     // Populate attachedFiles with initial values from the task
     attachedFiles.addAll(widget.task.filePaths);
   }
-
-  @override
-  _TaskDetailPageState createState() => _TaskDetailPageState();
-
+<<<<<<< HEAD
 @override
 Widget build(BuildContext context) {
   return Scaffold(
@@ -173,6 +158,107 @@ Widget build(BuildContext context) {
                   ),
                 ...widget.task.fields.map((field) {
                   if (field is! DueDateField) {
+=======
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Task Detail'),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () async {
+              final updatedTask = await Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => EditTaskPage(
+                      task: widget.task,
+                      onTaskUpdated: (updatedTask) {},
+                      onTaskDeleted: (deleteTask) {
+                        widget.onTaskDeleted(deleteTask);
+                      },
+                      onTaskCreated: (newTask) {
+                        widget.onTaskCreated(newTask);
+                      }),
+                ),
+              );
+              if (updatedTask != null) {
+                // Update the task with the updated task received from EditTaskPage
+                setState(() {
+                  widget.task.name = updatedTask.name;
+                  // Update other task properties as needed
+                });
+              }
+            },
+          ),
+        ],
+      ),
+      body: Column(
+        // You should access the task property using widget.task
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          ListTile(
+            title: Text(widget.task.name), // Access task using widget.task
+            subtitle: GestureDetector(
+              // Add GestureDetector for handling taps on the description
+              child: Text(
+                widget.task.description,
+                style: TextStyle(
+                  color: widget.task.getDescriptionUrl() != null
+                      ? Colors.blue
+                      : Colors.black, // Use black color if no link is present
+                  decoration: widget.task.getDescriptionUrl() != null
+                      ? TextDecoration.underline
+                      : TextDecoration.none, // Underline if a link is present
+                ),
+              ),
+
+              onTap: () {
+                // Call the launchURL method when the description is tapped
+                widget.task.launchURL();
+              },
+            ),
+          ),
+          if (widget.task.fields.isNotEmpty)
+            Container(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  ...widget.task.fields.map((field) {
+                    if (field is DueDateField) {
+                      // Display information for DueDateField
+                      return ListTile(
+                        title: Text('Due Date'),
+                        subtitle: Row(
+                          children: [
+                            Text('Date: ${formatDate(field.dueDate)}'),
+                            const SizedBox(width: 8),
+                            Text('Time: ${formatTime(field.dueTime)}'),
+                          ],
+                        ),
+                      );
+                    } else if (field is! DueDateField) {
+                      return ListTile(
+                        title: Text(field.name),
+                        subtitle: Text(field.value),
+                      );
+                    } else {
+                      return Container(); // Skip the DueDateField as it's already displayed separately
+                    }
+                  }).toList(),
+                ],
+              ),
+            ),
+          if (widget.subtasks.isNotEmpty) // Check if there are subtasks
+            Column(
+              children: <Widget>[
+                const Text('Subtasks:'),
+                ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: widget.subtasks.length,
+                  itemBuilder: (context, index) {
+                    final subtask = widget.subtasks[index];
+>>>>>>> dev
                     return ListTile(
                       title: Text(field.name),
                       subtitle: Text(field.value),

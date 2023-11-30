@@ -1,20 +1,28 @@
+//main.dart
+//import main pages
 import 'package:flutter/material.dart';
 import 'task_detail_page.dart'; // Import the task_detail_page.dart file
 import 'task_creation_page.dart'; // Import the task_creation_page.dart file
 import 'completed_tasks_page.dart'; // Import the CompletedTasksPage widget
 import 'calendar_view.dart';
 import 'user_progress_screen.dart';
-
+import 'due_date_list.dart';
 
 // import task and utilities
 import 'task/task.dart';
 import 'task/task_list.dart';
 import 'task/task_sorter.dart';
+import 'task/collapsible_task_list.dart';
 
 // import fields
 import 'fields/task_field.dart';
 import 'fields/priority_field.dart';
 import 'fields/due_date_field.dart';
+import 'fields/self_care_field.dart';
+import 'task/task_sorter.dart';
+import 'task/self_care_tasks.dart';
+import 'self_care_popup.dart';
+import 'dart:math'; // Import the dart:math library for Random
 
 // Define the tasks list with sample data
 final List<Task> tasks = [
@@ -78,6 +86,7 @@ final List<Task> tasks = [
 ];
 
 List<Map<String, dynamic>> progressHistory = [];
+
 double overallScore = 0.0;
 
 extension IterableExtensions<E> on Iterable<E> {
@@ -87,13 +96,16 @@ extension IterableExtensions<E> on Iterable<E> {
 }
 
 void main() {
-  runApp(MyApp(tasks: tasks));
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  runApp(MyApp(tasks: tasks, navigatorKey: navigatorKey));
 }
 
 class MyApp extends StatefulWidget {
   final List<Task> tasks;
+  final GlobalKey<NavigatorState> navigatorKey;
 
-  const MyApp({super.key, required this.tasks});
+  const MyApp({Key? key, required this.tasks, required this.navigatorKey})
+      : super(key: key);
 
   @override
   _MyAppState createState() => _MyAppState();
@@ -106,7 +118,30 @@ class _MyAppState extends State<MyApp> {
   // Callback function to handle newly created tasks
   void handleTaskCreated(Task newTask) {
     setState(() {
-      tasks.add(newTask); // Add the newly created task to the global tasks list
+      if (newTask != null) {
+        print('New task created: $newTask');
+        tasks.add(newTask);
+        incompleteTasks = tasks.where((task) => !task.isComplete).toList();
+
+        final bool isNewTaskSelfCare =
+            newTask.fields.any((field) => field is SelfCareField);
+
+        final bool hasSelfCareTasksForToday = tasks.any((task) {
+          if (task.hasDueDate) {
+            final today = DateTime.now();
+            final taskDueDate = task.getDueDate()!;
+            return taskDueDate.year == today.year &&
+                taskDueDate.month == today.month &&
+                taskDueDate.day == today.day;
+          }
+          return false;
+        });
+
+        if (!isNewTaskSelfCare && !hasSelfCareTasksForToday) {
+          // Do not pop the context here
+          _showSelfCareRecommendationPopup(context);
+        }
+      }
     });
   }
 
@@ -116,7 +151,7 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  // Define the callback function to handle task updates
+  //Define the callback function to handle task updates
   void handleTaskUpdated(Task updatedTask) {
     setState(() {
       // Update the task in the tasks list
@@ -142,11 +177,42 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  void _showSelfCareRecommendationPopup(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SelfCarePopup(
+          selfCareTasks: generateSelfCareTasks(),
+          onTaskCreated:
+              handleTaskCreated, // Pass the handleTaskCreated function
+        );
+      },
+    );
+  }
+
+  List<Task> generateSelfCareTasks() {
+    final Random random = Random();
+    final int randomIndex = random.nextInt(selfCareTasks.length);
+
+    // Create a new self-care task
+    Task selfCareTask = Task.copy(selfCareTasks[randomIndex]);
+
+    // Set the due date of the self-care task to today
+    selfCareTask.fields.add(DueDateField(
+      dueDate: DateTime.now(),
+      dueTime: TimeOfDay(hour: 23, minute: 59), // Adjust the time as needed
+    ));
+
+    return [selfCareTask];
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
+      debugShowCheckedModeBanner: false,
       home: DefaultTabController(
-        length: 5,
+        length: 4,
         child: Scaffold(
           appBar: AppBar(
             title: const Text('Task List'),
@@ -156,7 +222,6 @@ class _MyAppState extends State<MyApp> {
                 Tab(text: 'Priority'),
                 Tab(text: 'Calendar'),
                 Tab(text: 'Completed'),
-                Tab(text: 'Progress')
               ],
             ),
           ),
@@ -164,18 +229,20 @@ class _MyAppState extends State<MyApp> {
             child: ListView(
               padding: EdgeInsets.zero,
               children: [
-                DrawerHeader(
-                  decoration: BoxDecoration(
-                    color: Colors.blue,
+                Container(
+                  height: 135, // Set the desired height for the drawer header
+                  child: DrawerHeader(
+                    decoration: BoxDecoration(
+                      color: Colors.blue,
+                    ),
+                    child: Text('Menu', style: TextStyle(fontSize: 20)),
                   ),
-                  child: Text('Menu'),
                 ),
                 ListTile(
-                  title: Text('User Progress'),
+                  title: Text('Progress'),
                   onTap: () {
-                    Navigator.pop(context); // Close the drawer
-                    Navigator.push(
-                      context,
+                    navigatorKey.currentState?.pop(); // Close the drawer
+                    navigatorKey.currentState?.push(
                       MaterialPageRoute(
                         builder: (context) => UserProgressScreen(
                           overallScore: overallScore,
@@ -186,10 +253,10 @@ class _MyAppState extends State<MyApp> {
                   },
                 ),
                 ListTile(
-                  title: Text('Item 2'),
+                  title: Text('Store'),
                   onTap: () {
                     // Handle menu item 2 click
-                    Navigator.pop(context); // Close the drawer
+                    navigatorKey.currentState?.pop(); // Close the drawer
                   },
                 ),
                 // Add more menu items as needed
@@ -198,13 +265,10 @@ class _MyAppState extends State<MyApp> {
           ),
           body: TabBarView(
             children: [
-              TaskList(
-                tasks: TaskSorter.sortByDueDate(widget.tasks),
+              DueDateListView(
+                tasks: widget.tasks,
                 updateTaskCompletionStatus: _updateTaskCompletionStatus,
-                onTaskUpdated: (updatedTask) {
-                  // Handle the updated task here
-                  // Optionally, you can update the UI or perform other actions.
-                },
+                onTaskUpdated: handleTaskUpdated,
                 onTaskCreated: handleTaskCreated,
                 onTaskDeleted: handleTaskDeleted,
               ),
@@ -226,21 +290,22 @@ class _MyAppState extends State<MyApp> {
                 onTaskUpdated: handleTaskUpdated,
                 onTaskDeleted: handleTaskDeleted,
               ),
-              UserProgressScreen(
-                  overallScore: overallScore, progressHistory: progressHistory),
             ],
           ),
           floatingActionButton: FloatingActionButton(
-            onPressed: () async {
-              // Navigate to the TaskCreationPage and pass the callback function
-              final newTask = await navigatorKey.currentState?.push(
-                MaterialPageRoute(
-                  builder: (context) =>
-                      TaskCreationPage(onTaskCreated: handleTaskCreated),
-                ),
-              );
+            onPressed: () {
+              // Check if navigatorKey.currentState is not null before using it
+              if (widget.navigatorKey.currentState != null) {
+                widget.navigatorKey.currentState!.push(
+                  MaterialPageRoute(
+                    builder: (context) => TaskCreationPage(
+                      onTaskCreated: handleTaskCreated,
+                    ),
+                  ),
+                );
+              }
             },
-            child: const Icon(Icons.add),
+            child: Icon(Icons.add),
           ),
         ),
       ),

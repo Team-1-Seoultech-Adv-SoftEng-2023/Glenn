@@ -48,9 +48,9 @@ class _TaskCardState extends State<TaskCard> {
         widget.task.fields.first is DueDateField) {
       canEditDateTime = false; // Set to false for TaskCard
       dateController.text =
-          _formatDate((widget.task.fields.first as DueDateField).dueDate);
+          formatDate((widget.task.fields.first as DueDateField).dueDate);
       timeController.text =
-          _formatTime((widget.task.fields.first as DueDateField).dueTime);
+          formatTime((widget.task.fields.first as DueDateField).dueTime);
     }
   }
 
@@ -252,9 +252,9 @@ class _TaskCardState extends State<TaskCard> {
           setState(() {
             // Update the date and time on TaskCard when returning from TaskDetailPage
             dateController.text =
-                _formatDate((widget.task.fields.first as DueDateField).dueDate);
+                formatDate((widget.task.fields.first as DueDateField).dueDate);
             timeController.text =
-                _formatTime((widget.task.fields.first as DueDateField).dueTime);
+                formatTime((widget.task.fields.first as DueDateField).dueTime);
           });
         },
         child: Stack(
@@ -310,7 +310,7 @@ class _TaskCardState extends State<TaskCard> {
                                                       as DueDateField)
                                                   .dueDate = selectedDate;
                                               dateController.text =
-                                                  _formatDate(selectedDate);
+                                                  formatDate(selectedDate);
                                             });
                                             // Pass the updated DueDateField to the callback function
                                             widget.onUpdateDueDateTime(widget
@@ -346,7 +346,7 @@ class _TaskCardState extends State<TaskCard> {
                                                       as DueDateField)
                                                   .dueTime = selectedTime;
                                               timeController.text =
-                                                  _formatTime(selectedTime);
+                                                  formatTime(selectedTime);
                                             });
                                             // Pass the updated DueDateField to the callback function
                                             widget.onUpdateDueDateTime(widget
@@ -416,12 +416,4 @@ class _TaskCardState extends State<TaskCard> {
       ),
     );
   }
-}
-
-String _formatDate(DateTime date) {
-  return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-}
-
-String _formatTime(TimeOfDay time) {
-  return '${time.hour.toString().padLeft(2, '0')}${time.minute.toString().padLeft(2, '0')}';
 }
