@@ -5,6 +5,7 @@ import 'completed_tasks_page.dart'; // Import the CompletedTasksPage widget
 import 'calendar_view.dart';
 import 'user_progress_screen.dart';
 
+
 // import task and utilities
 import 'task/task.dart';
 import 'task/task_list.dart';
@@ -29,6 +30,7 @@ final List<Task> tasks = [
       ),
       PriorityField(priority: 2), // Medium priority
     ],
+    filePaths: List.empty(),
   ),
   Task(
     id: '2',
@@ -41,6 +43,7 @@ final List<Task> tasks = [
         dueTime: TimeOfDay(hour: 10, minute: 0),
       ),
     ],
+    filePaths: List.empty(),
   ),
   Task(
     id: '3',
@@ -50,6 +53,7 @@ final List<Task> tasks = [
     fields: [
       PriorityField(priority: 3), // High priority
     ],
+    filePaths: List.empty(),
   ),
   Task(
     id: '4',
@@ -69,6 +73,7 @@ final List<Task> tasks = [
         dueTime: const TimeOfDay(hour: 12, minute: 0),
       ),
     ],
+    filePaths: List.empty(),
   ),
 ];
 
