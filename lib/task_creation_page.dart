@@ -89,6 +89,7 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
             ),
 
             if (_isRepeating && widget.parentId == '') _buildRepeatPatternDropdown(),
+            
             ElevatedButton(
               onPressed: () {
                 // Check if the task name is not empty before creating the task
@@ -100,7 +101,7 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                     description: _descriptionController.text,
                     parentId: widget.parentId,
                     fields: [
-                      if (widget.parentId == '')
+                      if (!_isRepeating && widget.parentId == '')
                       DueDateField(
                         dueDate: _dateController.text.isNotEmpty
                             ? DateTime.parse(_dateController.text)
@@ -117,6 +118,12 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                       if (_isRepeating && widget.parentId == '')
                         RepeatingTaskField(
                           repeatPeriod: _selectedRepeatPeriod,
+                          startDate: _startDateController.text.isNotEmpty
+                            ? DateTime.parse(_startDateController.text)
+                            : DateTime.now(),
+                          endDate:  _endDateController.text.isNotEmpty
+                            ? DateTime.parse(_endDateController.text)
+                            : DateTime.now(),
                         ),
                     ],
                   );
