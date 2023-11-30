@@ -1,5 +1,3 @@
-import '../main.dart';
-import '../task/task.dart';
 import '../fields/task_field.dart';
 
 class SelfCareField extends TaskField {

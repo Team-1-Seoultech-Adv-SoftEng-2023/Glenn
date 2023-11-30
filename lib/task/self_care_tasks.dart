@@ -1,5 +1,4 @@
 // tasks/self_care_tasks.dart
-import '../main.dart';
 import '../fields/self_care_field.dart';
 import 'task.dart';
 import 'package:uuid/uuid.dart';
