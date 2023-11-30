@@ -355,28 +355,9 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
       );
 
       repeatingTasks.add(newTask);
-    }
 
-      // Increment the current date based on the repeat period
-      switch (_selectedRepeatPeriod) {
-        case RepeatPeriod.Daily:
-          currentDate = currentDate.add(Duration(days: 1));
-          break;
-        case RepeatPeriod.Weekly:
-          currentDate = currentDate.add(Duration(days: 7));
-          break;
-        case RepeatPeriod.Monthly:
-          currentDate = DateTime(currentDate.year, currentDate.month + 1, currentDate.day);
-          break;
-        case RepeatPeriod.Yearly:
-          currentDate = DateTime(currentDate.year + 1, currentDate.month, currentDate.day);
-          break;
-        case RepeatPeriod.Custom:
-          break;
-        default:
-          // Handle unknown repeat period
-          break;
-      }
+      incrementCurrentDate(currentDate, _selectedRepeatPeriod);
+    }
 
     return repeatingTasks;
   }
