@@ -73,15 +73,14 @@ final List<Task> tasks = [
 ];
 
 List<Map<String, dynamic>> progressHistory = [];
-double overallScore = 0.0;
 
+double overallScore = 0.0;
 
 extension IterableExtensions<E> on Iterable<E> {
   E? get firstOrNull {
     return isEmpty ? null : first;
   }
 }
-
 
 void main() {
   runApp(MyApp(tasks: tasks));
@@ -142,8 +141,10 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
+      debugShowCheckedModeBanner: false,
       home: DefaultTabController(
-        length: 5,
+        length: 4,
         child: Scaffold(
           appBar: AppBar(
             title: const Text('Task List'),
@@ -153,7 +154,6 @@ class _MyAppState extends State<MyApp> {
                 Tab(text: 'Priority'),
                 Tab(text: 'Calendar'),
                 Tab(text: 'Completed'),
-                Tab(text: 'Progress')
               ],
             ),
           ),
@@ -161,18 +161,20 @@ class _MyAppState extends State<MyApp> {
             child: ListView(
               padding: EdgeInsets.zero,
               children: [
-                DrawerHeader(
-                  decoration: BoxDecoration(
-                    color: Colors.blue,
+                Container(
+                  height: 135, // Set the desired height for the drawer header
+                  child: DrawerHeader(
+                    decoration: BoxDecoration(
+                      color: Colors.blue,
+                    ),
+                    child: Text('Menu', style: TextStyle(fontSize: 20)),
                   ),
-                  child: Text('Menu'),
                 ),
                 ListTile(
-                  title: Text('User Progress'),
+                  title: Text('Progress'),
                   onTap: () {
-                    Navigator.pop(context); // Close the drawer
-                    Navigator.push(
-                      context,
+                    navigatorKey.currentState?.pop(); // Close the drawer
+                    navigatorKey.currentState?.push(
                       MaterialPageRoute(
                         builder: (context) => UserProgressScreen(
                           overallScore: overallScore,
@@ -183,10 +185,10 @@ class _MyAppState extends State<MyApp> {
                   },
                 ),
                 ListTile(
-                  title: Text('Item 2'),
+                  title: Text('Store'),
                   onTap: () {
                     // Handle menu item 2 click
-                    Navigator.pop(context); // Close the drawer
+                    navigatorKey.currentState?.pop(); // Close the drawer
                   },
                 ),
                 // Add more menu items as needed
@@ -223,8 +225,6 @@ class _MyAppState extends State<MyApp> {
                 onTaskUpdated: handleTaskUpdated,
                 onTaskDeleted: handleTaskDeleted,
               ),
-              UserProgressScreen(
-                  overallScore: overallScore, progressHistory: progressHistory),
             ],
           ),
           floatingActionButton: FloatingActionButton(
@@ -244,5 +244,3 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
-
-

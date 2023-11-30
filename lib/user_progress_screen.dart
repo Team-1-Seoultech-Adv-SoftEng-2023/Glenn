@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:intl/intl.dart';
-import 'main.dart';
 
 class UserProgressScreen extends StatefulWidget {
   final double overallScore;
@@ -31,7 +29,7 @@ class _UserProgressScreenState extends State<UserProgressScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Overall Score: ${overallScore}',
+              'Overall Score: ${widget.overallScore}',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 16),
@@ -57,33 +55,19 @@ class _UserProgressScreenState extends State<UserProgressScreen> {
                   .toList(),
             ),
             Expanded(
-              child: LineChart(
-                LineChartData(
-                  minX: 0,
-                  maxX: _calculateMaxX(),
+              child: BarChart(
+                BarChartData(
+                  alignment: BarChartAlignment.spaceAround,
                   minY: _calculateMinY(),
                   maxY: _calculateMaxY(),
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: List.generate(
-                        _getFilteredData().length,
-                        (index) {
-                          final data = _getFilteredData()[index];
-                          final date = data['date'];
-                          final xValue = _getXValue(date) - 1;
-                          return FlSpot(
-                            xValue,
-                            data['scoreChange'].toDouble(),
-                          );
-                        },
-                      ),
-                      isCurved: false,
-                      dotData: FlDotData(show: true),
-                      belowBarData: BarAreaData(show: false),
-                    ),
-                  ],
                   titlesData: FlTitlesData(
                     show: true,
+                    leftTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                      showTitles: true,
+                      interval: 1,
+                      reservedSize: 30,
+                    )),
                     rightTitles:
                         AxisTitles(sideTitles: SideTitles(showTitles: false)),
                     topTitles:
@@ -98,6 +82,37 @@ class _UserProgressScreenState extends State<UserProgressScreen> {
                       ),
                     ),
                   ),
+                  borderData: FlBorderData(
+                    show: false,
+                  ),
+                  barGroups: List.generate(
+                    _getFilteredData().length,
+                    (index) {
+                      final data = _getFilteredData()[index];
+                      final date = data['date'];
+                      final xValue = _getXValue(date).toInt();
+
+                      return BarChartGroupData(
+                        x: xValue, // Convert xValue to double
+                        barRods: [
+                          BarChartRodData(
+                            toY: data['scoreChange'].toDouble(),
+                            color: data['scoreChange'] >= 0
+                                ? Colors.blue
+                                : Colors.red,
+                            width: 16,
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                  groupsSpace: 10, // Adjust this value as needed
+                  barTouchData: BarTouchData(
+                    touchTooltipData: BarTouchTooltipData(
+                      tooltipBgColor: const Color.fromARGB(255, 237, 238, 240),
+                    ),
+                  ),
+                  gridData: FlGridData(show: true),
                 ),
               ),
             ),
@@ -117,10 +132,11 @@ class _UserProgressScreenState extends State<UserProgressScreen> {
   }
 
   String _getXAxisLabel(int value) {
+    print(value);
     if (selectedInterval == 'Week') {
-      return _getDayLabel(value);
+      return _getDayLabel(value - 1);
     } else if (selectedInterval == 'Month') {
-      return _getMonthLabel(value);
+      return _getMonthLabel(value - 1);
     }
     return value.toString();
   }
@@ -160,20 +176,17 @@ class _UserProgressScreenState extends State<UserProgressScreen> {
     //return DateFormat('MMM').format(DateTime(2023, value, 1));
   }
 
-  double _calculateMaxX() {
-    return selectedInterval == 'Week' ? 6.0 : 11.0;
-  }
-
   double _calculateMinY() {
-    if (widget.progressHistory.isEmpty) {
+    if (_getFilteredData().isEmpty) {
       return 0.0; // Default value when there is no completed task
     }
 
-    int minScore = widget.progressHistory
+    int minScore = _getFilteredData()
         .map<int>((entry) => entry['scoreChange'])
         .reduce((min, score) => min < score ? min : score);
 
-    return minScore.toDouble() - 5;
+    // Offset negative values by -3
+    return minScore >= 0 ? 0.0 : minScore.toDouble() - 1;
   }
 
   double _calculateMaxY() {
@@ -185,22 +198,45 @@ class _UserProgressScreenState extends State<UserProgressScreen> {
         .map<int>((entry) => entry['scoreChange'])
         .reduce((max, score) => max > score ? max : score);
 
-    return maxScore.toDouble() + 5;
+    return maxScore.toDouble() + 3;
   }
 
   List<Map<String, dynamic>> _getFilteredData() {
     final currentDate = DateTime.now();
-
     List<Map<String, dynamic>> result;
 
     if (selectedInterval == 'Week') {
-      result = _groupAndCalculateDailyScores(7)
-          .where((entry) => currentDate.difference(entry['date']).inDays <= 7)
-          .toList();
+      // Calculate the start and end dates for the current week
+      final startOfWeek =
+          currentDate.subtract(Duration(days: currentDate.weekday - 1));
+      final endOfWeek = currentDate
+          .add(Duration(days: DateTime.sunday - currentDate.weekday + 1));
+
+      final numberOfDays = 7;
+
+      result = List.generate(numberOfDays, (index) {
+        final currentDay = startOfWeek.add(Duration(days: index));
+        return {
+          'date': currentDay,
+          'scoreChange': _groupAndCalculateDailyScores(numberOfDays)
+              .where((entry) => entry['date'].day == currentDay.day)
+              .map<int>((entry) => entry['scoreChange'])
+              .fold(0, (previous, score) => previous + score),
+        };
+      }).toList();
     } else if (selectedInterval == 'Month') {
-      result = _groupAndCalculateDailyScores(30)
-          .where((entry) => currentDate.difference(entry['date']).inDays <= 30)
-          .toList();
+      // Filter tasks for each month in the current year
+      result = List.generate(12, (index) {
+        final startOfMonth = DateTime(currentDate.year, index + 1, 1);
+
+        return {
+          'date': startOfMonth,
+          'scoreChange': _groupAndCalculateMonthlyScores(currentDate.year)
+              .where((entry) => entry['date'].month == index + 1)
+              .map<int>((entry) => entry['scoreChange'])
+              .fold(0, (previous, score) => previous + score),
+        };
+      });
     } else {
       result = widget.progressHistory;
     }
@@ -230,7 +266,30 @@ class _UserProgressScreenState extends State<UserProgressScreen> {
       });
     }
 
-    print(result);
+    return result;
+  }
+
+  List<Map<String, dynamic>> _groupAndCalculateMonthlyScores(int year) {
+    final currentDate = DateTime.now();
+    final filteredData = widget.progressHistory
+        .where((entry) => currentDate.difference(entry['date']).inDays <= 365)
+        .toList();
+
+    final groupedData = <DateTime, num>{};
+    for (var entry in filteredData) {
+      final date = entry['date'];
+      final truncatedDate = DateTime(date.year, date.month);
+      groupedData[truncatedDate] =
+          (groupedData[truncatedDate] ?? 0) + entry['scoreChange'];
+    }
+
+    final result = <Map<String, dynamic>>[];
+    for (var entry in groupedData.entries) {
+      result.add({
+        'date': entry.key,
+        'scoreChange': entry.value,
+      });
+    }
 
     return result;
   }
