@@ -1,7 +1,6 @@
 //main.dart
 //import main pages
 import 'package:flutter/material.dart';
-import 'task_detail_page.dart'; // Import the task_detail_page.dart file
 import 'task_creation_page.dart'; // Import the task_creation_page.dart file
 import 'completed_tasks_page.dart'; // Import the CompletedTasksPage widget
 import 'calendar_view.dart';
@@ -12,14 +11,11 @@ import 'due_date_list.dart';
 import 'task/task.dart';
 import 'task/task_list.dart';
 import 'task/task_sorter.dart';
-import 'task/collapsible_task_list.dart';
 
 // import fields
-import 'fields/task_field.dart';
 import 'fields/priority_field.dart';
 import 'fields/due_date_field.dart';
 import 'fields/self_care_field.dart';
-import 'task/task_sorter.dart';
 import 'task/self_care_tasks.dart';
 import 'self_care_popup.dart';
 import 'dart:math'; // Import the dart:math library for Random

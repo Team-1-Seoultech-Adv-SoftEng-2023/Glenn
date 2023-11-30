@@ -1,7 +1,6 @@
 // self_care_popup.dart
 
 import 'package:flutter/material.dart';
-import 'main.dart';
 import '../task/task.dart';
 
 class SelfCarePopup extends StatelessWidget {
