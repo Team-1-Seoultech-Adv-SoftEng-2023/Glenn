@@ -7,12 +7,12 @@ import 'fields/repeating_field.dart';
 
 class TaskCreationPage extends StatefulWidget {
   final Function(Task) onTaskCreated;
-  final String parentId; // Add the parentId parameter
+  final String parentId;
 
   const TaskCreationPage({
     super.key,
     required this.onTaskCreated,
-    this.parentId = '', // Set the default value
+    this.parentId = '',
   });
 
   @override
@@ -49,6 +49,8 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
               controller: _descriptionController,
               decoration: const InputDecoration(labelText: 'Task Description'),
             ),
+            
+            if (widget.parentId == '')
             ListTile(
               title: Text('Due Date'),
               subtitle: Row(
@@ -63,6 +65,8 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                 ],
               ),
             ),
+
+            if (widget.parentId == '')
             CheckboxListTile(
               title: Text('Repeat Task'),
               value: _isRepeating,
@@ -83,7 +87,8 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                 });
               },
             ),
-            if (_isRepeating) _buildRepeatPatternDropdown(),
+
+            if (_isRepeating && widget.parentId == '') _buildRepeatPatternDropdown(),
             ElevatedButton(
               onPressed: () {
                 // Check if the task name is not empty before creating the task
@@ -93,8 +98,7 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                     id: UniqueKey().toString(),
                     name: _nameController.text,
                     description: _descriptionController.text,
-                    parentId:
-                        widget.parentId, // Use the parentId from the widget
+                    parentId: widget.parentId,
                     fields: [
                       DueDateField(
                         dueDate: _dateController.text.isNotEmpty
