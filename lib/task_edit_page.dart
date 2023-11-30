@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
-import 'main.dart';
+import 'package:file_picker/file_picker.dart';
 import 'task_creation_page.dart';
-
 import 'task/task.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class EditTaskPage extends StatefulWidget {
   final Task task;
+  final Function(Task) onTaskUpdated;
+  final Function(Task) onTaskCreated;
+  final Function(Task) onTaskDeleted;
 
-  final Function(Task) onTaskUpdated; // Add this callback
-  final Function(Task) onTaskCreated; // Add this callback
-  final Function(Task) onTaskDeleted; // Add this callback
-
-  const EditTaskPage({super.key, 
+  const EditTaskPage({
+    Key? key,
     required this.task,
     required this.onTaskUpdated,
     required this.onTaskCreated,
-    required this.onTaskDeleted, // Update the constructor
-  });
+    required this.onTaskDeleted,
+  }) : super(key: key);
 
   @override
   _EditTaskPageState createState() => _EditTaskPageState();
@@ -45,6 +45,41 @@ class _EditTaskPageState extends State<EditTaskPage> {
     Navigator.pop(context);
   }
 
+ // Function to handle file attachment
+void _attachFile() async {
+  // Check storage permission before proceeding
+  var status = await Permission.storage.status;
+
+  if (status.isDenied) {
+    // Here just ask for the permission for the first time
+    await Permission.storage.request();
+
+    // Check again and go to app settings if permission is still denied
+    if (await Permission.storage.isDenied) {
+      await openAppSettings();
+      return; // Return to avoid proceeding with file selection
+    }
+  } else if (status.isPermanentlyDenied) {
+    // Open app settings for the user to manually enable permission
+    await openAppSettings();
+    return; // Return to avoid proceeding with file selection
+  }
+
+  // Permission is granted, proceed with file selection
+  FilePickerResult? result = await FilePicker.platform.pickFiles();
+
+  if (result != null && mounted) {
+    String filePath = result.files.single.path!;
+    // Add logic to handle the file path as needed
+    // For example, you can update the task's file paths list
+    setState(() {
+      widget.task.filePaths.add(filePath);
+    });
+  }
+}
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -63,9 +98,11 @@ class _EditTaskPageState extends State<EditTaskPage> {
                     ),
                   ),
                 );
-              } else if (value == "delete_task") {
+              } else if (value == 'attach_file') {
+                // Call the function to handle file attachment
+                _attachFile();
+              } else if (value == 'delete_task') {
                 // Call the function to handle task deletion
-
                 _deleteTask();
               }
             },
@@ -75,11 +112,14 @@ class _EditTaskPageState extends State<EditTaskPage> {
                   value: 'add_sub_task',
                   child: Text('Add Sub-Task'),
                 ),
-                // You can add more options here if needed
+                const PopupMenuItem<String>(
+                  value: 'attach_file',
+                  child: Text('Attach File'),
+                ),
                 const PopupMenuItem<String>(
                   value: 'delete_task',
                   child: Text('Delete'),
-                )
+                ),
               ];
             },
           ),

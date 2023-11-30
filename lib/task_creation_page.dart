@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'main.dart';
+import 'package:file_picker/file_picker.dart';
 
 import 'task/task.dart';
 
@@ -22,6 +22,16 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
 
+  // Method to handle file picking
+  void _pickFile() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles();
+
+    if (result != null) {
+      String filePath = result.files.single.path!;
+      // Add logic to handle the file path as needed
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,14 +51,20 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
               decoration: const InputDecoration(labelText: 'Task Description'),
             ),
             ElevatedButton(
+              onPressed: _pickFile, // Add file picking button
+              child: const Text('Add File'),
+            ),
+            ElevatedButton(
               onPressed: () {
                 // Create a new task object with the provided details
                 final Task newTask = Task(
                   id: UniqueKey().toString(),
                   name: _nameController.text,
                   description: _descriptionController.text,
-                  parentId: widget.parentId, // Use the parentId from the widget
+                  parentId: widget.parentId,
                   fields: [],
+                  // Add file paths or references as needed
+                  filePaths: [],
                 );
 
                 // Notify the main page about the newly created task

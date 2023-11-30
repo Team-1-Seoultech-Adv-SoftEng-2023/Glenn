@@ -10,6 +10,7 @@ class Task {
   final List<TaskField> fields;
   bool isComplete;
   bool isCompletedOnTime; // Add this property
+  List<String> filePaths;
 
   @override
   bool operator ==(Object other) =>
@@ -27,6 +28,7 @@ class Task {
     required this.fields,
     this.isComplete = false,
     this.isCompletedOnTime = true, // Initialize as incomplete
+    this.filePaths = const [],
   });
 
   int? getPriority() {

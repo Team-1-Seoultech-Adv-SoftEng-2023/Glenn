@@ -59,19 +59,19 @@ class _TaskCardState extends State<TaskCard> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Congratulations!'),
+          title: const Text('Congratulations!'),
           content: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('You completed the task on time. Keep up the good work!'),
-              SizedBox(height: 8),
+              const Text('You completed the task on time. Keep up the good work!'),
+              const SizedBox(height: 8),
               Text('Your score is now: $overallScore'),
             ],
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('OK'),
+              child: const Text('OK'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -89,13 +89,13 @@ class _TaskCardState extends State<TaskCard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
+            const Text(
                 'You missed the deadline, but don\'t give up! Keep pushing forward.'),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text('Your score is now: $overallScore'),
           ],
         ),
-        duration: Duration(seconds: 5),
+        duration: const Duration(seconds: 5),
       ),
     );
   }
@@ -136,7 +136,7 @@ class _TaskCardState extends State<TaskCard> {
       },
     );
 
-    if (shouldUpdateTask != null && shouldUpdateTask) {
+    if (shouldUpdateTask) {
       widget.updateTaskCompletionStatus(widget.task, value);
 
       if (widget.task.isComplete) {
