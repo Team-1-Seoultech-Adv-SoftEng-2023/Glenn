@@ -112,11 +112,17 @@ class _MyAppState extends State<MyApp> {
   List<Task> incompleteTasks = [];
 
   // Callback function to handle newly created tasks
-  void handleTaskCreated(Task newTask) {
+  void handleTaskCreated(dynamic newTask) {
     setState(() {
       if (newTask != null) {
         print('New task created: $newTask');
-        tasks.add(newTask);
+        if (newTask is Task) {
+          tasks.add(newTask);
+        } else if (newTask is List<Task>) {
+          tasks.addAll(newTask);
+        } else{
+          print('Error!');
+        }
         incompleteTasks = tasks.where((task) => !task.isComplete).toList();
 
         final bool isNewTaskSelfCare =

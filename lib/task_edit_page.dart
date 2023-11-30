@@ -8,7 +8,7 @@ import 'package:permission_handler/permission_handler.dart';
 class EditTaskPage extends StatefulWidget {
   final Task task;
   final Function(Task) onTaskUpdated;
-  final Function(Task) onTaskCreated;
+  final Function(dynamic) onTaskCreated;
   final Function(Task) onTaskDeleted;
 
   const EditTaskPage({
