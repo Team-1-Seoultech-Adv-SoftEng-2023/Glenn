@@ -1,3 +1,4 @@
+//task.dart
 import '../fields/task_field.dart';
 import '../fields/priority_field.dart';
 import '../fields/due_date_field.dart';
@@ -31,6 +32,16 @@ class Task {
     this.isCompletedOnTime = true, // Initialize as incomplete
     this.reminderDate,
   });
+
+  Task.copy(Task original)
+      : id = original.id,
+        name = original.name,
+        description = original.description,
+        parentId = original.parentId,
+        fields = List.from(original.fields),
+        isComplete = original.isComplete,
+        isCompletedOnTime = original.isCompletedOnTime;
+
 
 // Method to launch URL if the description contains one
   void launchURL() async {

@@ -1,19 +1,28 @@
+//main.dart
+//import main pages
 import 'package:flutter/material.dart';
 import 'task_detail_page.dart'; // Import the task_detail_page.dart file
 import 'task_creation_page.dart'; // Import the task_creation_page.dart file
 import 'completed_tasks_page.dart'; // Import the CompletedTasksPage widget
 import 'calendar_view.dart';
 import 'user_progress_screen.dart';
+import 'due_date_list.dart';
 
 // import task and utilities
 import 'task/task.dart';
 import 'task/task_list.dart';
 import 'task/task_sorter.dart';
+import 'task/collapsible_task_list.dart';
 
 // import fields
 import 'fields/task_field.dart';
 import 'fields/priority_field.dart';
 import 'fields/due_date_field.dart';
+import 'fields/self_care_field.dart';
+import 'task/task_sorter.dart';
+import 'task/self_care_tasks.dart';
+import 'self_care_popup.dart';
+import 'dart:math'; // Import the dart:math library for Random
 
 // Define the tasks list with sample data
 final List<Task> tasks = [
@@ -82,7 +91,9 @@ extension IterableExtensions<E> on Iterable<E> {
 }
 
 void main() {
-  runApp(MyApp(tasks: tasks));
+  runApp(MaterialApp(
+    home: MyApp(tasks: tasks),
+  ));
 }
 
 class MyApp extends StatefulWidget {
@@ -101,9 +112,32 @@ class _MyAppState extends State<MyApp> {
   // Callback function to handle newly created tasks
   void handleTaskCreated(Task newTask) {
     setState(() {
-      tasks.add(newTask); // Add the newly created task to the global tasks list
+      if (newTask != null) {
+        print('New task created: $newTask');
+        tasks.add(newTask);
+
+        final bool isNewTaskSelfCare =
+            newTask.fields.any((field) => field is SelfCareField);
+
+        final bool hasSelfCareTasksForToday = tasks.any((task) {
+          if (task.hasDueDate) {
+            final today = DateTime.now();
+            final taskDueDate = task.getDueDate()!;
+            return taskDueDate.year == today.year &&
+                taskDueDate.month == today.month &&
+                taskDueDate.day == today.day;
+          }
+          return false;
+        });
+
+        if (!isNewTaskSelfCare && !hasSelfCareTasksForToday) {
+          // Do not pop the context here
+          _showSelfCareRecommendationPopup(context);
+        }
+      }
     });
   }
+
 
   void handleTaskDeleted(Task deleteTask) {
     setState(() {
@@ -136,6 +170,36 @@ class _MyAppState extends State<MyApp> {
       print("Updated");
     });
   }
+
+  void _showSelfCareRecommendationPopup(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SelfCarePopup(
+          selfCareTasks: generateSelfCareTasks(),
+          onTaskCreated:
+              handleTaskCreated, // Pass the handleTaskCreated function
+        );
+      },
+    );
+  }
+
+  List<Task> generateSelfCareTasks() {
+    final Random random = Random();
+    final int randomIndex = random.nextInt(selfCareTasks.length);
+
+    // Create a new self-care task
+    Task selfCareTask = Task.copy(selfCareTasks[randomIndex]);
+
+    // Set the due date of the self-care task to today
+    selfCareTask.fields.add(DueDateField(
+      dueDate: DateTime.now(),
+      dueTime: TimeOfDay(hour: 23, minute: 59), // Adjust the time as needed
+    ));
+
+    return [selfCareTask];
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -193,13 +257,10 @@ class _MyAppState extends State<MyApp> {
           ),
           body: TabBarView(
             children: [
-              TaskList(
-                tasks: TaskSorter.sortByDueDate(widget.tasks),
+              DueDateListView(
+                tasks: widget.tasks,
                 updateTaskCompletionStatus: _updateTaskCompletionStatus,
-                onTaskUpdated: (updatedTask) {
-                  // Handle the updated task here
-                  // Optionally, you can update the UI or perform other actions.
-                },
+                onTaskUpdated: handleTaskUpdated,
                 onTaskCreated: handleTaskCreated,
                 onTaskDeleted: handleTaskDeleted,
               ),
@@ -227,13 +288,20 @@ class _MyAppState extends State<MyApp> {
           ),
           floatingActionButton: FloatingActionButton(
             onPressed: () async {
-              // Navigate to the TaskCreationPage and pass the callback function
-              final newTask = await navigatorKey.currentState?.push(
+              // Navigate to the TaskCreationPage
+              final newTask = await Navigator.push(
+                context,
                 MaterialPageRoute(
-                  builder: (context) =>
-                      TaskCreationPage(onTaskCreated: handleTaskCreated),
+                  builder: (context) => TaskCreationPage(
+                    onTaskCreated: handleTaskCreated,
+                  ),
                 ),
               );
+
+              // Handle the result from the TaskCreationPage if needed
+              if (newTask != null) {
+                print('New task created: $newTask');
+              }
             },
             child: const Icon(Icons.add),
           ),
