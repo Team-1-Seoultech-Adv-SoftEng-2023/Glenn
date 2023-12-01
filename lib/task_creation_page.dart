@@ -354,11 +354,7 @@ class TaskCreationPageState extends State<TaskCreationPage> {
     );
     if (selectedTime != null) {
       setState(() {
-        _dueTimeController.text = formatTime(selectedTime).replaceFirstMapped(
-          RegExp(r'(\d{2})(\d{2})'),
-          (match) => '${match[1]}:${match[2]}',
-        );
-
+        _dueTimeController.text = formatTime(selectedTime);
         if (_dueDateController.text.isEmpty) {
           _dueDateController.text = formatDate(DateTime.now());
         }

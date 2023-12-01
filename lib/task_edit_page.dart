@@ -77,8 +77,8 @@ class EditTaskPageState extends State<EditTaskPage> {
 
   // Method to get the formatted due time as a string
   String _getDueTimeFormatted() {
-    if (widget.task.hasDueDate && widget.task.fields.first is DueDateField) {
-      return formatTime((widget.task.fields.first as DueDateField).dueTime);
+    if (widget.task.hasDueDate) {
+      return formatTime(widget.task.getDueTime()!);
     } else {
       return '';
     }
@@ -139,7 +139,7 @@ class EditTaskPageState extends State<EditTaskPage> {
                   MaterialPageRoute(
                     builder: (context) => TaskCreationPage(
                       onTaskCreated: widget.onTaskCreated,
-                      parentId: widget.task.id,
+                      //parentId: widget.task.id,
                     ),
                   ),
                 );
@@ -206,8 +206,6 @@ class EditTaskPageState extends State<EditTaskPage> {
             ElevatedButton(
               onPressed: () {
                 
-                PriorityField priorityField = PriorityField(priority: _selectedPriority);
-
                 // Update the task's attributes when the button is pressed
                 setState(() {
                   widget.task.updateTask(
@@ -215,7 +213,7 @@ class EditTaskPageState extends State<EditTaskPage> {
                     description: _descriptionController.text,
                     fields: [
                         createDueDateField(),
-                        if(_selectedPriority != 0) priorityField,
+                        if(_selectedPriority != 0) PriorityField(priority: _selectedPriority),
                     ],
                   );
                 });
@@ -288,10 +286,7 @@ class EditTaskPageState extends State<EditTaskPage> {
         widget.task.fields.first is DueDateField) {
       DueDateField dueDateField = widget.task.fields.first as DueDateField;
       dueDateField.dueTime = selectedTime;
-      _dueTimeController.text = formatTime(selectedTime).replaceFirstMapped(
-          RegExp(r'(\d{2})(\d{2})'),
-          (match) => '${match[1]}:${match[2]}',
-        );
+      _dueTimeController.text = formatTime(selectedTime);
     }
   }
   

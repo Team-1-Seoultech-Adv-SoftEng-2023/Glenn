@@ -122,8 +122,7 @@ class Task {
     final dueDateField = fields.whereType<DueDateField>().firstOrNull;
 
     if (dueDateField != null) {
-      final DateTime dueDate = dueDateField.dueDate;
-      return TimeOfDay(hour: dueDate.hour, minute: dueDate.minute);
+      return dueDateField.dueTime;
     } else {
       return null;
     }
