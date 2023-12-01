@@ -56,20 +56,20 @@ enum RepeatPeriod { days, weeks, months, years}
 //   }
 // }
 
-String _formatRepeatPeriod(RepeatPeriod repeatPeriod, int customRepeatDays) {
-    switch (repeatPeriod) {
-      case RepeatPeriod.days:
-        return 'Daily';
-      case RepeatPeriod.weeks:
-        return 'Weekly';
-      case RepeatPeriod.months:
-        return 'Monthly';
-      case RepeatPeriod.years:
-        return 'Yearly';
-      default:
-        return 'Unknown';
-    }
-}
+// String _formatRepeatPeriod(RepeatPeriod repeatPeriod, int customRepeatDays) {
+//     switch (repeatPeriod) {
+//       case RepeatPeriod.days:
+//         return 'Daily';
+//       case RepeatPeriod.weeks:
+//         return 'Weekly';
+//       case RepeatPeriod.months:
+//         return 'Monthly';
+//       case RepeatPeriod.years:
+//         return 'Yearly';
+//       default:
+//         return 'Unknown';
+//     }
+// }
 
 DateTime incrementCurrentDate(DateTime currentDate, RepeatPeriod repeatPeriod, int customRepeat) {
   switch (repeatPeriod) {

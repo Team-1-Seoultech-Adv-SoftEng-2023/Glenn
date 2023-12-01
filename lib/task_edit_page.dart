@@ -22,10 +22,10 @@ class EditTaskPage extends StatefulWidget {
   });
 
   @override
-  _EditTaskPageState createState() => _EditTaskPageState();
+  EditTaskPageState createState() => EditTaskPageState();
 }
 
-class _EditTaskPageState extends State<EditTaskPage> {
+class EditTaskPageState extends State<EditTaskPage> {
   late TextEditingController _nameController;
   late TextEditingController _descriptionController;
   late TextEditingController _dueDateController;
@@ -41,8 +41,7 @@ class _EditTaskPageState extends State<EditTaskPage> {
 
   void initializeControllers() {
     _nameController = TextEditingController(text: widget.task.name);
-    _descriptionController =
-        TextEditingController(text: widget.task.description);
+    _descriptionController = TextEditingController(text: widget.task.description);
     _dueDateController = TextEditingController(text: _getDueDateFormatted());
     _dueTimeController = TextEditingController(text: _getDueTimeFormatted());
     _selectedPriority = _getPriority();
@@ -140,7 +139,7 @@ class _EditTaskPageState extends State<EditTaskPage> {
                   MaterialPageRoute(
                     builder: (context) => TaskCreationPage(
                       onTaskCreated: widget.onTaskCreated,
-                      //parentId: widget.task.id,
+                      parentId: widget.task.id,
                     ),
                   ),
                 );
@@ -185,23 +184,24 @@ class _EditTaskPageState extends State<EditTaskPage> {
               controller: _descriptionController,
               decoration: const InputDecoration(labelText: 'Description'),
             ),
+
+            _buildPriorityDropdown(),
+
             // Date and Time form fields for due date
             ListTile(
-              title: Text('Due Date'),
+              title: const Text('Due Date'),
               subtitle: Row(
                 children: [
                   Expanded(
                     child: _buildDateField(),
                   ),
-                  SizedBox(width: 16),
+                  const SizedBox(width: 16),
                   Expanded(
                     child: _buildTimeField(),
                   ),
                 ],
               ),
             ),
-
-            _buildPriorityDropdown(),
 
             ElevatedButton(
               onPressed: () {
@@ -235,7 +235,7 @@ class _EditTaskPageState extends State<EditTaskPage> {
     return TextFormField(
       controller: _dueDateController,
       keyboardType: TextInputType.datetime,
-      decoration: InputDecoration(labelText: 'Date'),
+      decoration: const InputDecoration(labelText: 'Date'),
       onTap: () => _showDatePicker(),
     );
   }
@@ -245,7 +245,7 @@ class _EditTaskPageState extends State<EditTaskPage> {
     return TextFormField(
       controller: _dueTimeController,
       keyboardType: TextInputType.datetime,
-      decoration: InputDecoration(labelText: 'Time'),
+      decoration: const InputDecoration(labelText: 'Time'),
       onTap: () => _showTimePicker(),
     );
   }
@@ -307,7 +307,7 @@ class _EditTaskPageState extends State<EditTaskPage> {
   Widget _buildPriorityDropdown() {
   return DropdownButtonFormField<int>(
     value: _selectedPriority,
-    items: [
+    items: const [
       DropdownMenuItem<int>(
         value: 0,
         child: Text('None'),
@@ -334,7 +334,7 @@ class _EditTaskPageState extends State<EditTaskPage> {
         _selectedPriority = value!;
       });
     },
-    decoration: InputDecoration(labelText: 'Priority'),
+    decoration: const InputDecoration(labelText: 'Priority'),
   );
 }
 

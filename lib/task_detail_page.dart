@@ -1,6 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'task_edit_page.dart';
-import 'package:file_picker/file_picker.dart';
+//import 'package:file_picker/file_picker.dart';
 
 import 'task/task.dart';
 
@@ -16,7 +17,7 @@ class TaskDetailPage extends StatefulWidget {
   final Function(Task) onTaskDeleted;
   final Function(DueDateField) onUpdateDueDateTime;
 
-  TaskDetailPage({
+  const TaskDetailPage({
     Key? key,
     required this.task,
     required this.subtasks,
@@ -27,10 +28,10 @@ class TaskDetailPage extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _TaskDetailPageState createState() => _TaskDetailPageState();
+  TaskDetailPageState createState() => TaskDetailPageState();
 }
 
-class _TaskDetailPageState extends State<TaskDetailPage> {
+class TaskDetailPageState extends State<TaskDetailPage> {
   List<String> attachedFiles = [];
 
   @override
@@ -142,24 +143,26 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
   }
 
   void _openFile(String filePath) {
-    print('Opening file: $filePath');
+    if (kDebugMode) {
+      print('Opening file: $filePath');
+    }
     // Implement logic to open the file using appropriate plugins
   }
 
-  void _pickFile() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
+  // void _pickFile() async {
+  //   FilePickerResult? result = await FilePicker.platform.pickFiles();
 
-    if (result != null) {
-      String filePath = result.files.single.path!;
-      setState(() {
-        attachedFiles.add(filePath);
-      });
-    }
-  }
+  //   if (result != null) {
+  //     String filePath = result.files.single.path!;
+  //     setState(() {
+  //       attachedFiles.add(filePath);
+  //     });
+  //   }
+  // }
 
   Widget _buildDueDateField(DueDateField field) {
     return ListTile(
-      title: Text('Due Date'),
+      title: const Text('Due Date'),
       subtitle: Row(
         children: [
           Text('Date: ${formatDate(field.dueDate)}'),
@@ -172,14 +175,14 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
 
   Widget _buildPriorityField(PriorityField priorityField) {
     return ListTile(
-      title: Text('Priority'),
+      title: const Text('Priority'),
       subtitle: Text(priorityField.value),
     );
   }
 
   Widget _buildSelfCareField(SelfCareField selfCareField) {
     return ListTile(
-      title: Text('Self Care'),
+      title: const Text('Self Care'),
       subtitle: Text(selfCareField.value),
     );
   }
@@ -191,10 +194,10 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           ...widget.task.fields.map((field) {
-            if (field is DueDateField) {
-              return _buildDueDateField(field);
-            } else if (field is PriorityField) {
+            if (field is PriorityField) {
               return _buildPriorityField(field);
+            } else if (field is DueDateField) {
+              return _buildDueDateField(field);
             } else if (field is SelfCareField) {
               return _buildSelfCareField(field);
             } else {

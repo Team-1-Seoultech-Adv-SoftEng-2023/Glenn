@@ -1,4 +1,6 @@
 //task.dart
+import 'package:flutter/foundation.dart';
+
 import '../fields/task_field.dart';
 import '../fields/priority_field.dart';
 import '../fields/due_date_field.dart';
@@ -173,7 +175,8 @@ class Task {
       }
     }
 
-    print('Task ID: $id\n'
+    if (kDebugMode) {
+      print('Task ID: $id\n'
           '---Name: $name\n'
           '---Description: $description\n'
           '---Parent ID: $parentId\n'
@@ -182,6 +185,7 @@ class Task {
           '---Is Completed On Time: $isCompletedOnTime\n'
           '---File Paths: $filePaths\n'
           '---Reminder Date: $reminderDate\n'
-          '---Fields:\n  |--->${fieldDetails.join('\n')}');
+          '---Fields:\n  |--->${fieldDetails.join('\n  |--->')}');
+    }
   }
 }

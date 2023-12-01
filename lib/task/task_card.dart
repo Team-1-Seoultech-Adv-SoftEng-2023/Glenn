@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'task.dart';
 import '../main.dart';
@@ -26,32 +27,18 @@ class TaskCard extends StatefulWidget {
       this.updateTaskCompletionStatus = _dummyFunction});
 
   @override
-  _TaskCardState createState() => _TaskCardState();
+  TaskCardState createState() => TaskCardState();
 }
 
 void _dummyFunction(Task task, bool isComplete) {
   // This is a placeholder function that does nothing.
 }
 
-class _TaskCardState extends State<TaskCard> {
-  late TextEditingController dateController;
-  late TextEditingController timeController;
-  bool canEditDateTime = false;
+class TaskCardState extends State<TaskCard> {
 
   @override
   void initState() {
     super.initState();
-    dateController = TextEditingController(text: '');
-    timeController = TextEditingController(text: '');
-
-    if (widget.task.fields.isNotEmpty &&
-        widget.task.fields.first is DueDateField) {
-      canEditDateTime = false; // Set to false for TaskCard
-      dateController.text =
-          formatDate((widget.task.fields.first as DueDateField).dueDate);
-      timeController.text =
-          formatTime((widget.task.fields.first as DueDateField).dueTime);
-    }
   }
 
   void _showCongratulationsDialog(BuildContext context) {
@@ -155,7 +142,9 @@ class _TaskCardState extends State<TaskCard> {
           'scoreChange': scoreChange,
         });
 
-        print(progressHistory);
+        if (kDebugMode) {
+          print(progressHistory);
+        }
 
         // Update overall score
         overallScore += scoreChange;
@@ -249,13 +238,6 @@ class _TaskCardState extends State<TaskCard> {
               ),
             ),
           );
-          setState(() {
-            // Update the date and time on TaskCard when returning from TaskDetailPage
-            dateController.text =
-                formatDate((widget.task.fields.first as DueDateField).dueDate);
-            timeController.text =
-                formatTime((widget.task.fields.first as DueDateField).dueTime);
-          });
         },
         child: Stack(
           children: [

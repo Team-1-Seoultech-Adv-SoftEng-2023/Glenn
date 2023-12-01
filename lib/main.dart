@@ -1,5 +1,6 @@
 //main.dart
 //import main pages
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'task_creation_page.dart'; // Import the task_creation_page.dart file
 import 'completed_tasks_page.dart'; // Import the CompletedTasksPage widget
@@ -28,21 +29,21 @@ final List<Task> tasks = [
     description: 'This task has both due date and priority',
     parentId: '',
     fields: [
+      PriorityField(priority: 2), // Medium priority
       DueDateField(
         dueDateTime: DateTime(2023, 11, 22, 14, 30)
       ),
-      PriorityField(priority: 2), // Medium priority
     ],
     filePaths: List.empty(),
   ),
   Task(
     id: '2',
-    name: 'Task with Due Date Only',
+    name: 'Task with a future Due Date Only',
     description: 'https://www.youtube.com/',
     parentId: '',
     fields: [
       DueDateField(
-        dueDateTime: DateTime(2023, 11, 24, 10, 00)
+        dueDateTime: DateTime(2023, 12, 24, 10, 00)
       ),
     ],
     filePaths: List.empty(),
@@ -76,6 +77,24 @@ final List<Task> tasks = [
     ],
     filePaths: List.empty(),
   ),
+  Task(
+    id: '6',
+    name: 'Subtask 1',
+    description: 'This is a subtask',
+    parentId: '1',
+    fields: [
+    ],
+    filePaths: List.empty(),
+  ),
+  Task(
+    id: '7',
+    name: 'Subtask 2',
+    description: 'This is a second subtask',
+    parentId: '1',
+    fields: [
+    ],
+    filePaths: List.empty(),
+  ),
 ];
 
 List<Map<String, dynamic>> progressHistory = [];
@@ -101,18 +120,19 @@ class MyApp extends StatefulWidget {
       : super(key: key);
 
   @override
-  _MyAppState createState() => _MyAppState();
+  MyAppState createState() => MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class MyAppState extends State<MyApp> {
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   List<Task> incompleteTasks = [];
 
   // Callback function to handle newly created tasks
   void handleTaskCreated(Task newTask) {
     setState(() {
-      if (newTask != null) {
-        print('New task created: $newTask');
+        if (kDebugMode) {
+          print('New task created: $newTask');
+        }
         newTask.printTaskDetails();
         
         tasks.add(newTask);
@@ -137,7 +157,6 @@ class _MyAppState extends State<MyApp> {
           // Do not pop the context here
           _showSelfCareRecommendationPopup(context);
         }
-      }
     });
   }
 
@@ -169,7 +188,9 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       task.isComplete = isComplete;
 
-      print("Updated");
+      if (kDebugMode) {
+        print("Updated");
+      }
     });
   }
 
@@ -224,7 +245,7 @@ class _MyAppState extends State<MyApp> {
             child: ListView(
               padding: EdgeInsets.zero,
               children: [
-                Container(
+                const SizedBox(
                   height: 135, // Set the desired height for the drawer header
                   child: DrawerHeader(
                     decoration: BoxDecoration(
@@ -234,7 +255,7 @@ class _MyAppState extends State<MyApp> {
                   ),
                 ),
                 ListTile(
-                  title: Text('Progress'),
+                  title: const Text('Progress'),
                   onTap: () {
                     navigatorKey.currentState?.pop(); // Close the drawer
                     navigatorKey.currentState?.push(
@@ -248,7 +269,7 @@ class _MyAppState extends State<MyApp> {
                   },
                 ),
                 ListTile(
-                  title: Text('Store'),
+                  title: const Text('Store'),
                   onTap: () {
                     // Handle menu item 2 click
                     navigatorKey.currentState?.pop(); // Close the drawer
@@ -300,7 +321,7 @@ class _MyAppState extends State<MyApp> {
                 );
               }
             },
-            child: Icon(Icons.add),
+            child: const Icon(Icons.add),
           ),
         ),
       ),

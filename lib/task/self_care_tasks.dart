@@ -5,7 +5,7 @@ import 'package:uuid/uuid.dart';
 
 final List<Task> selfCareTasks = [
   Task(
-    id: Uuid().v4(),
+    id: const Uuid().v4(),
     name: 'Grab a Coffee',
     description: 'Visit your favorite coffee shop and enjoy a cup of coffee.',
     parentId: '',
@@ -14,7 +14,7 @@ final List<Task> selfCareTasks = [
     ],
   ),
   Task(
-    id: Uuid().v4(),
+    id: const Uuid().v4(),
     name: 'Stretch',
     description: 'Take a break and do some stretching exercises.',
     parentId: '',
@@ -23,7 +23,7 @@ final List<Task> selfCareTasks = [
     ],
   ),
   Task(
-    id: Uuid().v4(),
+    id: const Uuid().v4(),
     name: 'Drink Water',
     description: 'Stay hydrated by drinking a glass of water.',
     parentId: '',
@@ -32,7 +32,7 @@ final List<Task> selfCareTasks = [
     ],
   ),
   Task(
-    id: Uuid().v4(),
+    id: const Uuid().v4(),
     name: 'Take a Walk',
     description:
         'Go for a short walk to get some fresh air and light exercise.',
@@ -43,7 +43,7 @@ final List<Task> selfCareTasks = [
   ),
   // Additional self care tasks
   Task(
-    id: Uuid().v4(),
+    id: const Uuid().v4(),
     name: 'Read a Book',
     description: 'Spend some time reading a book of your choice.',
     parentId: '',
@@ -52,7 +52,7 @@ final List<Task> selfCareTasks = [
     ],
   ),
   Task(
-    id: Uuid().v4(),
+    id: const Uuid().v4(),
     name: 'Listen to Music',
     description: 'Relax and enjoy your favorite music.',
     parentId: '',
@@ -61,7 +61,7 @@ final List<Task> selfCareTasks = [
     ],
   ),
   Task(
-    id: Uuid().v4(),
+    id: const Uuid().v4(),
     name: 'Practice Mindfulness',
     description: 'Take a moment to practice mindfulness and meditation.',
     parentId: '',
@@ -70,7 +70,7 @@ final List<Task> selfCareTasks = [
     ],
   ),
   Task(
-    id: Uuid().v4(),
+    id: const Uuid().v4(),
     name: 'Cook a Healthy Meal',
     description: 'Try cooking a nutritious and delicious meal.',
     parentId: '',
@@ -79,7 +79,7 @@ final List<Task> selfCareTasks = [
     ],
   ),
   Task(
-    id: Uuid().v4(),
+    id: const Uuid().v4(),
     name: 'Write in a Journal',
     description:
         'Reflect on your thoughts and feelings by writing in a journal.',
@@ -89,7 +89,7 @@ final List<Task> selfCareTasks = [
     ],
   ),
   Task(
-    id: Uuid().v4(),
+    id: const Uuid().v4(),
     name: 'Practice Yoga',
     description:
         'Engage in a yoga session to enhance flexibility and relaxation.',
