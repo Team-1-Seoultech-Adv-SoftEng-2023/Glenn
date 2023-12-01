@@ -139,7 +139,7 @@ class EditTaskPageState extends State<EditTaskPage> {
                   MaterialPageRoute(
                     builder: (context) => TaskCreationPage(
                       onTaskCreated: widget.onTaskCreated,
-                      //parentId: widget.task.id,
+                      parentId: widget.task.id,
                     ),
                   ),
                 );
