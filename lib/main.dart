@@ -113,6 +113,7 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       if (newTask != null) {
         print('New task created: $newTask');
+        newTask.printTaskDetails();
         
         tasks.add(newTask);
 

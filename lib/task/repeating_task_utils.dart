@@ -1,4 +1,6 @@
 //import '../fields/task_field.dart';
+import 'package:glenn/fields/due_date_field.dart';
+
 import 'task.dart';
 import 'package:flutter/material.dart';
 
@@ -86,28 +88,32 @@ DateTime incrementCurrentDate(DateTime currentDate, RepeatPeriod repeatPeriod, i
 
 List<Task> generateRepeatingTasks({
   required Task originalTask,
-  required TextEditingController dueDateController,
-  required TextEditingController endDateController,
+  required TextEditingController repetitionEndDateController,
   required RepeatPeriod selectedRepeatPeriod,
-  required TextEditingController repeatIntervalController,
+  required int repeatInterval,
 }) {
-  DateTime startDate = DateTime.parse(dueDateController.text);
-  DateTime endDate = DateTime.parse(endDateController.text);
+
   List<Task> repeatingTasks = [];
-  DateTime currentDate = startDate;
   originalTask.repeatingId = UniqueKey().toString();
-  TimeOfDay dueTime = originalTask.getDueTime() ?? TimeOfDay(hour: 23, minute: 59,);
+
+  DateTime currentDate = originalTask.getDueDate() ?? DateTime.now();
+  List<String> dateParts = repetitionEndDateController.text.split('-');
+  DateTime endDate = DateTime(
+    int.parse(dateParts[0]),
+    int.parse(dateParts[1]),
+    int.parse(dateParts[2]),
+    currentDate.hour,
+    currentDate.minute,
+  );
 
   while (currentDate.isBefore(endDate) || currentDate.isAtSameMomentAs(endDate)) {
     
     Task copiedTask = Task.copyWithUniqueID(originalTask);
-
-    copiedTask.setDueDate(currentDate, dueTime);
-
-    copiedTask.updateTask(fields: [/* updated fields */]);
+    DueDateField newDueDateField = DueDateField(dueDateTime: currentDate);
+    copiedTask.updateTask(fields: [newDueDateField]);
+    
     repeatingTasks.add(copiedTask);
 
-    int repeatInterval = int.parse(repeatIntervalController.text);
     currentDate = incrementCurrentDate(currentDate, selectedRepeatPeriod, repeatInterval);
   }
 

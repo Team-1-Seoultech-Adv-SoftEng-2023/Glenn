@@ -157,59 +157,31 @@ class Task {
     this.reminderDate = reminderDate ?? this.reminderDate;
   }
 
-  void setDueDate(DateTime newDueDate, TimeOfDay newDueTime) {
-    // Check if the task has a due date field
-    if (hasDueDate) {
-      // Find the DueDateField in the fields list
-      final dueDateFieldIndex = fields.indexWhere((field) => field is DueDateField);
-      if (dueDateFieldIndex != -1) {
-        // Update the due date and time in the existing DueDateField
-        final dueDateField = fields[dueDateFieldIndex] as DueDateField;
-        dueDateField.dueDateTime = DateTime(
-          newDueDate.year,
-          newDueDate.month,
-          newDueDate.day,
-          newDueTime.hour,
-          newDueTime.minute,
-        );
-        dueDateField.updateValue();
-      }
-    } else {
-      // If the task doesn't have a due date field, create a new one
-      final dueDateField = DueDateField(dueDateTime: DateTime(
-        newDueDate.year,
-        newDueDate.month,
-        newDueDate.day,
-        newDueTime.hour,
-        newDueTime.minute,
-      ));
-      this.fields.add(dueDateField);
-    }
-  }
-
 
   void printTaskDetails() {
-    print('Task ID: $id');
-    print('Name: $name');
-    print('Description: $description');
-    print('Parent ID: $parentId');
-    print('Repeating ID: $repeatingId');
-    print('Is Complete: $isComplete');
-    print('Is Completed On Time: $isCompletedOnTime');
-    print('File Paths: $filePaths');
-    print('Reminder Date: $reminderDate');
-    print('Fields:');
+    List<String> fieldDetails = [];
+
     for (var field in fields) {
       if (field is DueDateField) {
-        print('  Due Date: ${field.value}, Due Date Time: ${field.dueDate} ${field.dueTime}');
+        fieldDetails.add('  Due Date and Time: ${field.value}');
       } else if (field is PriorityField) {
-        print('  Priority: ${field.value}');
+        fieldDetails.add('  Priority: ${field.value}');
       } else if (field is SelfCareField) {
-        print('  Self Care Activity: ${field.value}');
+        fieldDetails.add('  Self Care Activity: ${field.value}');
       } else {
-        print('  Field Name: ${field.name}, Field Value: ${field.value}');
+        fieldDetails.add('  Field Name: ${field.name}, Field Value: ${field.value}');
       }
     }
-  }
 
+    print('Task ID: $id\n'
+          '---Name: $name\n'
+          '---Description: $description\n'
+          '---Parent ID: $parentId\n'
+          '---Repeating ID: $repeatingId\n'
+          '---Is Complete: $isComplete\n'
+          '---Is Completed On Time: $isCompletedOnTime\n'
+          '---File Paths: $filePaths\n'
+          '---Reminder Date: $reminderDate\n'
+          '---Fields:\n  |--->${fieldDetails.join('\n')}');
+  }
 }

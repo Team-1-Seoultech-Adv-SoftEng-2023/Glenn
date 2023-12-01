@@ -4,7 +4,7 @@ import 'package:file_picker/file_picker.dart';
 
 import 'task/task.dart';
 import 'fields/due_date_field.dart';
-import 'task/repeating_task.dart';
+import 'task/repeating_task_utils.dart';
 import 'fields/task_field.dart';
 
 class TaskCreationPage extends StatefulWidget {
@@ -28,7 +28,7 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
   final TextEditingController _dueDateController = TextEditingController();
   final TextEditingController _dueTimeController = TextEditingController();
 
-  final TextEditingController _endDateController = TextEditingController();
+  final TextEditingController _repetitionEndDateController = TextEditingController();
   bool _isRepeating = false;
   RepeatPeriod _selectedRepeatPeriod = RepeatPeriod.days;
   final TextEditingController _repeatIntervalController =TextEditingController();
@@ -96,6 +96,8 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                           if (_dueTimeController.text.isEmpty){
                             _dueTimeController.text = formatTime(TimeOfDay(hour: 23, minute: 59,));
                           }
+                          _repetitionEndDateController.text = formatDate(DateTime.now());
+                          _repeatIntervalController.text = '1';
                         }
                       });
                     },
@@ -107,9 +109,12 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                 ],
               ),
             ),
-            ElevatedButton(
-              onPressed: _pickFile, // Add file picking button
-              child: const Text('Add File'),
+            Visibility(
+              visible: widget.parentId == '',
+              child: ElevatedButton(
+                onPressed: _pickFile,
+                child: Text('Add File'),
+              ),
             ),
             
             ElevatedButton(
@@ -132,41 +137,40 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                   if(widget.parentId != ''){
                       // Notify the main page about the newly created task
                       widget.onTaskCreated(newTask);
+                      print('You created a new subtask!');
                   } 
                   else if(widget.parentId == ''){
 
-                    
                     // Create a new task object with the provided details
-                      //if (_dueDateController.text.isNotEmpty) {   
+                    if (_dueDateController.text.isNotEmpty) {   
                       DueDateField dueDateField = createDueDateField();                 
                       newTask.updateTask(fields: [dueDateField]);
-                      //}
+                    }
 
-                      newTask.printTaskDetails();
-
-                      if(!_isRepeating){
+                    if(!_isRepeating){
                         widget.onTaskCreated(newTask);
 
-                      } else if (_isRepeating){
+                    } else if (_isRepeating){
+
                         List<Task> newTasks = generateRepeatingTasks(
                             originalTask: newTask,
-                            dueDateController: _dueDateController,
-                            endDateController: _endDateController,
+                            repetitionEndDateController: _repetitionEndDateController,
                             selectedRepeatPeriod: _selectedRepeatPeriod,
-                            repeatIntervalController: _repeatIntervalController,
+                            repeatInterval: int.parse(_repeatIntervalController.text),
                         );
-                    
+
+                        print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
                         print(newTasks);
 
                         for (Task newTask in newTasks) {
-                          widget.onTaskCreated(newTask);
-                        }
+                           widget.onTaskCreated(newTask);
+                         }
                       }
                   }
                   
                   resetForm();
+                  print('Done on the task creation page... Back to the main task page!');
                   Navigator.of(context).pop();  
-
                 } 
               },
               child: const Text('Create Task'),
@@ -269,7 +273,7 @@ Widget _buildRepeatPatternDropdown() {
 
   Widget _buildEndDateField() {
     return TextFormField(
-      controller: _endDateController,
+      controller: _repetitionEndDateController,
       keyboardType: TextInputType.datetime,
       //decoration: InputDecoration(labelText: 'End Date'),
       onTap: () => _showEndDatePicker(),
@@ -279,15 +283,27 @@ Widget _buildRepeatPatternDropdown() {
   void _showEndDatePicker() async {
     DateTime? selectedDate = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(), // Default to one year from now
-      firstDate: DateTime(2000),
+      initialDate: _dueDateController.text.isNotEmpty
+          ? DateTime.parse(_dueDateController.text)
+          : DateTime.now(), // Default to one year from now if _dueDateController is empty
+      firstDate: DateTime.now(),
       lastDate: DateTime(2101),
     );
 
     if (selectedDate != null) {
-      setState(() {
-        _endDateController.text = formatDate(selectedDate);
-      });
+      if (selectedDate.isAfter(DateTime.parse(_dueDateController.text))) {
+        setState(() {
+          _repetitionEndDateController.text = formatDate(selectedDate);
+        });
+      } else {
+        // Show an error or handle the case where the selected end date is not in the future
+        // For example, you can display a snackbar or an error message.
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Please select an end date in the future."),
+          ),
+        );
+      }
     }
   }
 
@@ -352,7 +368,7 @@ Widget _buildRepeatPatternDropdown() {
     _descriptionController.clear();
     _dueDateController.clear();
     _dueTimeController.clear();
-    _endDateController.clear();
+    _repetitionEndDateController.clear();
     _repeatIntervalController.clear();
     setState(() {
       _isRepeating = false;
@@ -379,9 +395,4 @@ Widget _buildRepeatPatternDropdown() {
   }
 
 
-// if (_endDateController.text.isEmpty || DateTime.parse(_endDateController.text).isBefore(DateTime.parse(_dueDateController.text))) {
-//                       ScaffoldMessenger.of(context).showSnackBar(
-//                         SnackBar(content: Text('Please chose an end date that is in the future.'),),
-//                       );
-//                     } 
 }
