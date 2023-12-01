@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'task_creation_page.dart';
 import 'fields/due_date_field.dart';
+import 'fields/priority_field.dart';
+import 'task_creation_page.dart';
 import 'task/task.dart';
 import 'package:permission_handler/permission_handler.dart';
+
 
 class EditTaskPage extends StatefulWidget {
   final Task task;
@@ -26,8 +28,9 @@ class EditTaskPage extends StatefulWidget {
 class _EditTaskPageState extends State<EditTaskPage> {
   late TextEditingController _nameController;
   late TextEditingController _descriptionController;
-  late TextEditingController _dateController;
-  late TextEditingController _timeController;
+  late TextEditingController _dueDateController;
+  late TextEditingController _dueTimeController;
+  late int _selectedPriority;
 
   @override
   void initState() {
@@ -40,8 +43,9 @@ class _EditTaskPageState extends State<EditTaskPage> {
     _nameController = TextEditingController(text: widget.task.name);
     _descriptionController =
         TextEditingController(text: widget.task.description);
-    _dateController = TextEditingController(text: _getDueDateFormatted());
-    _timeController = TextEditingController(text: _getDueTimeFormatted());
+    _dueDateController = TextEditingController(text: _getDueDateFormatted());
+    _dueTimeController = TextEditingController(text: _getDueTimeFormatted());
+    _selectedPriority = _getPriority();
   }
 
   @override
@@ -49,9 +53,18 @@ class _EditTaskPageState extends State<EditTaskPage> {
     // Dispose controllers to avoid memory leaks
     _nameController.dispose();
     _descriptionController.dispose();
-    _dateController.dispose();
-    _timeController.dispose();
+    _dueDateController.dispose();
+    _dueTimeController.dispose();
     super.dispose();
+  }
+
+  int _getPriority() {
+    int? priority = widget.task.getPriority();
+    if (priority != null) {
+      return priority;
+    } else {
+      return 0;
+    }
   }
 
   // Method to get the formatted due date as a string
@@ -127,7 +140,7 @@ class _EditTaskPageState extends State<EditTaskPage> {
                   MaterialPageRoute(
                     builder: (context) => TaskCreationPage(
                       onTaskCreated: widget.onTaskCreated,
-                      parentId: widget.task.id,
+                      //parentId: widget.task.id,
                     ),
                   ),
                 );
@@ -187,21 +200,22 @@ class _EditTaskPageState extends State<EditTaskPage> {
                 ],
               ),
             ),
+
+            _buildPriorityDropdown(),
+
             ElevatedButton(
               onPressed: () {
-                // Update the task's name when the button is pressed
+                
+                PriorityField priorityField = PriorityField(priority: _selectedPriority);
+
+                // Update the task's attributes when the button is pressed
                 setState(() {
                   widget.task.updateTask(
                     name: _nameController.text,
                     description: _descriptionController.text,
                     fields: [
-                      DueDateField(
-                        dueDate: DateTime.parse(_dateController.text),
-                        dueTime: TimeOfDay(
-                          hour: int.parse(_timeController.text.split(":")[0]),
-                          minute: int.parse(_timeController.text.split(":")[1]),
-                        ),
-                      ),
+                        createDueDateField(),
+                        if(_selectedPriority != 0) priorityField,
                     ],
                   );
                 });
@@ -219,7 +233,7 @@ class _EditTaskPageState extends State<EditTaskPage> {
   // Widget method to build the TextFormField for the date input
   Widget _buildDateField() {
     return TextFormField(
-      controller: _dateController,
+      controller: _dueDateController,
       keyboardType: TextInputType.datetime,
       decoration: InputDecoration(labelText: 'Date'),
       onTap: () => _showDatePicker(),
@@ -229,7 +243,7 @@ class _EditTaskPageState extends State<EditTaskPage> {
   // Widget method to build the TextFormField for the time input
   Widget _buildTimeField() {
     return TextFormField(
-      controller: _timeController,
+      controller: _dueTimeController,
       keyboardType: TextInputType.datetime,
       decoration: InputDecoration(labelText: 'Time'),
       onTap: () => _showTimePicker(),
@@ -265,7 +279,7 @@ class _EditTaskPageState extends State<EditTaskPage> {
         widget.task.fields.first is DueDateField) {
       DueDateField dueDateField = widget.task.fields.first as DueDateField;
       dueDateField.dueDate = selectedDate;
-      _dateController.text = formatDate(selectedDate);
+      _dueDateController.text = formatDate(selectedDate);
     }
   }
 
@@ -274,7 +288,54 @@ class _EditTaskPageState extends State<EditTaskPage> {
         widget.task.fields.first is DueDateField) {
       DueDateField dueDateField = widget.task.fields.first as DueDateField;
       dueDateField.dueTime = selectedTime;
-      _timeController.text = formatTime(selectedTime);
+      _dueTimeController.text = formatTime(selectedTime).replaceFirstMapped(
+          RegExp(r'(\d{2})(\d{2})'),
+          (match) => '${match[1]}:${match[2]}',
+        );
     }
   }
+  
+  DueDateField createDueDateField() {
+    DueDateField dueDateField = DueDateField(dueDateTime: DateTime.parse(_dueDateController.text));
+    dueDateField.dueTime = TimeOfDay(
+                      hour: int.parse(_dueTimeController.text.split(":")[0]),
+                      minute: int.parse(_dueTimeController.text.split(":")[1]),
+                      );
+    return dueDateField;
+  }
+
+  Widget _buildPriorityDropdown() {
+  return DropdownButtonFormField<int>(
+    value: _selectedPriority,
+    items: [
+      DropdownMenuItem<int>(
+        value: 0,
+        child: Text('None'),
+      ),
+      DropdownMenuItem<int>(
+        value: 1,
+        child: Text('Low'),
+      ),
+      DropdownMenuItem<int>(
+        value: 2,
+        child: Text('Medium'),
+      ),
+      DropdownMenuItem<int>(
+        value: 3,
+        child: Text('High'),
+      ),
+      DropdownMenuItem<int>(
+        value: 4,
+        child: Text('Critical'),
+      ),
+    ],
+    onChanged: (value) {
+      setState(() {
+        _selectedPriority = value!;
+      });
+    },
+    decoration: InputDecoration(labelText: 'Priority'),
+  );
+}
+
 }

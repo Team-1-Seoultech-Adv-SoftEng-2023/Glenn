@@ -5,6 +5,8 @@ import 'package:file_picker/file_picker.dart';
 import 'task/task.dart';
 
 import 'fields/due_date_field.dart';
+import 'fields/priority_field.dart';
+import 'fields/self_care_field.dart';
 
 class TaskDetailPage extends StatefulWidget {
   final Task task;
@@ -92,33 +94,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
             ),
           ),
           if (widget.task.fields.isNotEmpty)
-            Container(
-              padding: const EdgeInsets.all(10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  ...widget.task.fields.map((field) {
-                    if (field is DueDateField) {
-                      return ListTile(
-                        title: Text('Due Date'),
-                        subtitle: Row(
-                          children: [
-                            Text('Date: ${_formatDate(field.dueDate)}'),
-                            const SizedBox(width: 8),
-                            Text('Time: ${_formatTime(field.dueTime)}'),
-                          ],
-                        ),
-                      );
-                    } else {
-                      return ListTile(
-                        title: Text(field.name),
-                        subtitle: Text(field.value),
-                      );
-                    }
-                  }).toList(),
-                ],
-              ),
-            ),
+            _buildFieldContainer(),
           if (widget.subtasks.isNotEmpty)
             Column(
               children: <Widget>[
@@ -165,14 +141,6 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
     );
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-  }
-
-  String _formatTime(TimeOfDay time) {
-    return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
-  }
-
   void _openFile(String filePath) {
     print('Opening file: $filePath');
     // Implement logic to open the file using appropriate plugins
@@ -187,5 +155,57 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
         attachedFiles.add(filePath);
       });
     }
+  }
+
+  Widget _buildDueDateField(DueDateField field) {
+    return ListTile(
+      title: Text('Due Date'),
+      subtitle: Row(
+        children: [
+          Text('Date: ${formatDate(field.dueDate)}'),
+          const SizedBox(width: 8),
+          Text('Time: ${formatTime(field.dueTime)}'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPriorityField(PriorityField priorityField) {
+    return ListTile(
+      title: Text('Priority'),
+      subtitle: Text(priorityField.value),
+    );
+  }
+
+  Widget _buildSelfCareField(SelfCareField selfCareField) {
+    return ListTile(
+      title: Text('Self Care'),
+      subtitle: Text(selfCareField.value),
+    );
+  }
+
+  Widget _buildFieldContainer() {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          ...widget.task.fields.map((field) {
+            if (field is DueDateField) {
+              return _buildDueDateField(field);
+            } else if (field is PriorityField) {
+              return _buildPriorityField(field);
+            } else if (field is SelfCareField) {
+              return _buildSelfCareField(field);
+            } else {
+              return ListTile(
+                title: Text(field.name),
+                subtitle: Text(field.value),
+              );
+            }
+          }).toList(),
+        ],
+      ),
+    );
   }
 }

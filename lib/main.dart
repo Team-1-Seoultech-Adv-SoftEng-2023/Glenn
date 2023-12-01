@@ -29,8 +29,7 @@ final List<Task> tasks = [
     parentId: '',
     fields: [
       DueDateField(
-        dueDate: DateTime(2023, 11, 22),
-        dueTime: TimeOfDay(hour: 14, minute: 30),
+        dueDateTime: DateTime(2023, 11, 22, 14, 30)
       ),
       PriorityField(priority: 2), // Medium priority
     ],
@@ -43,8 +42,7 @@ final List<Task> tasks = [
     parentId: '',
     fields: [
       DueDateField(
-        dueDate: DateTime(2023, 11, 24),
-        dueTime: TimeOfDay(hour: 10, minute: 0),
+        dueDateTime: DateTime(2023, 11, 24, 10, 00)
       ),
     ],
     filePaths: List.empty(),
@@ -73,8 +71,7 @@ final List<Task> tasks = [
     parentId: '',
     fields: [
       DueDateField(
-        dueDate: DateTime(2023, 11, 10),
-        dueTime: const TimeOfDay(hour: 12, minute: 0),
+        dueDateTime: DateTime(2023, 11, 10, 12, 00)
       ),
     ],
     filePaths: List.empty(),
@@ -197,9 +194,8 @@ class _MyAppState extends State<MyApp> {
 
     // Set the due date of the self-care task to today
     selfCareTask.fields.add(DueDateField(
-      dueDate: DateTime.now(),
-      dueTime: TimeOfDay(hour: 23, minute: 59), // Adjust the time as needed
-    ));
+      dueDateTime: DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, 23, 59)
+      ));
 
     return [selfCareTask];
   }

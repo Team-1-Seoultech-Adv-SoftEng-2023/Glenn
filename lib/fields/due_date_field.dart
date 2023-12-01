@@ -3,32 +3,43 @@ import 'package:flutter/material.dart';
 import 'task_field.dart';
 
 class DueDateField extends TaskField {
-  DateTime _dueDate;
-  TimeOfDay _dueTime;
+  DateTime _dueDateTime;
 
   DueDateField({
-    required DateTime dueDate,
-    TimeOfDay dueTime = const TimeOfDay(hour: 23, minute: 59),
-  })  : _dueDate = dueDate,
-        _dueTime = dueTime,
+    required dueDateTime,
+  })  : _dueDateTime = dueDateTime,
         super(
             name: 'Due Date',
-            value: '${formatDate(dueDate)} ${formatTime(dueTime)}');
+            value: '${formatDate(dueDateTime)} ${formatTime( extractTimeOfDay(dueDateTime))}');
 
-  DateTime get dueDate => _dueDate;
-  set dueDate(DateTime value) {
-    _dueDate = value;
+  
+  DateTime get dueDateTime => _dueDateTime;
+
+  set dueDateTime(DateTime value) {
+    _dueDateTime = value;
     updateValue();
   }
 
-  TimeOfDay get dueTime => _dueTime;
+  // Getter for date
+  DateTime get dueDate => DateTime(_dueDateTime.year, _dueDateTime.month, _dueDateTime.day);
+
+  // Setter for date
+  set dueDate(DateTime value) {
+    _dueDateTime = DateTime(value.year, value.month, value.day, _dueDateTime.hour, _dueDateTime.minute);
+    updateValue();
+  }
+
+  // Getter for time
+  TimeOfDay get dueTime => extractTimeOfDay(_dueDateTime);
+
+  // Setter for time
   set dueTime(TimeOfDay value) {
-    _dueTime = value;
+    _dueDateTime = DateTime(_dueDateTime.year, _dueDateTime.month, _dueDateTime.day, value.hour, value.minute);
     updateValue();
   }
 
   void updateValue() {
-    super.value = '${formatDate(_dueDate)} ${formatTime(_dueTime)}';
+    super.value = '${formatDate(_dueDateTime)} ${formatTime(extractTimeOfDay(_dueDateTime))}';
   }
 }
 
@@ -37,5 +48,10 @@ String formatDate (DateTime date) {
 }
 
 String formatTime (TimeOfDay time) {
-  return '${time.hour.toString().padLeft(2, '0')}${time.minute.toString().padLeft(2, '0')}';
+  return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
 }
+
+TimeOfDay extractTimeOfDay(DateTime dateTime) {
+  return TimeOfDay(hour: dateTime.hour, minute: dateTime.minute);
+}
+

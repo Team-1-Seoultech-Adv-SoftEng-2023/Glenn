@@ -281,94 +281,18 @@ class _TaskCardState extends State<TaskCard> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        ListTile(
-                          title: const Text('Due Date'),
-                          subtitle: Row(
-                            children: [
-                              Expanded(
-                                child: TextFormField(
-                                  controller: dateController,
-                                  keyboardType: TextInputType.datetime,
-                                  decoration:
-                                      const InputDecoration(labelText: 'Date'),
-                                  enabled:
-                                      canEditDateTime, // Disable editing on TaskCard
-                                  onTap: canEditDateTime
-                                      ? () async {
-                                          DateTime? selectedDate =
-                                              await showDatePicker(
-                                            context: context,
-                                            initialDate: (widget.task.fields
-                                                    .first as DueDateField)
-                                                .dueDate,
-                                            firstDate: DateTime(2000),
-                                            lastDate: DateTime(2101),
-                                          );
-                                          if (selectedDate != null) {
-                                            setState(() {
-                                              (widget.task.fields.first
-                                                      as DueDateField)
-                                                  .dueDate = selectedDate;
-                                              dateController.text =
-                                                  formatDate(selectedDate);
-                                            });
-                                            // Pass the updated DueDateField to the callback function
-                                            widget.onUpdateDueDateTime(widget
-                                                .task
-                                                .fields
-                                                .first as DueDateField);
-                                          }
-                                        }
-                                      : null,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: TextFormField(
-                                  controller: timeController,
-                                  keyboardType: TextInputType.datetime,
-                                  decoration:
-                                      const InputDecoration(labelText: 'Time'),
-                                  enabled:
-                                      canEditDateTime, // Disable editing on TaskCard
-                                  onTap: canEditDateTime
-                                      ? () async {
-                                          TimeOfDay? selectedTime =
-                                              await showTimePicker(
-                                            context: context,
-                                            initialTime: (widget.task.fields
-                                                    .first as DueDateField)
-                                                .dueTime,
-                                          );
-                                          if (selectedTime != null) {
-                                            setState(() {
-                                              (widget.task.fields.first
-                                                      as DueDateField)
-                                                  .dueTime = selectedTime;
-                                              timeController.text =
-                                                  formatTime(selectedTime);
-                                            });
-                                            // Pass the updated DueDateField to the callback function
-                                            widget.onUpdateDueDateTime(widget
-                                                .task
-                                                .fields
-                                                .first as DueDateField);
-                                          }
-                                        }
-                                      : null,
-                                ),
-                              ),
-                            ],
+                        if (widget.task.fields.any((field) => field is DueDateField))
+                          // Display the Due Date ListTile if a DueDateField is found
+                          ListTile(
+                            title: const Text('Due Date'),
+                            subtitle: Row(
+                              children: [
+                                Text('Date: ${formatDate((widget.task.fields.firstWhere((field) => field is DueDateField) as DueDateField).dueDate)}'),
+                                const SizedBox(width: 8),
+                                Text('Time: ${formatTime((widget.task.fields.firstWhere((field) => field is DueDateField) as DueDateField).dueTime)}'),
+                              ],
+                            ),
                           ),
-                        ),
-                        const ListTile(
-                          title: Text('Field1'),
-                          subtitle: Text('Value1'),
-                        ),
-                        const ListTile(
-                          title: Text('Field3'),
-                          subtitle: Text('Value3'),
-                        ),
                       ],
                       // children: widget.task.fields.map((field) {
                       //   return ListTile(

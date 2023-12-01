@@ -1,7 +1,6 @@
 //import '../fields/task_field.dart';
 import 'task.dart';
 import 'package:flutter/material.dart';
-import '../fields/due_date_field.dart';
 
 enum RepeatPeriod { days, weeks, months, years}
 
@@ -98,7 +97,6 @@ List<Task> generateRepeatingTasks({
   DateTime currentDate = startDate;
   originalTask.repeatingId = UniqueKey().toString();
   TimeOfDay dueTime = originalTask.getDueTime() ?? TimeOfDay(hour: 23, minute: 59,);
-
 
   while (currentDate.isBefore(endDate) || currentDate.isAtSameMomentAs(endDate)) {
     
