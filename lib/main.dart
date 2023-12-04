@@ -6,6 +6,7 @@ import 'completed_tasks_page.dart'; // Import the CompletedTasksPage widget
 import 'calendar_view.dart';
 import 'user_progress_screen.dart';
 import 'due_date_list.dart';
+import 'store.dart';
 
 // import task and utilities
 import 'task/task.dart';
@@ -29,7 +30,7 @@ final List<Task> tasks = [
     parentId: '',
     fields: [
       DueDateField(
-        dueDate: DateTime(2023, 11, 22),
+        dueDate: DateTime(2023, 12, 6),
         dueTime: TimeOfDay(hour: 14, minute: 30),
       ),
       PriorityField(priority: 2), // Medium priority
@@ -43,7 +44,7 @@ final List<Task> tasks = [
     parentId: '',
     fields: [
       DueDateField(
-        dueDate: DateTime(2023, 11, 24),
+        dueDate: DateTime(2023, 12, 24),
         dueTime: TimeOfDay(hour: 10, minute: 0),
       ),
     ],
@@ -73,7 +74,7 @@ final List<Task> tasks = [
     parentId: '',
     fields: [
       DueDateField(
-        dueDate: DateTime(2023, 11, 10),
+        dueDate: DateTime(2023, 12, 10),
         dueTime: const TimeOfDay(hour: 12, minute: 0),
       ),
     ],
@@ -93,15 +94,21 @@ extension IterableExtensions<E> on Iterable<E> {
 
 void main() {
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-  runApp(MyApp(tasks: tasks, navigatorKey: navigatorKey));
+  runApp(MyApp(
+    tasks: tasks,
+    navigatorKey: navigatorKey,
+  ));
 }
 
 class MyApp extends StatefulWidget {
   final List<Task> tasks;
   final GlobalKey<NavigatorState> navigatorKey;
 
-  const MyApp({Key? key, required this.tasks, required this.navigatorKey})
-      : super(key: key);
+  const MyApp({
+    Key? key,
+    required this.tasks,
+    required this.navigatorKey,
+  }) : super(key: key);
 
   @override
   _MyAppState createState() => _MyAppState();
@@ -110,6 +117,13 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   List<Task> incompleteTasks = [];
+
+  // Callback function to update overallScore
+  void updateOverallScore(double newScore) {
+    setState(() {
+      overallScore = newScore;
+    });
+  }
 
   // Callback function to handle newly created tasks
   void handleTaskCreated(Task newTask) {
@@ -253,6 +267,15 @@ class _MyAppState extends State<MyApp> {
                   onTap: () {
                     // Handle menu item 2 click
                     navigatorKey.currentState?.pop(); // Close the drawer
+                    navigatorKey.currentState?.push(
+                      MaterialPageRoute(
+                        builder: (context) => StorePage(
+                          overallScore: overallScore,
+                          updateOverallScore:
+                              updateOverallScore, // Pass the callback function
+                        ),
+                      ),
+                    );
                   },
                 ),
                 // Add more menu items as needed
