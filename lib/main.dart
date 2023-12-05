@@ -115,7 +115,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   List<Task> incompleteTasks = [];
 
   // Callback function to update overallScore
@@ -219,7 +218,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      navigatorKey: navigatorKey,
+      navigatorKey: widget.navigatorKey,
       debugShowCheckedModeBanner: false,
       home: DefaultTabController(
         length: 4,
@@ -251,8 +250,8 @@ class _MyAppState extends State<MyApp> {
                 ListTile(
                   title: Text('Progress'),
                   onTap: () {
-                    navigatorKey.currentState?.pop(); // Close the drawer
-                    navigatorKey.currentState?.push(
+                    widget.navigatorKey.currentState?.pop(); // Close the drawer
+                    widget.navigatorKey.currentState?.push(
                       MaterialPageRoute(
                         builder: (context) => UserProgressScreen(
                           overallScore: overallScore,
@@ -266,8 +265,8 @@ class _MyAppState extends State<MyApp> {
                   title: Text('Store'),
                   onTap: () {
                     // Handle menu item 2 click
-                    navigatorKey.currentState?.pop(); // Close the drawer
-                    navigatorKey.currentState?.push(
+                    widget.navigatorKey.currentState?.pop(); // Close the drawer
+                    widget.navigatorKey.currentState?.push(
                       MaterialPageRoute(
                         builder: (context) => StorePage(
                           overallScore: overallScore,
