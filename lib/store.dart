@@ -1,17 +1,26 @@
+//store.dart
 import 'package:flutter/material.dart';
 
+
+// TODO: Make store page persistant (resets on going back)
 class StoreItem {
   final String name;
   final int sellingPoints;
   bool isOwned;
+  final String image; // Add an image property
 
-  StoreItem(
-      {required this.name, required this.sellingPoints, this.isOwned = false});
+  StoreItem({
+    required this.name,
+    required this.sellingPoints,
+    this.isOwned = false,
+    required this.image,
+  });
 }
 
 class StorePage extends StatefulWidget {
   double overallScore;
   final void Function(double) updateOverallScore;
+
   StorePage({required this.overallScore, required this.updateOverallScore});
 
   @override
@@ -21,16 +30,38 @@ class StorePage extends StatefulWidget {
 class _StorePageState extends State<StorePage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  StoreItem? _selectedOwnedItem; // Add this line to declare the variable
 
   List<StoreItem> storeItems = [
-    StoreItem(name: 'Cap', sellingPoints: 5),
-    StoreItem(name: 'Sun glasses', sellingPoints: 2),
-    StoreItem(name: 'Scarf', sellingPoints: 1),
-    StoreItem(name: 'Gloves', sellingPoints: 1),
+    StoreItem(
+      name: 'Orange Fancy Cat',
+      sellingPoints: 5,
+      image: 'assets/avatars/cute_cat.png',
+    ),
+    StoreItem(
+      name: 'Wizard Lizard',
+      sellingPoints: 2,
+      image: 'assets/avatars/wizard_lizard.png',
+    ),
+    StoreItem(
+      name: 'Nerd Fairy',
+      sellingPoints: 1,
+      image: 'assets/avatars/nerd_fairy.png',
+    ),
+    StoreItem(
+      name: 'Jeju Platypus',
+      sellingPoints: 1,
+      image: 'assets/avatars/vacation_platypus.png',
+    ),
     // Add more items as needed
   ];
 
   List<StoreItem> ownedItems = [
+    StoreItem(
+      name: 'Pet Rock',
+      sellingPoints: 0,
+      image: 'assets/avatars/pet_rock.png',
+    ),
     // Add items that the user already owns
   ];
 
@@ -41,7 +72,13 @@ class _StorePageState extends State<StorePage>
       builder: (context) {
         return AlertDialog(
           title: Text('Confirm Purchase'),
-          content: Text('Do you want to purchase ${item.name}?'),
+          content: Column(
+            children: [
+              Image.asset(
+                  item.image), // Display the image in the confirmation dialog
+              Text('Do you want to purchase ${item.name}?'),
+            ],
+          ),
           actions: [
             TextButton(
               onPressed: () {
@@ -80,6 +117,8 @@ class _StorePageState extends State<StorePage>
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                Image.asset(
+                    item.image), // Display the image in the success dialog
                 Text('Item ${item.name} purchased!'),
                 SizedBox(height: 10),
                 Text('Remaining points: ${widget.overallScore}'),
@@ -138,6 +177,7 @@ class _StorePageState extends State<StorePage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _selectOwnedItem(ownedItems[0]);
   }
 
   @override
@@ -159,38 +199,91 @@ class _StorePageState extends State<StorePage>
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
+      body: Stack(
         children: [
-          // Tab 1: Purchase
-          ListView.builder(
-            itemCount: storeItems.length,
-            itemBuilder: (context, index) {
-              final item = storeItems[index];
-              return ListTile(
-                title: Text(item.name),
-                subtitle: Text('Cost: ${item.sellingPoints} points'),
-                onTap: () => _purchaseItem(item),
-                trailing: index == 0
-                    ? Text('Total Points: ${widget.overallScore.toString()}')
-                    : null,
-              );
-            },
-          ),
+          TabBarView(
+            controller: _tabController,
+            children: [
+              // Tab 1: Purchase
+              ListView.builder(
+                itemCount: storeItems.length,
+                itemBuilder: (context, index) {
+                  final item = storeItems[index];
+                  return ListTile(
+                    title: Text(item.name),
+                    subtitle: Text('Cost: ${item.sellingPoints} points'),
+                    onTap: () => _purchaseItem(item),
+                    leading: Image.asset(item.image),
+                    trailing: index == 0
+                        ? Text(
+                            'Total Points: ${widget.overallScore.toString()}')
+                        : null,
+                  );
+                },
+              ),
 
-          // Tab 2: Owned
-          ListView.builder(
-            itemCount: ownedItems.length,
-            itemBuilder: (context, index) {
-              final item = ownedItems[index];
-              return ListTile(
-                title: Text(item.name),
-                subtitle: Text('Owned'),
-              );
-            },
+              // Tab 2: Owned
+              ListView.builder(
+                itemCount: ownedItems.length,
+                itemBuilder: (context, index) {
+                  final item = ownedItems[index];
+                  return ListTile(
+                    title: Text(item.name),
+                    subtitle: Text('Owned'),
+                    leading: GestureDetector(
+                      onTap: () => _selectOwnedItem(item),
+                      child: Container(
+                        width: 48.0,
+                        height: 48.0,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: _selectedOwnedItem == item
+                              ? Color.fromARGB(255, 218, 218, 218)
+                              : Colors.transparent,
+                        ),
+                        child: Center(
+                          child: Image.asset(
+                            item.image,
+                            width: 40.0, // Adjust the size of the image
+                            height: 40.0,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+          Positioned(
+            bottom: 16.0,
+            left: 16.0,
+            child: Container(
+              width: 56.0,
+              height: 56.0,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Color.fromARGB(255, 218, 218, 218),
+              ),
+              child: Center(
+                child: _selectedOwnedItem != null
+                    ? Image.asset(
+                        _selectedOwnedItem!.image,
+                        width: 96.0,
+                        height: 96.0,
+                      )
+                    : SizedBox(), // Display nothing if no owned item is selected
+              ),
+            ),
           ),
         ],
       ),
     );
+  }
+
+  void _selectOwnedItem(StoreItem item) {
+    setState(() {
+      _selectedOwnedItem = item;
+    });
   }
 }
