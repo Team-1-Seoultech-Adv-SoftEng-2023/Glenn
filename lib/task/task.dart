@@ -12,7 +12,7 @@ class Task {
   final List<TaskField> fields;
   bool isComplete;
   bool isCompletedOnTime; // Add this property
-  List<String> filePaths;
+  final List<String> filePaths;
   DateTime? reminderDate;
 
   @override
