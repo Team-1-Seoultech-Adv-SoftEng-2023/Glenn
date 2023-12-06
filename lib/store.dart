@@ -20,19 +20,20 @@ class StoreItem {
 class StorePage extends StatefulWidget {
   double overallScore;
   final void Function(double) updateOverallScore;
+  final GlobalKey<StorePageState> storePageKey;
 
-  StorePage({required this.overallScore, required this.updateOverallScore});
+
+    StorePage({
+    required this.overallScore,
+    required this.updateOverallScore,
+    required this.storePageKey,
+  });
 
   @override
-  _StorePageState createState() => _StorePageState();
+  StorePageState createState() => StorePageState();
 }
 
-class _StorePageState extends State<StorePage>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  StoreItem? _selectedOwnedItem; // Add this line to declare the variable
-
-  List<StoreItem> storeItems = [
+List<StoreItem> storeItems = [
     StoreItem(
       name: 'Orange Fancy Cat',
       sellingPoints: 5,
@@ -64,6 +65,12 @@ class _StorePageState extends State<StorePage>
     ),
     // Add items that the user already owns
   ];
+
+  StoreItem selectedOwnedItem = ownedItems[0]; 
+
+
+class StorePageState extends State<StorePage> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
 
   void _purchaseItem(StoreItem item) {
     // Show a confirmation dialog before the purchase
@@ -107,6 +114,7 @@ class _StorePageState extends State<StorePage>
       widget.overallScore -= item.sellingPoints;
 
       widget.updateOverallScore(widget.overallScore);
+      _selectOwnedItem(item);
 
       // Show a confirmation dialog for successful purchase
       showDialog(
@@ -177,8 +185,8 @@ class _StorePageState extends State<StorePage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _selectOwnedItem(ownedItems[0]);
   }
+
 
   @override
   void dispose() {
@@ -212,7 +220,9 @@ class _StorePageState extends State<StorePage>
                   return ListTile(
                     title: Text(item.name),
                     subtitle: Text('Cost: ${item.sellingPoints} points'),
-                    onTap: () => _purchaseItem(item),
+                    onTap: () {
+                      _purchaseItem(item);
+                    },                    
                     leading: Image.asset(item.image),
                     trailing: index == 0
                         ? Text(
@@ -231,13 +241,13 @@ class _StorePageState extends State<StorePage>
                     title: Text(item.name),
                     subtitle: Text('Owned'),
                     leading: GestureDetector(
-                      onTap: () => _selectOwnedItem(item),
+                      onTap: () {_selectOwnedItem(item);},
                       child: Container(
                         width: 48.0,
                         height: 48.0,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: _selectedOwnedItem == item
+                          color: selectedOwnedItem == item
                               ? Color.fromARGB(255, 218, 218, 218)
                               : Colors.transparent,
                         ),
@@ -266,9 +276,9 @@ class _StorePageState extends State<StorePage>
                 color: Color.fromARGB(255, 218, 218, 218),
               ),
               child: Center(
-                child: _selectedOwnedItem != null
+                child: selectedOwnedItem != null
                     ? Image.asset(
-                        _selectedOwnedItem!.image,
+                        selectedOwnedItem!.image,
                         width: 96.0,
                         height: 96.0,
                       )
@@ -278,12 +288,28 @@ class _StorePageState extends State<StorePage>
           ),
         ],
       ),
+      bottomNavigationBar: BottomAppBar(
+        child: Container(
+          height: 56.0,
+          child: Row(
+            children: [
+              IconButton(
+                icon: Icon(Icons.arrow_back),
+                onPressed: () {
+                  Navigator.of(context).pop(); // Use pop instead of push
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
   void _selectOwnedItem(StoreItem item) {
     setState(() {
-      _selectedOwnedItem = item;
+      selectedOwnedItem = item;
     });
   }
+
 }

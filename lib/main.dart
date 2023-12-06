@@ -84,7 +84,7 @@ final List<Task> tasks = [
 
 List<Map<String, dynamic>> progressHistory = [];
 
-double overallScore = 0.0;
+double overallScore = 10.0;
 
 extension IterableExtensions<E> on Iterable<E> {
   E? get firstOrNull {
@@ -103,12 +103,14 @@ void main() {
 class MyApp extends StatefulWidget {
   final List<Task> tasks;
   final GlobalKey<NavigatorState> navigatorKey;
+  final GlobalKey<StorePageState> storePageKey;
 
-  const MyApp({
+  MyApp({
     Key? key,
     required this.tasks,
     required this.navigatorKey,
-  }) : super(key: key);
+  }) : storePageKey = GlobalKey<StorePageState>(),
+   super(key: key);
 
   @override
   _MyAppState createState() => _MyAppState();
@@ -270,8 +272,8 @@ class _MyAppState extends State<MyApp> {
                       MaterialPageRoute(
                         builder: (context) => StorePage(
                           overallScore: overallScore,
-                          updateOverallScore:
-                              updateOverallScore, // Pass the callback function
+                          updateOverallScore: updateOverallScore,
+                          storePageKey: widget.storePageKey,  // Pass the callback function
                         ),
                       ),
                     );
@@ -312,7 +314,6 @@ class _MyAppState extends State<MyApp> {
           ),
           floatingActionButton: FloatingActionButton(
             onPressed: () {
-              // Check if navigatorKey.currentState is not null before using it
               if (widget.navigatorKey.currentState != null) {
                 widget.navigatorKey.currentState!.push(
                   MaterialPageRoute(
