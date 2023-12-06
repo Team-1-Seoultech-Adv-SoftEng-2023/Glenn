@@ -1,12 +1,19 @@
 //main.dart
-//import main pages
+//import packages
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+//import main pages
 import 'task_creation_page.dart'; // Import the task_creation_page.dart file
 import 'completed_tasks_page.dart'; // Import the CompletedTasksPage widget
 import 'calendar_view.dart';
 import 'user_progress_screen.dart';
 import 'due_date_list.dart';
-import 'store.dart';
+
+// import store
+import 'store/store.dart';
+import 'store/store_item.dart';
+import 'store/store_state.dart';
 
 // import task and utilities
 import 'task/task.dart';
@@ -84,7 +91,7 @@ final List<Task> tasks = [
 
 List<Map<String, dynamic>> progressHistory = [];
 
-double overallScore = 0.0;
+double overallScore = 10.0;
 
 extension IterableExtensions<E> on Iterable<E> {
   E? get firstOrNull {
@@ -94,11 +101,25 @@ extension IterableExtensions<E> on Iterable<E> {
 
 void main() {
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-  runApp(MyApp(
-    tasks: tasks,
-    navigatorKey: navigatorKey,
-  ));
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => StoreState(
+            overallScore: overallScore,
+            storeItems: defaultStoreItems,  // Make sure to replace defaultStoreItems with your actual default items
+            ownedItems: defaultOwnedItems,  // Make sure to replace defaultOwnedItems with your actual default items
+          ),
+        ),
+      ],
+      child: MyApp(
+        tasks: tasks,
+        navigatorKey: navigatorKey,
+      ),
+    ),
+  );
 }
+
 
 class MyApp extends StatefulWidget {
   final List<Task> tasks;

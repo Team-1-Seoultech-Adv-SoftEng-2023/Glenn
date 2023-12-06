@@ -1,11 +1,12 @@
-// store_state.dart
+// store/store_state.dart
 import 'package:flutter/material.dart';
-import 'store.dart';
+import 'store_item.dart';
 
 class StoreState extends ChangeNotifier {
   double overallScore;
   List<StoreItem> storeItems;
   List<StoreItem> ownedItems;
+  StoreItem? _selectedOwnedItem;
 
   StoreState({
     required this.overallScore,
@@ -13,14 +14,26 @@ class StoreState extends ChangeNotifier {
     required this.ownedItems,
   });
 
+  StoreItem? get selectedOwnedItem => _selectedOwnedItem;
+
   void updateOverallScore(double newScore) {
     overallScore = newScore;
-    notifyListeners();
+    // notifyListeners();
   }
 
   void purchaseItem(StoreItem item) {
     // Your purchase logic here
     // ...
+    // notifyListeners();
+  }
+
+  void selectOwnedItem(StoreItem? item) {
+    _selectedOwnedItem = item;
+    notifyListeners();
+  }
+
+  void removeStoreItem(StoreItem item) {
+    storeItems.remove(item);
     notifyListeners();
   }
 
