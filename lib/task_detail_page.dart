@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'task_edit_page.dart';
-//import 'package:file_picker/file_picker.dart';
+import 'package:open_file/open_file.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'task/task.dart';
-
 import 'fields/due_date_field.dart';
 import 'fields/priority_field.dart';
 import 'fields/self_care_field.dart';
@@ -113,11 +113,15 @@ class TaskDetailPageState extends State<TaskDetailPage> {
                 ),
               ],
             ),
-          if (attachedFiles.isNotEmpty)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                const Text('Attached Files:'),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              const Text('Attached Files:'),
+              if (attachedFiles.isEmpty)
+                const ListTile(
+                  title: Text('No attached files'),
+                ),
+              if (attachedFiles.isNotEmpty)
                 ListView.builder(
                   shrinkWrap: true,
                   itemCount: attachedFiles.length,
@@ -125,40 +129,29 @@ class TaskDetailPageState extends State<TaskDetailPage> {
                     final filePath = attachedFiles[index];
                     return ListTile(
                       title: InkWell(
-                        child: Text(filePath.isEmpty
-                            ? 'No attached files'
-                            : filePath.split('/').last),
+                        child: Text(
+                          filePath.isEmpty ? 'No attached files' : filePath.split('/').last,
+                          style: TextStyle(
+                            color: filePath.isEmpty ? Colors.grey : Colors.blue,
+                            decoration: filePath.isEmpty ? TextDecoration.none : TextDecoration.underline,
+                          ),
+                        ),
                         onTap: () {
-                          _openFile(filePath);
+                          if (filePath.isNotEmpty) {
+                            _openFile(filePath);
+                          }
                         },
                       ),
                     );
                   },
                 ),
-              ],
-            ),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  void _openFile(String filePath) {
-    if (kDebugMode) {
-      print('Opening file: $filePath');
-    }
-    // Implement logic to open the file using appropriate plugins
-  }
-
-  // void _pickFile() async {
-  //   FilePickerResult? result = await FilePicker.platform.pickFiles();
-
-  //   if (result != null) {
-  //     String filePath = result.files.single.path!;
-  //     setState(() {
-  //       attachedFiles.add(filePath);
-  //     });
-  //   }
-  // }
 
   Widget _buildDueDateField(DueDateField field) {
     return ListTile(
@@ -211,4 +204,24 @@ class TaskDetailPageState extends State<TaskDetailPage> {
       ),
     );
   }
+  
+void _openFile(String filePath) {
+  if (filePath.isNotEmpty) {
+    if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
+      // Open URL
+      launchURL(Uri.parse(filePath));
+    } else {
+      // Open local file
+      OpenFile.open(filePath);
+    }
+  }
+}
+void launchURL(Uri uri) async {
+  if (await canLaunchUrl(uri)) {
+    await launchUrl(uri);
+  } else {
+    throw 'Could not launch $uri';
+  }
+}
+
 }

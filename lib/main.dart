@@ -7,6 +7,7 @@ import 'completed_tasks_page.dart'; // Import the CompletedTasksPage widget
 import 'calendar_view.dart';
 import 'user_progress_screen.dart';
 import 'due_date_list.dart';
+import 'store.dart';
 
 // import task and utilities
 import 'task/task.dart';
@@ -29,12 +30,15 @@ final List<Task> tasks = [
     description: 'This task has both due date and priority',
     parentId: '',
     fields: [
+      DueDateField(
+        dueDateTime: DateTime(2023, 12, 6, 14, 30),
+      ),
       PriorityField(priority: 2), // Medium priority
       DueDateField(
         dueDateTime: DateTime(2023, 11, 22, 14, 30)
       ),
     ],
-    filePaths: List.empty(),
+    filePaths: ['https://drive.google.com/file/d/1B6FtjriF8MyP0qZsXAdAxzoDPCuG4tnp/view?usp=drive_link'] ,
   ),
   Task(
     id: '2',
@@ -46,7 +50,7 @@ final List<Task> tasks = [
         dueDateTime: DateTime(2023, 12, 24, 10, 00)
       ),
     ],
-    filePaths: List.empty(),
+    filePaths: [],
   ),
   Task(
     id: '3',
@@ -56,7 +60,7 @@ final List<Task> tasks = [
     fields: [
       PriorityField(priority: 3), // High priority
     ],
-    filePaths: List.empty(),
+    filePaths: [],
   ),
   Task(
     id: '4',
@@ -75,7 +79,7 @@ final List<Task> tasks = [
         dueDateTime: DateTime(2023, 11, 10, 12, 00)
       ),
     ],
-    filePaths: List.empty(),
+    filePaths: [],
   ),
   Task(
     id: '6',
@@ -99,7 +103,7 @@ final List<Task> tasks = [
 
 List<Map<String, dynamic>> progressHistory = [];
 
-double overallScore = 0.0;
+double overallScore = 10.0;
 
 extension IterableExtensions<E> on Iterable<E> {
   E? get firstOrNull {
@@ -109,23 +113,37 @@ extension IterableExtensions<E> on Iterable<E> {
 
 void main() {
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-  runApp(MyApp(tasks: tasks, navigatorKey: navigatorKey));
+  runApp(MyApp(
+    tasks: tasks,
+    navigatorKey: navigatorKey,
+  ));
 }
 
 class MyApp extends StatefulWidget {
   final List<Task> tasks;
   final GlobalKey<NavigatorState> navigatorKey;
+  final GlobalKey<StorePageState> storePageKey;
 
-  const MyApp({Key? key, required this.tasks, required this.navigatorKey})
-      : super(key: key);
+  MyApp({
+    Key? key,
+    required this.tasks,
+    required this.navigatorKey,
+  }) : storePageKey = GlobalKey<StorePageState>(),
+   super(key: key);
 
   @override
   MyAppState createState() => MyAppState();
 }
 
 class MyAppState extends State<MyApp> {
-  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   List<Task> incompleteTasks = [];
+
+  // Callback function to update overallScore
+  void updateOverallScore(double newScore) {
+    setState(() {
+      overallScore = newScore;
+    });
+  }
 
   // Callback function to handle newly created tasks
   void handleTaskCreated(Task newTask) {
@@ -225,7 +243,7 @@ class MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      navigatorKey: navigatorKey,
+      navigatorKey: widget.navigatorKey,
       debugShowCheckedModeBanner: false,
       home: DefaultTabController(
         length: 4,
@@ -257,8 +275,8 @@ class MyAppState extends State<MyApp> {
                 ListTile(
                   title: const Text('Progress'),
                   onTap: () {
-                    navigatorKey.currentState?.pop(); // Close the drawer
-                    navigatorKey.currentState?.push(
+                    widget.navigatorKey.currentState?.pop(); // Close the drawer
+                    widget.navigatorKey.currentState?.push(
                       MaterialPageRoute(
                         builder: (context) => UserProgressScreen(
                           overallScore: overallScore,
@@ -272,7 +290,16 @@ class MyAppState extends State<MyApp> {
                   title: const Text('Store'),
                   onTap: () {
                     // Handle menu item 2 click
-                    navigatorKey.currentState?.pop(); // Close the drawer
+                    widget.navigatorKey.currentState?.pop(); // Close the drawer
+                    widget.navigatorKey.currentState?.push(
+                      MaterialPageRoute(
+                        builder: (context) => StorePage(
+                          overallScore: overallScore,
+                          updateOverallScore: updateOverallScore,
+                          storePageKey: widget.storePageKey,  // Pass the callback function
+                        ),
+                      ),
+                    );
                   },
                 ),
                 // Add more menu items as needed
@@ -310,7 +337,6 @@ class MyAppState extends State<MyApp> {
           ),
           floatingActionButton: FloatingActionButton(
             onPressed: () {
-              // Check if navigatorKey.currentState is not null before using it
               if (widget.navigatorKey.currentState != null) {
                 widget.navigatorKey.currentState!.push(
                   MaterialPageRoute(
