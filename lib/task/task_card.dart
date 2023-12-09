@@ -209,117 +209,120 @@ class TaskCardState extends State<TaskCard> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    // Function to find child tasks for the current task
-    List<Task> getChildTasks() {
-      return widget.allTasks
-          .where((t) => t.parentId == widget.task.id)
-          .toList();
-    }
+//...
 
-    return Card(
-      margin: const EdgeInsets.all(10),
-      child: GestureDetector(
-        onTap: () async {
-          // Pass the callback function to TaskDetailPage
-          await Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => TaskDetailPage(
-                task: widget.task,
-                onTaskUpdated: (updatedTask) {
-                  // Handle the updated task here
-                  // Optionally, you can update the UI or perform other actions.
-                },
-                onTaskDeleted: widget.onTaskDeleted,
-                onTaskCreated: widget.onTaskCreated, // Pass the callback
-                subtasks: getChildTasks(),
-                onUpdateDueDateTime: widget.onUpdateDueDateTime,
-              ),
+//...
+
+@override
+Widget build(BuildContext context) {
+  // Function to find child tasks for the current task
+  List<Task> getChildTasks() {
+    return widget.allTasks
+        .where((t) => t.parentId == widget.task.id)
+        .toList();
+  }
+
+  bool isParentTaskComplete = widget.task.isComplete;
+
+  return Card(
+    margin: const EdgeInsets.all(10),
+    child: GestureDetector(
+      onTap: () async {
+        // Pass the callback function to TaskDetailPage
+        await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => TaskDetailPage(
+              task: widget.task,
+              onTaskUpdated: (updatedTask) {
+                // Handle the updated task here
+                // Optionally, you can update the UI or perform other actions.
+              },
+              onTaskDeleted: widget.onTaskDeleted,
+              onTaskCreated: widget.onTaskCreated, // Pass the callback
+              subtasks: getChildTasks(),
+              onUpdateDueDateTime: widget.onUpdateDueDateTime,
             ),
-          );
-        },
-        child: Stack(
-          children: [
-            // Title and subtitle in a column
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ListTile(
-                  title: Text(widget.task.name),
-                  subtitle: Text(widget.task.description),
-                ),
-                if (!widget.task.isComplete)
-                  CheckboxListTile(
-                    title: const Text("Mark as Complete"),
-                    value: widget.task.isComplete,
-                    onChanged: (value) {
-                      _showConfirmationDialog(context, value!);
-                    },
-                  ),
-                if (widget.task.fields.isNotEmpty)
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        if (widget.task.fields.any((field) => field is DueDateField))
-                          // Display the Due Date ListTile if a DueDateField is found
-                          ListTile(
-                            title: const Text('Due Date'),
-                            subtitle: Row(
+          ),
+        );
+      },
+      child: Stack(
+        children: [
+          // Title and subtitle in a column
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Display task name and checkbox in a row
+              Row(
+                children: [
+                  // Conditionally render the checkbox based on the parent task's completion status
+                  if (!isParentTaskComplete)
+                    Checkbox(
+                      value: widget.task.isComplete,
+                      onChanged: (value) {
+                        _showConfirmationDialog(context, value!);
+                      },
+                    ),
+                  Flexible(
+                    child: ListTile(
+                      title: Text(widget.task.name),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (widget.task.fields.isNotEmpty &&
+                              widget.task.fields.any((field) => field is DueDateField))
+                            // Display the Due Date in a more concise format
+                            Row(
                               children: [
-                                Text('Date: ${formatDate((widget.task.fields.firstWhere((field) => field is DueDateField) as DueDateField).dueDate)}'),
+                                const Text('Due: '),
+                                Text('${formatDate((widget.task.fields.firstWhere((field) => field is DueDateField) as DueDateField).dueDate)}'),
                                 const SizedBox(width: 8),
-                                Text('Time: ${formatTime((widget.task.fields.firstWhere((field) => field is DueDateField) as DueDateField).dueTime)}'),
+                                Text('${formatTime((widget.task.fields.firstWhere((field) => field is DueDateField) as DueDateField).dueTime)}'),
                               ],
                             ),
-                          ),
-                      ],
-                      // children: widget.task.fields.map((field) {
-                      //   return ListTile(
-                      //     title: Text(field.name),
-                      //     subtitle: Text(field.value),
-                      //   );
-                      // }).toList(),
+                        ],
+                      ),
                     ),
                   ),
-                // Display child tasks under the main task
-                if (getChildTasks().isNotEmpty)
-                  Column(
-                    children: <Widget>[
-                      const Text('Sub Tasks:'),
-                      ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: getChildTasks().length,
-                        itemBuilder: (context, index) {
-                          return TaskCard(
-                              task: getChildTasks()[index],
-                              allTasks: widget.allTasks,
-                              onTaskUpdated: (updatedTask) {
-                                // Handle the updated task here
-                                // Optionally, you can update the UI or perform other actions.
-                              },
-                              onTaskDeleted: widget.onTaskDeleted,
-                              onTaskCreated: widget.onTaskCreated,
-                              onUpdateDueDateTime: widget.onUpdateDueDateTime);
-                        },
-                      ),
-                    ],
-                  ),
-              ],
-            ),
-
-            // Display priority block in the top-right corner
-            if (widget.task.hasPriority)
-              Positioned(
-                top: 0,
-                right: 0,
-                child: _buildPriorityBlock(widget.task.getPriority()!),
+                ],
               ),
-          ],
-        ),
+              // Display child tasks under the main task
+              if (getChildTasks().isNotEmpty && !isParentTaskComplete)
+                Column(
+                  children: <Widget>[
+                    const Text('Sub Tasks:'),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: getChildTasks().length,
+                      itemBuilder: (context, index) {
+                        return TaskCard(
+                          task: getChildTasks()[index],
+                          allTasks: widget.allTasks,
+                          onTaskUpdated: (updatedTask) {
+                            // Handle the updated task here
+                            // Optionally, you can update the UI or perform other actions.
+                          },
+                          onTaskDeleted: widget.onTaskDeleted,
+                          onTaskCreated: widget.onTaskCreated,
+                          onUpdateDueDateTime: widget.onUpdateDueDateTime,
+                        );
+                      },
+                    ),
+                  ],
+                ),
+            ],
+          ),
+
+          // Display priority block in the top-right corner
+          if (widget.task.hasPriority)
+            Positioned(
+              top: 0,
+              right: 0,
+              child: _buildPriorityBlock(widget.task.getPriority()!),
+            ),
+        ],
       ),
-    );
-  }
+    ),
+  );
 }
+}
+

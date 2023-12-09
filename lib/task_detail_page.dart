@@ -96,6 +96,7 @@ class TaskDetailPageState extends State<TaskDetailPage> {
             ),
           ),
           if (widget.task.fields.isNotEmpty) _buildFieldContainer(),
+
           if (widget.subtasks.isNotEmpty) _buildSubtasksSection(),
           _buildAttachedFilesSection(),
         ],
