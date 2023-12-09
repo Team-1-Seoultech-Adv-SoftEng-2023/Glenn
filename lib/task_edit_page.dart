@@ -44,7 +44,17 @@ class EditTaskPageState extends State<EditTaskPage> {
     _descriptionController = TextEditingController(text: widget.task.description);
     _dueDateController = TextEditingController(text: _getDueDateFormatted());
     _dueTimeController = TextEditingController(text: _getDueTimeFormatted());
-    _selectedPriority = _getPriority();
+    _selectedPriority = getPriority() ?? 0;
+  }
+
+  int? getPriority() {
+  final priorityField = widget.task.fields.firstWhere(
+    (field) => field is PriorityField,
+    orElse: () => PriorityField(priority: 0), // Default to priority 0 if not found
+  ) as PriorityField;
+
+
+    return priorityField.priority;
   }
 
   @override
@@ -55,15 +65,6 @@ class EditTaskPageState extends State<EditTaskPage> {
     _dueDateController.dispose();
     _dueTimeController.dispose();
     super.dispose();
-  }
-
-  int _getPriority() {
-    int? priority = widget.task.getPriority();
-    if (priority != null) {
-      return priority;
-    } else {
-      return 0;
-    }
   }
 
   // Method to get the formatted due date as a string

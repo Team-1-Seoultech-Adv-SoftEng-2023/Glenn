@@ -46,7 +46,8 @@ class TaskDetailPageState extends State<TaskDetailPage> {
       appBar: AppBar(
         title: const Text('Task Detail'),
         actions: <Widget>[
-          IconButton(
+         if (!widget.task.isComplete)
+         IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () async {
               final updatedTask = await Navigator.of(context).push(
@@ -94,59 +95,9 @@ class TaskDetailPageState extends State<TaskDetailPage> {
               },
             ),
           ),
-          if (widget.task.fields.isNotEmpty)
-            _buildFieldContainer(),
-          if (widget.subtasks.isNotEmpty)
-            Column(
-              children: <Widget>[
-                const Text('Subtasks:'),
-                ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: widget.subtasks.length,
-                  itemBuilder: (context, index) {
-                    final subtask = widget.subtasks[index];
-                    return ListTile(
-                      title: Text(subtask.name),
-                      subtitle: Text(subtask.description),
-                    );
-                  },
-                ),
-              ],
-            ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              const Text('Attached Files:'),
-              if (attachedFiles.isEmpty)
-                const ListTile(
-                  title: Text('No attached files'),
-                ),
-              if (attachedFiles.isNotEmpty)
-                ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: attachedFiles.length,
-                  itemBuilder: (context, index) {
-                    final filePath = attachedFiles[index];
-                    return ListTile(
-                      title: InkWell(
-                        child: Text(
-                          filePath.isEmpty ? 'No attached files' : filePath.split('/').last,
-                          style: TextStyle(
-                            color: filePath.isEmpty ? Colors.grey : Colors.blue,
-                            decoration: filePath.isEmpty ? TextDecoration.none : TextDecoration.underline,
-                          ),
-                        ),
-                        onTap: () {
-                          if (filePath.isNotEmpty) {
-                            _openFile(filePath);
-                          }
-                        },
-                      ),
-                    );
-                  },
-                ),
-            ],
-          ),
+          if (widget.task.fields.isNotEmpty) _buildFieldContainer(),
+          if (widget.subtasks.isNotEmpty) _buildSubtasksSection(),
+          _buildAttachedFilesSection(),
         ],
       ),
     );
@@ -223,5 +174,72 @@ void launchURL(Uri uri) async {
     throw 'Could not launch $uri';
   }
 }
+
+Widget _buildSubtasksSection() {
+    // Show subtasks only if there are subtasks and the task is not complete
+    if (widget.subtasks.isNotEmpty && !widget.task.isComplete) {
+      return Column(
+        children: <Widget>[
+          const Text('Subtasks:'),
+          ListView.builder(
+            shrinkWrap: true,
+            itemCount: widget.subtasks.length,
+            itemBuilder: (context, index) {
+              final subtask = widget.subtasks[index];
+              return ListTile(
+                title: Text(subtask.name),
+                subtitle: Text(subtask.description),
+              );
+            },
+          ),
+        ],
+      );
+    } else {
+      return Container(); // Empty container when no subtasks or task is complete
+    }
+  }
+
+Widget _buildAttachedFilesSection() {
+  // Show attached files only if there are files
+  if (attachedFiles.isEmpty) {
+    return const ListTile(
+      title: Text('No attached files'),
+    );
+  } else {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        const Text('Attached Files:'),
+        const SizedBox(height: 8), // Add space for separation
+        ListView.builder(
+          shrinkWrap: true,
+          itemCount: attachedFiles.length,
+          itemBuilder: (context, index) {
+            final filePath = attachedFiles[index];
+            return ListTile(
+              title: InkWell(
+                onTap: !widget.task.isComplete
+                    ? () {
+                        if (filePath.isNotEmpty) {
+                          _openFile(filePath);
+                        }
+                      }
+                    : null,
+                child: Text(
+                  filePath.isEmpty ? 'No attached files' : filePath.split('/').last,
+                  style: TextStyle(
+                    color: widget.task.isComplete ? Colors.black : Colors.blue,
+                    decoration: widget.task.isComplete ? TextDecoration.none : TextDecoration.underline,
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
 
 }
