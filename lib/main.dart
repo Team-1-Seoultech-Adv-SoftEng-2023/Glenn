@@ -35,7 +35,9 @@ final List<Task> tasks = [
       ),
       PriorityField(priority: 2), // Medium priority
     ],
-    filePaths: ['https://drive.google.com/file/d/1B6FtjriF8MyP0qZsXAdAxzoDPCuG4tnp/view?usp=drive_link'] ,
+    filePaths: [
+      'https://drive.google.com/file/d/1B6FtjriF8MyP0qZsXAdAxzoDPCuG4tnp/view?usp=drive_link'
+    ],
   ),
   Task(
     id: '2',
@@ -43,9 +45,7 @@ final List<Task> tasks = [
     description: 'https://www.youtube.com/',
     parentId: '',
     fields: [
-      DueDateField(
-        dueDateTime: DateTime(2023, 12, 24, 10, 00)
-      ),
+      DueDateField(dueDateTime: DateTime(2023, 12, 24, 10, 00)),
     ],
     filePaths: [],
   ),
@@ -72,9 +72,7 @@ final List<Task> tasks = [
     description: 'This task has a past due date',
     parentId: '',
     fields: [
-      DueDateField(
-        dueDateTime: DateTime(2023, 11, 10, 12, 00)
-      ),
+      DueDateField(dueDateTime: DateTime(2023, 11, 10, 12, 00)),
     ],
     filePaths: [],
   ),
@@ -83,8 +81,7 @@ final List<Task> tasks = [
     name: 'Subtask 1',
     description: 'This is a subtask',
     parentId: '1',
-    fields: [
-    ],
+    fields: [],
     filePaths: List.empty(),
   ),
   Task(
@@ -92,11 +89,10 @@ final List<Task> tasks = [
     name: 'Subtask 2',
     description: 'This is a second subtask',
     parentId: '1',
-    fields: [
-    ],
+    fields: [],
     filePaths: List.empty(),
   ),
-    Task(
+  Task(
     id: '8',
     name: 'Repeating Task 1',
     description: 'This task repeats every day',
@@ -150,9 +146,7 @@ final List<Task> tasks = [
   ),
 ];
 
-
 List<Map<String, dynamic>> progressHistory = [];
-
 double overallScore = 10.0;
 
 extension IterableExtensions<E> on Iterable<E> {
@@ -178,12 +172,11 @@ class MyApp extends StatefulWidget {
     Key? key,
     required this.tasks,
     required this.navigatorKey,
-  }) : storePageKey = GlobalKey<StorePageState>(),
-   super(key: key);
+  })  : storePageKey = GlobalKey<StorePageState>(),
+        super(key: key);
 
   @override
   MyAppState createState() => MyAppState();
-
 }
 
 class MyAppState extends State<MyApp> {
@@ -197,37 +190,38 @@ class MyAppState extends State<MyApp> {
   }
 
   // Callback function to handle newly created tasks
-  void handleTaskCreated(Task newTask) {
-    setState(() {
-        if (kDebugMode) {
-          print('New task created: $newTask');
-        }
-        newTask.printTaskDetails();
-        
-        tasks.add(newTask);
+void handleTaskCreated(Task newTask) {
+  setState(() {
+    if (kDebugMode) {
+      print('New task created: $newTask');
+    }
 
-        incompleteTasks = tasks.where((task) => !task.isComplete).toList();
+    tasks.add(newTask);
 
-        final bool isNewTaskSelfCare =
-            newTask.fields.any((field) => field is SelfCareField);
+    newTask.printTaskDetails();
 
-        final bool hasSelfCareTasksForToday = tasks.any((task) {
-          if (task.hasDueDate) {
-            final today = DateTime.now();
-            final taskDueDate = task.getDueDate()!;
-            return taskDueDate.year == today.year &&
-                taskDueDate.month == today.month &&
-                taskDueDate.day == today.day;
-          }
-          return false;
-        });
+    incompleteTasks = tasks.where((task) => !task.isComplete).toList();
 
-        if (!isNewTaskSelfCare && !hasSelfCareTasksForToday) {
-          // Do not pop the context here
-          _showSelfCareRecommendationPopup(context);
-        }
+    final bool isNewTaskSelfCare =
+        newTask.fields.any((field) => field is SelfCareField);
+
+    final bool hasSelfCareTasksForToday = tasks.any((task) {
+      if (task.hasDueDate) {
+        final today = DateTime.now();
+        final taskDueDate = task.getDueDate()!;
+        return taskDueDate.year == today.year &&
+            taskDueDate.month == today.month &&
+            taskDueDate.day == today.day;
+      }
+      return false;
     });
-  }
+
+    if (!isNewTaskSelfCare && !hasSelfCareTasksForToday) {
+      //TODO Throws errors!
+      //_showSelfCareRecommendationPopup(context);
+    }
+  });
+}
 
   void handleTaskDeleted(Task deleteTask) {
     setState(() {
@@ -285,8 +279,8 @@ class MyAppState extends State<MyApp> {
 
     // Set the due date of the self-care task to today
     selfCareTask.fields.add(DueDateField(
-      dueDateTime: DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, 23, 59)
-      ));
+        dueDateTime: DateTime(DateTime.now().year, DateTime.now().month,
+            DateTime.now().day, 23, 59)));
 
     return [selfCareTask];
   }
@@ -347,7 +341,8 @@ class MyAppState extends State<MyApp> {
                         builder: (context) => StorePage(
                           overallScore: overallScore,
                           updateOverallScore: updateOverallScore,
-                          storePageKey: widget.storePageKey,  // Pass the callback function
+                          storePageKey:
+                              widget.storePageKey, // Pass the callback function
                         ),
                       ),
                     );

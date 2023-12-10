@@ -23,7 +23,7 @@ class Task {
   Task({
     required this.id,
     required this.name,
-    required this.description,
+    this.description = '',
     required this.parentId,
     required this.fields,
     this.repeatingId = '',

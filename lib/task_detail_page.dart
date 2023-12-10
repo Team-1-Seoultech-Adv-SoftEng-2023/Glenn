@@ -32,6 +32,7 @@ class TaskDetailPage extends StatefulWidget {
 
   @override
   TaskDetailPageState createState() => TaskDetailPageState();
+  
 }
 
 class TaskDetailPageState extends State<TaskDetailPage> {
@@ -262,10 +263,7 @@ Future<void> _showConfirmationDialog(BuildContext context) async {
           onTaskDeleted: (deleteTask) {
             widget.onTaskDeleted(deleteTask);
           },
-          onTaskCreated: (newTask) {
-            widget.onTaskCreated(newTask);
-          },
-
+          onTaskCreated: (newTask) { widget.onTaskCreated(newTask);}, 
         ),
       ),
     );

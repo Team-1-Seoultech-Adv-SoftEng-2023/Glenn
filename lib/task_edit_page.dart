@@ -42,9 +42,11 @@ class EditTaskPageState extends State<EditTaskPage> {
 
   @override
   void initState() {
+    
     super.initState();
     initializeControllers();
     calculateRepeatingInterval();
+      
   }
 
   void initializeControllers() {
@@ -54,7 +56,7 @@ class EditTaskPageState extends State<EditTaskPage> {
     _dueTimeController = TextEditingController(text: _getDueTimeFormatted());
     _repetitionEndDateController = TextEditingController(text: _getEndDateFormatted());
     _selectedPriority = getPriority() ?? 0;
-    _isRepeating = false;
+    _isRepeating = widget.repeatingTasks.isNotEmpty;
     _selectedRepeatPeriod = RepeatPeriod.days;
     _repeatIntervalController = TextEditingController();
   }
@@ -100,21 +102,17 @@ class EditTaskPageState extends State<EditTaskPage> {
   }
 
   String _getEndDateFormatted() {
-    if (tasks.isNotEmpty) {
-      Task lastTask = tasks.lastWhere((task) => !task.isComplete, orElse: () => widget.task);
+    if (widget.repeatingTasks.isNotEmpty) {
+      Task lastTask = widget.repeatingTasks.lastWhere(
+        (task) => !task.isComplete,
+        orElse: () => widget.task,
+      );
       return formatDate(lastTask.getDueDate()!);
     } else {
       return '';
     }
   }
-
-  // Function to handle task deletion
-  void _deleteTask() {
-    // Call the onTaskDeleted callback to notify the parent widget about the deletion
-    widget.onTaskDeleted(widget.task);
-    // Navigate back to the previous screen
-    Navigator.pop(context);
-  }
+  
 
   // Function to handle file attachment
   void _attachFile() async {
@@ -172,7 +170,16 @@ class EditTaskPageState extends State<EditTaskPage> {
                 _attachFile();
               } else if (value == 'delete_task') {
                 // Call the function to handle task deletion
-                _deleteTask();
+                if (widget.repeatingTasks.isNotEmpty) {
+                  for (Task t in widget.repeatingTasks) {
+                    if (!t.isComplete) {
+                      widget.onTaskDeleted(t);
+                    }
+                  }
+                }else {
+                  widget.onTaskDeleted(widget.task);
+                }
+                 Navigator.pop(context);
               }
             },
             itemBuilder: (BuildContext context) {
@@ -229,29 +236,90 @@ class EditTaskPageState extends State<EditTaskPage> {
             ),
 
             Visibility(
-            visible: widget.task.parentId == '',
-            child: _buildRepeatTaskField(),
-          ),
+              visible: widget.task.parentId == '',
+              child: _buildRepeatTaskField(),
+            ),
 
             ElevatedButton(
-              onPressed: () {
-                
-                // Update the task's attributes when the button is pressed
-                setState(() {
-                  widget.task.updateTask(
-                    name: _nameController.text,
-                    description: _descriptionController.text,
-                    fields: [
-                        createDueDateField(),
-                        if(_selectedPriority != 0) PriorityField(priority: _selectedPriority),
-                    ],
-                  );
-                });
-                // Return the updated task to the previous page
-                Navigator.pop(context, widget.task);
-              },
-              child: const Text('Save'),
-            ),
+                  onPressed: () {
+                    // Update the task's attributes when the button is pressed
+                    setState(() {
+
+                      widget.task.updateTask(
+                          name: _nameController.text,
+                          description: _descriptionController.text.isNotEmpty ? _descriptionController.text : '',
+                          fields: []
+                        );
+
+                      if (_selectedPriority != 0) {   
+                        PriorityField priorityField = PriorityField(priority: _selectedPriority);                 
+                        widget.task.updateTask(fields: [priorityField]);
+                      }
+
+                      // Create a new task object with the provided details
+                      if (_dueDateController.text.isNotEmpty) {   
+                        DueDateField dueDateField = createDueDateField();                 
+                        widget.task.updateTask(fields: [dueDateField]);
+                      }
+
+
+                      if (_isRepeating && widget.task.repeatingId.isEmpty) {
+                        
+                        final Task newTask = Task(
+                          id: UniqueKey().toString(),
+                          name: _nameController.text,
+                          description: _descriptionController.text,
+                          parentId: '',
+                          fields: [],
+                          filePaths: [],
+                        );
+
+                        if (_selectedPriority != 0) {   
+                          PriorityField priorityField = PriorityField(priority: _selectedPriority);                 
+                          newTask.updateTask(fields: [priorityField]);
+                        }
+
+                      // Create a new task object with the provided details
+                        if (_dueDateController.text.isNotEmpty) {   
+                          DueDateField dueDateField = createDueDateField();                 
+                          newTask.updateTask(fields: [dueDateField]);
+                        }
+
+                        List<Task> newTasks = generateRepeatingTasks(
+                          originalTask: newTask,
+                          repetitionEndDateController: _repetitionEndDateController,
+                          selectedRepeatPeriod: _selectedRepeatPeriod,
+                          repeatInterval: int.parse(_repeatIntervalController.text),
+                        );
+
+                        for (Task newTask in newTasks) {
+                           widget.onTaskCreated(newTask);
+                        }
+
+                        widget.onTaskDeleted(widget.task);
+
+                      }
+                      if(!_isRepeating){
+
+                        if (widget.repeatingTasks.isNotEmpty) {
+                        for (Task t in widget.repeatingTasks) {
+                          if (!t.isComplete && t != widget.task) {
+                            widget.onTaskDeleted(t);
+                          }
+                        }
+                       }
+                       widget.task.repeatingId = '';
+                      } 
+                      else{ //_isRepeating = false 
+                        Navigator.pop(context, widget.task);
+                      }
+                    });
+
+                    // Return the updated task to the previous page
+                    Navigator.pop(context, widget.task);
+                  },
+                  child: const Text('Save'),
+                ),
           ],
         ),
       ),
@@ -364,9 +432,6 @@ class EditTaskPageState extends State<EditTaskPage> {
 }
 
 Widget _buildRepeatTaskField() {
-  if (widget.repeatingTasks.isNotEmpty) {
-    _isRepeating = true;
-  }
     return Column(
       children: [
         CheckboxListTile(
@@ -388,7 +453,9 @@ Widget _buildRepeatTaskField() {
                 if(_repeatIntervalController.text.isEmpty){
                   _repeatIntervalController.text = '1';
                 } 
-                
+                if(_repetitionEndDateController.text.isEmpty){
+                  _repetitionEndDateController.text = formatDate(DateTime.now());
+                } 
               }
             });
           },
@@ -426,6 +493,15 @@ Widget _buildRepeatPatternDropdown() {
           ),
         ),
       ),
+    );
+  }
+
+    Widget _buildEndDateField() {
+    return TextFormField(
+      controller: _repetitionEndDateController,
+      keyboardType: TextInputType.datetime,
+      //decoration: InputDecoration(labelText: 'End Date'),
+      onTap: () => _showEndDatePicker(),
     );
   }
 
@@ -499,8 +575,6 @@ void calculateRepeatingInterval() {
     }
   }
   dueDates.sort();
-
-  print(dueDates);
   
   // Calculate the repeating interval
   if (dueDates.length >= 2) {
@@ -529,30 +603,33 @@ void calculateRepeatingInterval() {
     });
   }
 }
-  
-    Widget _buildEndDateField() {
-    return TextFormField(
-      controller: _repetitionEndDateController,
-      keyboardType: TextInputType.datetime,
-      //decoration: InputDecoration(labelText: 'End Date'),
-      onTap: () => _showEndDatePicker(),
-    );
-  }
 
-  void _showEndDatePicker() async {
-    DateTime? selectedDate = await showDatePicker(
-      context: context,
-      initialDate: _dueDateController.text.isNotEmpty
-          ? DateTime.parse(_dueDateController.text)
-          : DateTime.now(), // Default to one year from now if _dueDateController is empty
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2101),
-    );
+void _showEndDatePicker() async {
+  DateTime? dueDate = _dueDateController.text.isNotEmpty
+      ? DateTime.parse(_dueDateController.text)
+      : null;
 
-    if (selectedDate != null) {
-        setState(() {
-          _repetitionEndDateController.text = formatDate(selectedDate);
-        });
-    }
+  DateTime? selectedDate = await showDatePicker(
+    context: context,
+    initialDate: DateTime.now(),
+    firstDate: dueDate ?? DateTime(2000),
+    lastDate: DateTime(2101),
+    selectableDayPredicate: (DateTime day) {
+      // Disable dates before the due date
+      return dueDate == null || day.isAfter(dueDate);
+    },
+  );
+
+  if (selectedDate != null) {
+    _updateEndDate(selectedDate);
   }
+}
+
+void _updateEndDate(DateTime selectedDate) {
+  setState(() {
+    _repetitionEndDateController.text = formatDate(selectedDate);
+  });
+}
+
+
 }

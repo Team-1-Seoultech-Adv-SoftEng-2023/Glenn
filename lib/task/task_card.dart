@@ -13,7 +13,7 @@ class TaskCard extends StatefulWidget {
 
   final List<Task> allTasks;
   final Function(Task) onTaskUpdated; // Add the callback
-  final Function(Task) onTaskCreated; // Add the callback
+  final Function(Task) onTaskCreated;
   final Function(Task) onTaskDeleted; // Add the callback
 
   const TaskCard(
@@ -239,7 +239,7 @@ Widget build(BuildContext context) {
                 // Optionally, you can update the UI or perform other actions.
               },
               onTaskDeleted: widget.onTaskDeleted,
-              onTaskCreated: widget.onTaskCreated, // Pass the callback
+              onTaskCreated: widget.onTaskCreated,
               subtasks: getChildTasks(),
               onUpdateDueDateTime: widget.onUpdateDueDateTime,
             ),

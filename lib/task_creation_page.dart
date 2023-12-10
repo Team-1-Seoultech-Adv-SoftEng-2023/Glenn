@@ -168,7 +168,6 @@ class TaskCreationPageState extends State<TaskCreationPage> {
                         widget.onTaskCreated(newTask);
 
                     } else if (_isRepeating){
-
                         List<Task> newTasks = generateRepeatingTasks(
                             originalTask: newTask,
                             repetitionEndDateController: _repetitionEndDateController,
@@ -182,7 +181,6 @@ class TaskCreationPageState extends State<TaskCreationPage> {
                       }
                   }
                   
-                  resetForm();
                   if (kDebugMode) {
                     print('Done on the task creation page... Back to the main task page!');
                   }

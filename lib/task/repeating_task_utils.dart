@@ -30,26 +30,28 @@ List<Task> generateRepeatingTasks({
   originalTask.repeatingId = UniqueKey().toString();
 
   DateTime currentDate = originalTask.getDueDate() ?? DateTime.now();
+  TimeOfDay dueTime = originalTask.getDueTime() ?? TimeOfDay.now();
+
   List<String> dateParts = repetitionEndDateController.text.split('-');
   DateTime endDate = DateTime(
     int.parse(dateParts[0]),
     int.parse(dateParts[1]),
     int.parse(dateParts[2]),
-    currentDate.hour,
-    currentDate.minute,
+    dueTime.hour,
+    dueTime.minute,
   );
+
+  print(endDate);
 
   while (currentDate.isBefore(endDate) || currentDate.isAtSameMomentAs(endDate)) {
     
     Task copiedTask = Task.copyWithUniqueID(originalTask);
     DueDateField newDueDateField = DueDateField(dueDateTime: currentDate);
+    newDueDateField.dueTime  = dueTime;
     copiedTask.updateTask(fields: [newDueDateField]);
-    
     repeatingTasks.add(copiedTask);
-
     currentDate = incrementCurrentDate(currentDate, selectedRepeatPeriod, repeatInterval);
   }
-
   return repeatingTasks;
 }
 
