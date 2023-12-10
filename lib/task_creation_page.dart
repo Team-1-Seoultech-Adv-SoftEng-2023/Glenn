@@ -315,7 +315,7 @@ class TaskCreationPageState extends State<TaskCreationPage> {
       controller: _dueDateController,
       keyboardType: TextInputType.datetime,
       decoration: const InputDecoration(labelText: 'Date'),
-      onTap: () => _showDatePicker(),
+      onTap: () => _showDueDatePicker(),
     );
   }
 
@@ -328,7 +328,7 @@ class TaskCreationPageState extends State<TaskCreationPage> {
     );
   }
 
-  void _showDatePicker() async {
+  void _showDueDatePicker() async {
     DateTime? selectedDate = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),

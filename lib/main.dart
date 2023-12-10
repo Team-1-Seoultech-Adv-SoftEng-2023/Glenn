@@ -150,6 +150,7 @@ final List<Task> tasks = [
   ),
 ];
 
+
 List<Map<String, dynamic>> progressHistory = [];
 
 double overallScore = 10.0;
@@ -182,6 +183,7 @@ class MyApp extends StatefulWidget {
 
   @override
   MyAppState createState() => MyAppState();
+
 }
 
 class MyAppState extends State<MyApp> {

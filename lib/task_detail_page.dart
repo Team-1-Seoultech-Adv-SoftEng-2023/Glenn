@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:glenn/main.dart';
 import 'task_edit_page.dart';
 import 'package:open_file/open_file.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -12,6 +13,7 @@ import 'fields/self_care_field.dart';
 class TaskDetailPage extends StatefulWidget {
   final Task task;
   final List<Task> subtasks;
+  final List<Task> tasks;
   final Function(Task) onTaskUpdated;
   final Function(Task) onTaskCreated;
   final Function(Task) onTaskDeleted;
@@ -21,6 +23,7 @@ class TaskDetailPage extends StatefulWidget {
     Key? key,
     required this.task,
     required this.subtasks,
+    required this.tasks,
     required this.onTaskUpdated,
     required this.onTaskCreated,
     required this.onTaskDeleted,
@@ -209,10 +212,12 @@ Widget _buildFieldContainer() {
 }
 
 Future<void> _showConfirmationDialog(BuildContext context) async {
-  bool editSeries = false;
+  List<Task> repeatingTasks = [];
+  Task task = widget.task;
+  
   bool shouldEditTask = true;
   if (widget.task.repeatingId != ''){
-    await showDialog(
+    shouldEditTask = await showDialog(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
@@ -234,7 +239,9 @@ Future<void> _showConfirmationDialog(BuildContext context) async {
           TextButton(
             child: const Text("Yes"),
             onPressed: () {
-              editSeries = true;
+              repeatingTasks = widget.tasks.where((task) {return task.repeatingId == widget.task.repeatingId;}).toList();
+              sortTasksByDueDate(repeatingTasks);
+              task = repeatingTasks.firstWhere((task) => !task.isComplete, orElse: () => widget.task);
               Navigator.of(context).pop(true);
             },
           ),
@@ -249,8 +256,8 @@ Future<void> _showConfirmationDialog(BuildContext context) async {
     final updatedTask = await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => EditTaskPage(
-          editSeries : editSeries,
-          task: widget.task,
+          repeatingTasks: repeatingTasks,
+          task: task,
           onTaskUpdated: (updatedTask) {},
           onTaskDeleted: (deleteTask) {
             widget.onTaskDeleted(deleteTask);
@@ -258,6 +265,7 @@ Future<void> _showConfirmationDialog(BuildContext context) async {
           onTaskCreated: (newTask) {
             widget.onTaskCreated(newTask);
           },
+
         ),
       ),
     );
@@ -268,5 +276,28 @@ Future<void> _showConfirmationDialog(BuildContext context) async {
       });
     }
   }
+}
+
+
+List<Task> sortTasksByDueDate(List<Task> tasks) {
+  // Filter out tasks with empty or null due dates
+  List<Task> tasksWithDueDate = tasks.where((task) => task.getDueDate() != null).toList();
+
+  // Sort tasks by due date
+  tasksWithDueDate.sort((a, b) {
+    if (a.getDueDate() != null && b.getDueDate() != null) {
+      // Compare TimeOfDay instances by converting them to minutes since midnight
+      final int aMinutes = a.getDueDate()!.hour * 60 + a.getDueDate()!.minute;
+      final int bMinutes = b.getDueDate()!.hour * 60 + b.getDueDate()!.minute;
+      return aMinutes.compareTo(bMinutes);
+    } else {
+      return 0;
+    }
+  });
+
+  // Combine tasks with due dates and tasks without due dates
+  List<Task> sortedTasks = [...tasksWithDueDate, ...tasks.where((task) => task.getDueDate() == null).toList()];
+
+  return sortedTasks;
 }
 }

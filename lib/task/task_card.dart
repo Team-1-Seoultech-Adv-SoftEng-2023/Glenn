@@ -232,6 +232,7 @@ Widget build(BuildContext context) {
         await Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => TaskDetailPage(
+              tasks: widget.allTasks,
               task: widget.task,
               onTaskUpdated: (updatedTask) {
                 // Handle the updated task here

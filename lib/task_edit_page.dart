@@ -8,13 +8,12 @@ import 'package:permission_handler/permission_handler.dart';
 import 'task/repeating_task_utils.dart';
 import 'main.dart';
 
-
 class EditTaskPage extends StatefulWidget {
   final Task task;
   final Function(Task) onTaskUpdated;
   final Function(dynamic) onTaskCreated;
   final Function(Task) onTaskDeleted;
-  final bool editSeries;
+  final List<Task> repeatingTasks;
 
   const EditTaskPage({
     super.key,
@@ -22,7 +21,7 @@ class EditTaskPage extends StatefulWidget {
     required this.onTaskUpdated,
     required this.onTaskCreated,
     required this.onTaskDeleted, 
-    required this.editSeries,
+    required this.repeatingTasks,
   });
 
   @override
@@ -36,16 +35,16 @@ class EditTaskPageState extends State<EditTaskPage> {
   late TextEditingController _dueTimeController;
   late int _selectedPriority;
 
-  late TextEditingController _repetitionEndDateController;
   late bool _isRepeating;
   late RepeatPeriod _selectedRepeatPeriod;
   late TextEditingController _repeatIntervalController;
+  late TextEditingController _repetitionEndDateController;
 
   @override
   void initState() {
     super.initState();
-    //_nameController = TextEditingController(text: widget.task.name);
     initializeControllers();
+    calculateRepeatingInterval();
   }
 
   void initializeControllers() {
@@ -53,9 +52,9 @@ class EditTaskPageState extends State<EditTaskPage> {
     _descriptionController = TextEditingController(text: widget.task.description);
     _dueDateController = TextEditingController(text: _getDueDateFormatted());
     _dueTimeController = TextEditingController(text: _getDueTimeFormatted());
+    _repetitionEndDateController = TextEditingController(text: _getEndDateFormatted());
     _selectedPriority = getPriority() ?? 0;
     _isRepeating = true;
-    _repetitionEndDateController = TextEditingController();
     _selectedRepeatPeriod = RepeatPeriod.days;
     _repeatIntervalController = TextEditingController();
   }
@@ -95,6 +94,15 @@ class EditTaskPageState extends State<EditTaskPage> {
   String _getDueTimeFormatted() {
     if (widget.task.hasDueDate) {
       return formatTime(widget.task.getDueTime()!);
+    } else {
+      return '';
+    }
+  }
+
+  String _getEndDateFormatted() {
+    if (tasks.isNotEmpty) {
+      Task lastTask = tasks.lastWhere((task) => !task.isComplete, orElse: () => widget.task);
+      return formatDate(lastTask.getDueDate()!);
     } else {
       return '';
     }
@@ -356,7 +364,7 @@ class EditTaskPageState extends State<EditTaskPage> {
 }
 
 Widget _buildRepeatTaskField() {
-  if (widget.editSeries) {
+  if (widget.repeatingTasks.isNotEmpty) {
     return Column(
       children: [
         CheckboxListTile(
@@ -375,9 +383,7 @@ Widget _buildRepeatTaskField() {
                     const TimeOfDay(hour: 23, minute: 59),
                   );
                 }
-                _repetitionEndDateController.text =
-                    formatDate(DateTime.now());
-                _repeatIntervalController.text = '1';
+                
               }
             });
           },
@@ -420,23 +426,6 @@ Widget _buildRepeatPatternDropdown() {
       ),
     );
   }
-
-Widget _buildEndDateField() {
-  return ListTile(
-    title: const Text('Due Date'),
-    subtitle: Row(
-      children: [
-        Expanded(
-          child: _buildDateField(),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _buildTimeField(),
-        ),
-      ],
-    ),
-  );
-}
 
  Widget _buildRepeatIntervalDropdown() {
     return Column(
@@ -496,16 +485,10 @@ Widget _buildEndDateField() {
     );
   }
 
-  List<Task> filterTasksByRepeatingId(List<Task> tasks, String repeatingId) {
-  return tasks.where((task) {
-    // Check if the task has the same repeatingId as the specified repeatingId
-    return task.repeatingId == repeatingId;
-  }).toList();
-}
 
-  List<DateTime> getDueDatesFromFilteredTasks(List<Task> filteredTasks) {
+void calculateRepeatingInterval() {
   List<DateTime> dueDates = [];
-  for (Task task in filteredTasks) {
+  for (Task task in widget.repeatingTasks) {
     if (task.hasDueDate) {
       DateTime? dueDate = task.getDueDate();
       if (dueDate != null) {
@@ -513,13 +496,10 @@ Widget _buildEndDateField() {
       }
     }
   }
-  return dueDates;
-}
-
-void calculateRepeatingInterval(List<DateTime> dueDates) {
-  // Sort due dates from past to future
   dueDates.sort();
 
+  print(dueDates);
+  
   // Calculate the repeating interval
   if (dueDates.length >= 2) {
     // Calculate the customRepeat
@@ -539,7 +519,7 @@ void calculateRepeatingInterval(List<DateTime> dueDates) {
     } else {
       repeatPeriod = RepeatPeriod.days;
     }
-
+    
     // Set the values
     setState(() {
       _selectedRepeatPeriod = repeatPeriod;
@@ -547,5 +527,30 @@ void calculateRepeatingInterval(List<DateTime> dueDates) {
     });
   }
 }
+  
+    Widget _buildEndDateField() {
+    return TextFormField(
+      controller: _repetitionEndDateController,
+      keyboardType: TextInputType.datetime,
+      //decoration: InputDecoration(labelText: 'End Date'),
+      onTap: () => _showEndDatePicker(),
+    );
+  }
 
+  void _showEndDatePicker() async {
+    DateTime? selectedDate = await showDatePicker(
+      context: context,
+      initialDate: _dueDateController.text.isNotEmpty
+          ? DateTime.parse(_dueDateController.text)
+          : DateTime.now(), // Default to one year from now if _dueDateController is empty
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2101),
+    );
+
+    if (selectedDate != null) {
+        setState(() {
+          _repetitionEndDateController.text = formatDate(selectedDate);
+        });
+    }
+  }
 }
