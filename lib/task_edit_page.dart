@@ -54,7 +54,7 @@ class EditTaskPageState extends State<EditTaskPage> {
     _dueTimeController = TextEditingController(text: _getDueTimeFormatted());
     _repetitionEndDateController = TextEditingController(text: _getEndDateFormatted());
     _selectedPriority = getPriority() ?? 0;
-    _isRepeating = true;
+    _isRepeating = false;
     _selectedRepeatPeriod = RepeatPeriod.days;
     _repeatIntervalController = TextEditingController();
   }
@@ -365,6 +365,8 @@ class EditTaskPageState extends State<EditTaskPage> {
 
 Widget _buildRepeatTaskField() {
   if (widget.repeatingTasks.isNotEmpty) {
+    _isRepeating = true;
+  }
     return Column(
       children: [
         CheckboxListTile(
@@ -383,6 +385,9 @@ Widget _buildRepeatTaskField() {
                     const TimeOfDay(hour: 23, minute: 59),
                   );
                 }
+                if(_repeatIntervalController.text.isEmpty){
+                  _repeatIntervalController.text = '1';
+                } 
                 
               }
             });
@@ -394,9 +399,6 @@ Widget _buildRepeatTaskField() {
         ),
       ],
     );
-  } else {
-    return const SizedBox(); // Return an empty SizedBox if repeat field is not needed
-  }
 }
 
 Widget _buildRepeatPatternDropdown() {
