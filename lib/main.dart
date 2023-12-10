@@ -34,9 +34,6 @@ final List<Task> tasks = [
         dueDateTime: DateTime(2023, 12, 6, 14, 30),
       ),
       PriorityField(priority: 2), // Medium priority
-      DueDateField(
-        dueDateTime: DateTime(2023, 11, 22, 14, 30)
-      ),
     ],
     filePaths: ['https://drive.google.com/file/d/1B6FtjriF8MyP0qZsXAdAxzoDPCuG4tnp/view?usp=drive_link'] ,
   ),

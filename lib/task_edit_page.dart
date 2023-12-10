@@ -5,6 +5,8 @@ import 'fields/priority_field.dart';
 import 'task_creation_page.dart';
 import 'task/task.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'task/repeating_task_utils.dart';
+import 'main.dart';
 
 
 class EditTaskPage extends StatefulWidget {
@@ -12,13 +14,15 @@ class EditTaskPage extends StatefulWidget {
   final Function(Task) onTaskUpdated;
   final Function(dynamic) onTaskCreated;
   final Function(Task) onTaskDeleted;
+  final bool editSeries;
 
   const EditTaskPage({
     super.key,
     required this.task,
     required this.onTaskUpdated,
     required this.onTaskCreated,
-    required this.onTaskDeleted,
+    required this.onTaskDeleted, 
+    required this.editSeries,
   });
 
   @override
@@ -31,6 +35,11 @@ class EditTaskPageState extends State<EditTaskPage> {
   late TextEditingController _dueDateController;
   late TextEditingController _dueTimeController;
   late int _selectedPriority;
+
+  late TextEditingController _repetitionEndDateController;
+  late bool _isRepeating;
+  late RepeatPeriod _selectedRepeatPeriod;
+  late TextEditingController _repeatIntervalController;
 
   @override
   void initState() {
@@ -45,6 +54,10 @@ class EditTaskPageState extends State<EditTaskPage> {
     _dueDateController = TextEditingController(text: _getDueDateFormatted());
     _dueTimeController = TextEditingController(text: _getDueTimeFormatted());
     _selectedPriority = getPriority() ?? 0;
+    _isRepeating = true;
+    _repetitionEndDateController = TextEditingController();
+    _selectedRepeatPeriod = RepeatPeriod.days;
+    _repeatIntervalController = TextEditingController();
   }
 
   int? getPriority() {
@@ -64,6 +77,8 @@ class EditTaskPageState extends State<EditTaskPage> {
     _descriptionController.dispose();
     _dueDateController.dispose();
     _dueTimeController.dispose();
+    _repeatIntervalController.dispose();
+    _repetitionEndDateController.dispose();
     super.dispose();
   }
 
@@ -171,7 +186,8 @@ class EditTaskPageState extends State<EditTaskPage> {
           ),
         ],
       ),
-      body: Padding(
+      body: SingleChildScrollView(
+      child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: <Widget>[
@@ -204,6 +220,11 @@ class EditTaskPageState extends State<EditTaskPage> {
               ),
             ),
 
+            Visibility(
+            visible: widget.task.parentId == '',
+            child: _buildRepeatTaskField(),
+          ),
+
             ElevatedButton(
               onPressed: () {
                 
@@ -226,7 +247,7 @@ class EditTaskPageState extends State<EditTaskPage> {
           ],
         ),
       ),
-    );
+    ));
   }
 
   // Widget method to build the TextFormField for the date input
@@ -332,6 +353,199 @@ class EditTaskPageState extends State<EditTaskPage> {
     },
     decoration: const InputDecoration(labelText: 'Priority'),
   );
+}
+
+Widget _buildRepeatTaskField() {
+  if (widget.editSeries) {
+    return Column(
+      children: [
+        CheckboxListTile(
+          title: const Text('Repeat Task'),
+          value: _isRepeating,
+          onChanged: (value) {
+            setState(() {
+              _isRepeating = value!;
+              if (_isRepeating) {
+                // If repeating is enabled, set due date to today if it's empty
+                if (_dueDateController.text.isEmpty) {
+                  _dueDateController.text = formatDate(DateTime.now());
+                }
+                if (_dueTimeController.text.isEmpty) {
+                  _dueTimeController.text = formatTime(
+                    const TimeOfDay(hour: 23, minute: 59),
+                  );
+                }
+                _repetitionEndDateController.text =
+                    formatDate(DateTime.now());
+                _repeatIntervalController.text = '1';
+              }
+            });
+          },
+        ),
+        Visibility(
+          visible: _isRepeating,
+          child: _buildRepeatPatternDropdown(),
+        ),
+      ],
+    );
+  } else {
+    return const SizedBox(); // Return an empty SizedBox if repeat field is not needed
+  }
+}
+
+Widget _buildRepeatPatternDropdown() {
+    return Padding(
+      padding: const EdgeInsets.all(0.0), // Add padding around the entire Container
+      child: Container(
+        color: Colors.grey.withOpacity(0.1), // Set a very faded light blue background color
+        child: Padding(
+          padding: const EdgeInsets.all(16.0), // Add padding around the child Column
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('End Date'),
+                  _buildEndDateField(),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 25.0), // Add vertical padding between the two children
+                child: _buildRepeatIntervalDropdown(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+Widget _buildEndDateField() {
+  return ListTile(
+    title: const Text('Due Date'),
+    subtitle: Row(
+      children: [
+        Expanded(
+          child: _buildDateField(),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: _buildTimeField(),
+        ),
+      ],
+    ),
+  );
+}
+
+ Widget _buildRepeatIntervalDropdown() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Repeats every...'),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(
+                    right: 15.0,
+                    left: 100.0), // Add some right padding for spacing
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 50, // Set the width of the TextFormField
+                      child: TextFormField(
+                        controller: _repeatIntervalController,
+                        keyboardType: TextInputType.number,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  DropdownButton<RepeatPeriod>(
+                    value: _selectedRepeatPeriod,
+                    onChanged: (RepeatPeriod? value) {
+                      if (value != null) {
+                        setState(() {
+                          _selectedRepeatPeriod = value;
+                        });
+                      }
+                    },
+                    items: RepeatPeriod.values
+                        .map<DropdownMenuItem<RepeatPeriod>>(
+                          (RepeatPeriod value) => DropdownMenuItem<RepeatPeriod>(
+                            value: value,
+                            child: Text(value.toString().split('.').last),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  List<Task> filterTasksByRepeatingId(List<Task> tasks, String repeatingId) {
+  return tasks.where((task) {
+    // Check if the task has the same repeatingId as the specified repeatingId
+    return task.repeatingId == repeatingId;
+  }).toList();
+}
+
+  List<DateTime> getDueDatesFromFilteredTasks(List<Task> filteredTasks) {
+  List<DateTime> dueDates = [];
+  for (Task task in filteredTasks) {
+    if (task.hasDueDate) {
+      DateTime? dueDate = task.getDueDate();
+      if (dueDate != null) {
+        dueDates.add(dueDate);
+      }
+    }
+  }
+  return dueDates;
+}
+
+void calculateRepeatingInterval(List<DateTime> dueDates) {
+  // Sort due dates from past to future
+  dueDates.sort();
+
+  // Calculate the repeating interval
+  if (dueDates.length >= 2) {
+    // Calculate the customRepeat
+    int customRepeat = dueDates[1].difference(dueDates[0]).inDays;
+
+    // Calculate the repeatPeriod
+    RepeatPeriod repeatPeriod;
+    if (customRepeat % 365 == 0) {
+      repeatPeriod = RepeatPeriod.years;
+      customRepeat = customRepeat ~/ 365;
+    } else if (customRepeat % 30 == 0) {
+      repeatPeriod = RepeatPeriod.months;
+      customRepeat = customRepeat ~/ 30;
+    } else if (customRepeat % 7 == 0) {
+      repeatPeriod = RepeatPeriod.weeks;
+      customRepeat = customRepeat ~/ 7;
+    } else {
+      repeatPeriod = RepeatPeriod.days;
+    }
+
+    // Set the values
+    setState(() {
+      _selectedRepeatPeriod = repeatPeriod;
+      _repeatIntervalController.text = customRepeat.toString();
+    });
+  }
 }
 
 }

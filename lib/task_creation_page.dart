@@ -393,38 +393,38 @@ class TaskCreationPageState extends State<TaskCreationPage> {
     return dueDateField;
   }
 
-Widget _buildPriorityDropdown() {
-  return DropdownButtonFormField<int>(
-    value: _selectedPriority,
-    items: const [
-      DropdownMenuItem<int>(
-        value: 0,
-        child: Text('None'),
-      ),
-      DropdownMenuItem<int>(
-        value: 1,
-        child: Text('Low'),
-      ),
-      DropdownMenuItem<int>(
-        value: 2,
-        child: Text('Medium'),
-      ),
-      DropdownMenuItem<int>(
-        value: 3,
-        child: Text('High'),
-      ),
-      DropdownMenuItem<int>(
-        value: 4,
-        child: Text('Critical'),
-      ),
-    ],
-    onChanged: (value) {
-      setState(() {
-        _selectedPriority = value!;
-      });
-    },
-    decoration: const InputDecoration(labelText: 'Priority'),
-  );
-}
+  Widget _buildPriorityDropdown() {
+    return DropdownButtonFormField<int>(
+      value: _selectedPriority,
+      items: const [
+        DropdownMenuItem<int>(
+          value: 0,
+          child: Text('None'),
+        ),
+        DropdownMenuItem<int>(
+          value: 1,
+          child: Text('Low'),
+        ),
+        DropdownMenuItem<int>(
+          value: 2,
+          child: Text('Medium'),
+        ),
+        DropdownMenuItem<int>(
+          value: 3,
+          child: Text('High'),
+        ),
+        DropdownMenuItem<int>(
+          value: 4,
+          child: Text('Critical'),
+        ),
+      ],
+      onChanged: (value) {
+        setState(() {
+          _selectedPriority = value!;
+        });
+      },
+      decoration: const InputDecoration(labelText: 'Priority'),
+    );
+  }
 
 }

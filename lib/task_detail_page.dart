@@ -50,25 +50,7 @@ class TaskDetailPageState extends State<TaskDetailPage> {
          IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () async {
-              final updatedTask = await Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => EditTaskPage(
-                    task: widget.task,
-                    onTaskUpdated: (updatedTask) {},
-                    onTaskDeleted: (deleteTask) {
-                      widget.onTaskDeleted(deleteTask);
-                    },
-                    onTaskCreated: (newTask) {
-                      widget.onTaskCreated(newTask);
-                    },
-                  ),
-                ),
-              );
-              if (updatedTask != null) {
-                setState(() {
-                  widget.task.name = updatedTask.name;
-                });
-              }
+              await _showConfirmationDialog(context);
             },
           ),
         ],
@@ -96,9 +78,7 @@ class TaskDetailPageState extends State<TaskDetailPage> {
             ),
           ),
           if (widget.task.fields.isNotEmpty) _buildFieldContainer(),
-
           if (widget.subtasks.isNotEmpty) _buildSubtasksSection(),
-          _buildAttachedFilesSection(),
         ],
       ),
     );
@@ -129,31 +109,6 @@ class TaskDetailPageState extends State<TaskDetailPage> {
     return ListTile(
       title: const Text('Self Care'),
       subtitle: Text(selfCareField.value),
-    );
-  }
-
-  Widget _buildFieldContainer() {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          ...widget.task.fields.map((field) {
-            if (field is PriorityField) {
-              return _buildPriorityField(field);
-            } else if (field is DueDateField) {
-              return _buildDueDateField(field);
-            } else if (field is SelfCareField) {
-              return _buildSelfCareField(field);
-            } else {
-              return ListTile(
-                title: Text(field.name),
-                subtitle: Text(field.value),
-              );
-            }
-          }).toList(),
-        ],
-      ),
     );
   }
   
@@ -199,48 +154,119 @@ Widget _buildSubtasksSection() {
       return Container(); // Empty container when no subtasks or task is complete
     }
   }
-
-Widget _buildAttachedFilesSection() {
-  // Show attached files only if there are files
-  if (attachedFiles.isEmpty) {
-    return const ListTile(
-      title: Text('No attached files'),
-    );
-  } else {
-    return Column(
+Widget _buildAttachedFilesField() {
+  return ListTile(
+    title: const Text('Attached Files'),
+    subtitle: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        const Text('Attached Files:'),
-        const SizedBox(height: 8), // Add space for separation
-        ListView.builder(
-          shrinkWrap: true,
-          itemCount: attachedFiles.length,
-          itemBuilder: (context, index) {
-            final filePath = attachedFiles[index];
-            return ListTile(
-              title: InkWell(
-                onTap: !widget.task.isComplete
-                    ? () {
-                        if (filePath.isNotEmpty) {
-                          _openFile(filePath);
-                        }
-                      }
-                    : null,
-                child: Text(
-                  filePath.isEmpty ? 'No attached files' : filePath.split('/').last,
-                  style: TextStyle(
-                    color: widget.task.isComplete ? Colors.black : Colors.blue,
-                    decoration: widget.task.isComplete ? TextDecoration.none : TextDecoration.underline,
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-      ],
-    );
-  }
+      children: attachedFiles.map((filePath) {
+        return InkWell(
+          onTap: !widget.task.isComplete
+              ? () {
+                  if (filePath.isNotEmpty) {
+                    _openFile(filePath);
+                  }
+                }
+              : null,
+          child: Text(
+            filePath.isEmpty ? 'No attached files' : filePath.split('/').last,
+            style: TextStyle(
+              color: widget.task.isComplete ? Colors.black : Colors.blue,
+              decoration: widget.task.isComplete ? TextDecoration.none : TextDecoration.underline,
+            ),
+          ),
+        );
+      }).toList(),
+    ),
+  );
 }
 
+// Modify _buildFieldContainer to include _buildAttachedFilesField
+Widget _buildFieldContainer() {
+  return Container(
+    padding: const EdgeInsets.all(10),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        ...widget.task.fields.map((field) {
+          if (field is PriorityField) {
+            return _buildPriorityField(field);
+          } else if (field is DueDateField) {
+            return _buildDueDateField(field);
+          } else if (field is SelfCareField) {
+            return _buildSelfCareField(field);
+          } else {
+            return ListTile(
+              title: Text(field.name),
+              subtitle: Text(field.value),
+            );
+          }
+        }).toList(),
+        _buildAttachedFilesField(), // Include attached files field
+      ],
+    ),
+  );
+}
 
+Future<void> _showConfirmationDialog(BuildContext context) async {
+  bool editSeries = false;
+  bool shouldEditTask = true;
+  if (widget.task.repeatingId != ''){
+    await showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text("Edit series"),
+        content: const Text("Do you want to edit the series?"),
+        actions: <Widget>[
+          TextButton(
+            child: const Text("Cancel"),
+            onPressed: () {
+              Navigator.of(context).pop(false);
+            },
+          ),
+          TextButton(
+            child: const Text("No"),
+            onPressed: () {
+              Navigator.of(context).pop(true);
+            },
+          ),
+          TextButton(
+            child: const Text("Yes"),
+            onPressed: () {
+              editSeries = true;
+              Navigator.of(context).pop(true);
+            },
+          ),
+        ],
+      );
+    },
+  );
+  }
+
+  if (shouldEditTask) {
+    // User confirmed, navigate to edit page
+    final updatedTask = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => EditTaskPage(
+          editSeries : editSeries,
+          task: widget.task,
+          onTaskUpdated: (updatedTask) {},
+          onTaskDeleted: (deleteTask) {
+            widget.onTaskDeleted(deleteTask);
+          },
+          onTaskCreated: (newTask) {
+            widget.onTaskCreated(newTask);
+          },
+        ),
+      ),
+    );
+
+    if (updatedTask != null) {
+      setState(() {
+        widget.task.name = updatedTask.name;
+      });
+    }
+  }
+}
 }
