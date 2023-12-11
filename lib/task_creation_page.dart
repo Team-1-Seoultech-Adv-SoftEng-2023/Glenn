@@ -12,7 +12,6 @@ import 'widgets/priority_widgets.dart';
 import 'widgets/due_date_widgets.dart';
 import 'widgets/repeating_tasks_widgets.dart';
 
-
 class TaskCreationPage extends StatefulWidget {
   final Function(Task) onTaskCreated;
   final String parentId;
@@ -28,27 +27,33 @@ class TaskCreationPage extends StatefulWidget {
 }
 
 class TaskCreationPageState extends State<TaskCreationPage> {
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _descriptionController = TextEditingController();
+  late TextEditingController _nameController;
+  late TextEditingController _descriptionController;
+  late TextEditingController _dueDateController;
+  late TextEditingController _dueTimeController;
+  late int _selectedPriority;
   
-  final TextEditingController _dueDateController = TextEditingController();
-  final TextEditingController _dueTimeController = TextEditingController();
-  
-  final TextEditingController _repetitionEndDateController = TextEditingController();
-  final TextEditingController _repeatIntervalController =TextEditingController();
-  int _selectedPriority = 0;
-  bool _isRepeating = false;
-  RepeatPeriod _selectedRepeatPeriod = RepeatPeriod.days;
+  late bool _isRepeating;
+  late RepeatPeriod _selectedRepeatPeriod;
+  late TextEditingController _repetitionEndDateController;
+  late TextEditingController _repeatIntervalController;
 
+  @override
+  void initState() {
+    super.initState();
+    initializeControllersNewTask();
+  }
 
-  // Method to handle file picking
-  void _pickFile() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
-
-    if (result != null) {
-      String filePath = result.files.single.path!;
-      // Add logic to handle the file path as needed
-    }
+  void initializeControllersNewTask() {
+    _nameController = TextEditingController();
+    _descriptionController = TextEditingController();
+    _dueDateController = TextEditingController();
+    _dueTimeController = TextEditingController();
+    _repetitionEndDateController = TextEditingController();
+    _selectedPriority = 0;
+    _isRepeating = false;
+    _selectedRepeatPeriod = RepeatPeriod.days;
+    _repeatIntervalController = TextEditingController();
   }
 
   @override
@@ -72,62 +77,23 @@ class TaskCreationPageState extends State<TaskCreationPage> {
 
             Visibility(
               visible: widget.parentId == '',
-              child: buildPriorityDropdown(_selectedPriority, (value) {
-                setState(() {
-                  _selectedPriority = value!;
-                });
-              }),
-            ),
-
-            Visibility(
-              visible: widget.parentId == '',
-              child: ListTile(
-                title: const Text('Due Date'),
-                subtitle: Row(
-                  children: [
-                    Expanded(
-                      child: _buildDateField(),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildTimeField(),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            
-            Visibility(
-              visible: widget.parentId == '',
               child: Column(
                 children: [
-                  CheckboxListTile(
-                    title: const Text('Repeat Task'),
-                    value: _isRepeating,
-                    onChanged: (value) {
-                      setState(() {
-                        _isRepeating = value!;
-                        if (_isRepeating) {
-                          // If repeating is enabled, set due date to today if it's empty
-                          if (_dueDateController.text.isEmpty) {
-                            _dueDateController.text = formatDate(DateTime.now());
-                          }
-                          if (_dueTimeController.text.isEmpty){
-                            _dueTimeController.text = formatTime(const TimeOfDay(hour: 23, minute: 59,));
-                          }
-                          _repetitionEndDateController.text = formatDate(DateTime.now());
-                          _repeatIntervalController.text = '1';
-                        }
-                      });
-                    },
-                  ),
-                  Visibility(
-                    visible: _isRepeating,
-                    child: _buildRepeatPatternDropdown(),
-                  ),
-                ],
+                  buildDueDateTimeField(context, _dueDateController, _dueTimeController),
+                  buildPriorityDropdown(_selectedPriority, (value) {setState(() {_selectedPriority = value!;});}),
+                  buildRepeatTaskField(
+                            isRepeating: _isRepeating,
+                            dueDateController: _dueDateController,
+                            dueTimeController: _dueTimeController,
+                            repetitionEndDateController: _repetitionEndDateController,
+                            repeatIntervalController: _repeatIntervalController,
+                            selectedRepeatPeriod: _selectedRepeatPeriod,
+                            showEndDatePicker: _showEndDatePicker,
+                            onRepeatPeriodChanged: (RepeatPeriod? value) {if (value != null){setState((){_selectedRepeatPeriod = value;});}},
+                            onRepeatingCheckboxChanged: (bool? value) {setState(() => _isRepeating = value!);},),],
               ),
             ),
+
             Visibility(
               visible: widget.parentId == '',
               child: ElevatedButton(
@@ -169,7 +135,9 @@ class TaskCreationPageState extends State<TaskCreationPage> {
 
                     // Create a new task object with the provided details
                     if (_dueDateController.text.isNotEmpty) {   
-                      DueDateField dueDateField = createDueDateField();                 
+                      DueDateField dueDateField = DueDateField.createDueDateField(
+                          _dueDateController, _dueTimeController);
+                                      
                       newTask.updateTask(fields: [dueDateField]);
                     }
 
@@ -204,149 +172,17 @@ class TaskCreationPageState extends State<TaskCreationPage> {
     );
   }
 
-
-  Widget _buildRepeatIntervalDropdown() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('Repeats every...'),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(
-                    right: 15.0,
-                    left: 100.0), // Add some right padding for spacing
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                      width: 50, // Set the width of the TextFormField
-                      child: TextFormField(
-                        controller: _repeatIntervalController,
-                        keyboardType: TextInputType.number,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  DropdownButton<RepeatPeriod>(
-                    value: _selectedRepeatPeriod,
-                    onChanged: (RepeatPeriod? value) {
-                      if (value != null) {
-                        setState(() {
-                          _selectedRepeatPeriod = value;
-                        });
-                      }
-                    },
-                    items: RepeatPeriod.values
-                        .map<DropdownMenuItem<RepeatPeriod>>(
-                          (RepeatPeriod value) => DropdownMenuItem<RepeatPeriod>(
-                            value: value,
-                            child: Text(value.toString().split('.').last),
-                          ),
-                        )
-                        .toList(),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRepeatPatternDropdown() {
-    return Padding(
-      padding: const EdgeInsets.all(0.0), // Add padding around the entire Container
-      child: Container(
-        color: Colors.grey.withOpacity(0.1), // Set a very faded light blue background color
-        child: Padding(
-          padding: const EdgeInsets.all(16.0), // Add padding around the child Column
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('End Date'),
-                    buildEndDateField(_repetitionEndDateController, _showEndDatePicker),
-                ],
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 25.0), // Add vertical padding between the two children
-                child: _buildRepeatIntervalDropdown(),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   void _showEndDatePicker() async {
-    DateTime? selectedDate = await showDatePicker(
-      context: context,
-      initialDate: _dueDateController.text.isNotEmpty
-          ? DateTime.parse(_dueDateController.text)
-          : DateTime.now(), // Default to one year from now if _dueDateController is empty
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2101),
-    );
-
-    if (selectedDate != null) {
-        setState(() {
-          _repetitionEndDateController.text = formatDate(selectedDate);
-        });
-    }
+    await showEndDatePicker(context, _dueDateController, _repetitionEndDateController);
   }
 
-    Widget _buildDateField() {
-      return buildDateField(_dueDateController, _showDueDatePicker);
-    }
+  // Method to handle file picking
+  void _pickFile() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles();
 
-    Widget _buildTimeField() {
-      return buildTimeField(_dueTimeController, _showTimePicker);
-    }
-
-  void _showDueDatePicker() async {
-    DateTime? selectedDate = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-    );
-    if (selectedDate != null) {
-      setState(() {
-        _dueDateController.text = formatDate(selectedDate);
-
-        if (_dueTimeController.text.isEmpty) {
-        _dueTimeController.text = formatTime(const TimeOfDay(hour: 23, minute: 59));
-        }
-
-      });
-    }
-  }
-
-  void _showTimePicker() async {
-    TimeOfDay? selectedTime = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-    );
-    if (selectedTime != null) {
-      setState(() {
-        _dueTimeController.text = formatTime(selectedTime);
-        if (_dueDateController.text.isEmpty) {
-          _dueDateController.text = formatDate(DateTime.now());
-        }
-      });
+    if (result != null) {
+      String filePath = result.files.single.path!;
+      // Add logic to handle the file path as needed
     }
   }
 
@@ -361,24 +197,5 @@ class TaskCreationPageState extends State<TaskCreationPage> {
       _isRepeating = false;
       _selectedRepeatPeriod = RepeatPeriod.days;
     });
-}
-
-  DueDateField createDueDateField() {
-    List<String> dateParts = _dueDateController.text.split('-');
-
-    int year = int.parse(dateParts[0]);
-    int month = int.parse(dateParts[1]);
-    int day = int.parse(dateParts[2]);
-
-    DueDateField dueDateField = DueDateField(dueDateTime:  DateTime(year, month, day, 23, 59));
-    if(_dueTimeController.text.isNotEmpty){
-      dueDateField.dueTime = TimeOfDay(
-                        hour: int.parse(_dueTimeController.text.split(":")[0]),
-                        minute: int.parse(_dueTimeController.text.split(":")[1]),
-                        );
-    }
-      
-    return dueDateField;
   }
-
 }

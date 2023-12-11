@@ -291,7 +291,7 @@ class StorePageState extends State<StorePage> with SingleTickerProviderStateMixi
           child: Row(
             children: [
               IconButton(
-                icon: Icon(Icons.arrow_back),
+                icon: const Icon(Icons.arrow_back),
                 onPressed: () {
                   Navigator.of(context).pop(); // Use pop instead of push
                 },

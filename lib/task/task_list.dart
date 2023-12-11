@@ -21,10 +21,10 @@ class TaskList extends StatefulWidget {
   });
 
   @override
-  _TaskListState createState() => _TaskListState();
+  TaskListState createState() => TaskListState();
 }
 
-class _TaskListState extends State<TaskList> {
+class TaskListState extends State<TaskList> {
   List<Task> incompleteTasks = [];
 
   @override

@@ -52,7 +52,7 @@ class PriorityField extends TaskField {
       case 'critical':
         return 4;
       default:
-        return 0; // Default to 'None' if the string is not recognized
+        return 0; 
     }
   }
 }

@@ -11,6 +11,7 @@ class DueDateListView extends StatelessWidget {
   final Function(Task) onTaskDeleted;
 
   DueDateListView({
+    super.key, 
     required this.tasks,
     required this.updateTaskCompletionStatus,
     required this.onTaskUpdated,

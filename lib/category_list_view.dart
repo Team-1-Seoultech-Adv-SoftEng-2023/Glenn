@@ -11,7 +11,7 @@ class CategoryListView extends StatelessWidget {
   final Function(Task) onTaskCreated;
   final Function(Task) onTaskDeleted;
 
-  CategoryListView({
+  const CategoryListView({super.key, 
     required this.taskCategories,
     required this.categoryNames,
     required this.updateTaskCompletionStatus,
