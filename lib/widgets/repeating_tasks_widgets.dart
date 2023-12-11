@@ -1,6 +1,7 @@
 // repeating_tasks_widget.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:glenn/fields/due_date_field.dart';
 import 'package:glenn/task/repeating_task_utils.dart';
 import 'package:glenn/widgets/due_date_widgets.dart';
@@ -13,11 +14,10 @@ Widget buildRepeatTaskField({
   required TextEditingController repetitionEndDateController,
   required TextEditingController repeatIntervalController,
   required RepeatPeriod selectedRepeatPeriod,
-  required VoidCallback showEndDatePicker,
+  required BuildContext context,
   required ValueChanged<RepeatPeriod?> onRepeatPeriodChanged,
   required ValueChanged<bool?> onRepeatingCheckboxChanged,
 }) {
-
   if (isRepeating) {
     initializeRepeatTaskValues(
       dueDateController: dueDateController,
@@ -32,9 +32,9 @@ Widget buildRepeatTaskField({
       CheckboxListTile(
         title: const Text('Repeat Task'),
         value: isRepeating,
-        onChanged: onRepeatingCheckboxChanged
+        onChanged: onRepeatingCheckboxChanged,
       ),
-      if(isRepeating)
+      if (isRepeating)
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: Container(
@@ -46,10 +46,7 @@ Widget buildRepeatTaskField({
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text('End Date'),
-                    buildEndDateField(
-                      repetitionEndDateController,
-                      showEndDatePicker,
-                    ),
+                    buildEndDateField(context, repetitionEndDateController, dueDateController),
                   ],
                 ),
                 const SizedBox(height: 25.0),
@@ -66,11 +63,12 @@ Widget buildRepeatTaskField({
   );
 }
 
+
 Widget buildRepeatIntervalDropdown({
   required RepeatPeriod selectedRepeatPeriod,
   required ValueChanged<RepeatPeriod?> onChanged,
   required TextEditingController repeatIntervalController,
-}) {
+}) {  
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -92,6 +90,12 @@ Widget buildRepeatIntervalDropdown({
                     child: TextFormField(
                       controller: repeatIntervalController,
                       keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'^[1-99]\d*')),
+                        // Ensures that only digits are allowed
+                        FilteringTextInputFormatter.deny(RegExp(r'^-')),
+                        // Denies input with a minus sign
+                      ],
                     ),
                   ),
                 ],
@@ -139,6 +143,7 @@ void initializeRepeatTaskValues({
     repeatIntervalController.text = '1';
   }
   if (repetitionEndDateController.text.isEmpty) {
-    repetitionEndDateController.text = formatDate(DateTime.now());
+    String tmp = dueDateController.text;
+    repetitionEndDateController.text = tmp;
   }
 }

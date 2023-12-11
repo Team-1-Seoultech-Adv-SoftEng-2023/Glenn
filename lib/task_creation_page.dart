@@ -1,4 +1,5 @@
 //task_creation_page.dart
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
@@ -32,7 +33,7 @@ class TaskCreationPageState extends State<TaskCreationPage> {
   late TextEditingController _dueDateController;
   late TextEditingController _dueTimeController;
   late int _selectedPriority;
-  
+
   late bool _isRepeating;
   late RepeatPeriod _selectedRepeatPeriod;
   late TextEditingController _repetitionEndDateController;
@@ -66,6 +67,7 @@ class TaskCreationPageState extends State<TaskCreationPage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: <Widget>[
+            
             TextField(
               controller: _nameController,
               decoration: const InputDecoration(labelText: 'Task Name'),
@@ -77,21 +79,7 @@ class TaskCreationPageState extends State<TaskCreationPage> {
 
             Visibility(
               visible: widget.parentId == '',
-              child: Column(
-                children: [
-                  buildDueDateTimeField(context, _dueDateController, _dueTimeController),
-                  buildPriorityDropdown(_selectedPriority, (value) {setState(() {_selectedPriority = value!;});}),
-                  buildRepeatTaskField(
-                            isRepeating: _isRepeating,
-                            dueDateController: _dueDateController,
-                            dueTimeController: _dueTimeController,
-                            repetitionEndDateController: _repetitionEndDateController,
-                            repeatIntervalController: _repeatIntervalController,
-                            selectedRepeatPeriod: _selectedRepeatPeriod,
-                            showEndDatePicker: _showEndDatePicker,
-                            onRepeatPeriodChanged: (RepeatPeriod? value) {if (value != null){setState((){_selectedRepeatPeriod = value;});}},
-                            onRepeatingCheckboxChanged: (bool? value) {setState(() => _isRepeating = value!);},),],
-              ),
+              child: _buildFields(),
             ),
 
             Visibility(
@@ -101,68 +89,30 @@ class TaskCreationPageState extends State<TaskCreationPage> {
                 child: const Text('Add File'),
               ),
             ),
-            
+
             ElevatedButton(
               onPressed: () {
-                // Check if the task name is not empty before creating the task
+                // Check if nessesary elements are empty
+                // Then Show a snackbar if the task name is empty
                 if (_nameController.text.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar( content: Text('Task name cannot be empty. Please enter a task name.'),),
-                    );
-                } else{
-                  final Task newTask = Task(
-                    id: UniqueKey().toString(),
-                    name: _nameController.text,
-                    description: _descriptionController.text,
-                    parentId: widget.parentId,
-                    fields: [],
-                    filePaths: [],
-                  );
-
-                  if(widget.parentId != ''){
-                      // Notify the main page about the newly created task
-                      widget.onTaskCreated(newTask);
-                      if (kDebugMode) {
-                        print('You created a new subtask!');
-                      }
-                  } 
-                  else if(widget.parentId == ''){
-
-                    if (_selectedPriority != 0) {   
-                      PriorityField priorityField = PriorityField(priority: _selectedPriority);                 
-                      newTask.updateTask(fields: [priorityField]);
-                    }
-
-                    // Create a new task object with the provided details
-                    if (_dueDateController.text.isNotEmpty) {   
-                      DueDateField dueDateField = DueDateField.createDueDateField(
-                          _dueDateController, _dueTimeController);
-                                      
-                      newTask.updateTask(fields: [dueDateField]);
-                    }
-
-                    if(!_isRepeating){
-                        widget.onTaskCreated(newTask);
-
-                    } else if (_isRepeating){
-                        List<Task> newTasks = generateRepeatingTasks(
-                            originalTask: newTask,
-                            repetitionEndDateController: _repetitionEndDateController,
-                            selectedRepeatPeriod: _selectedRepeatPeriod,
-                            repeatInterval: int.parse(_repeatIntervalController.text),
-                        );
-
-                        for (Task newTask in newTasks) {
-                           widget.onTaskCreated(newTask);
-                         }
-                      }
-                  }
-                  
-                  if (kDebugMode) {
-                    print('Done on the task creation page... Back to the main task page!');
-                  }
-                  Navigator.of(context).pop();  
+                   showSnackBar('The task name cannot be empty. Please enter a task name.');
+                } else if (_dueDateController.text.isNotEmpty && !isValidDate(_dueDateController.text)) {
+                  showSnackBar('Invalid date. Please enter a valid date in the format yyyy-mm-dd.');
+                } else if (_dueTimeController.text.isNotEmpty && !isValidTime(_dueTimeController.text)) {
+                  showSnackBar('Invalid time. Please enter a valid time in the format HH:mm.');
+                } else if (_dueTimeController.text.isNotEmpty && _dueDateController.text.isEmpty) {
+                  showSnackBar('Please pick a due date.');
                 } 
+                
+                 else if (_isRepeating && _repetitionEndDateController.text.isNotEmpty && !isValidDate(_repetitionEndDateController.text)) {
+                  showSnackBar('Invalid end date. Please enter a valid end date in the format yyyy-mm-dd.');
+                } else if (_isRepeating && _repetitionEndDateController.text.isEmpty) {
+                  showSnackBar('Invalid end date. Please enter a valid end date in the format yyyy-mm-dd.');
+                } else if (_isRepeating && _repeatIntervalController.text.isEmpty) {
+                  showSnackBar('Invalid repeat interval. Please enter a valid interval between 1 and 99.');
+                } else {
+                  createTask();
+                }
               },
               child: const Text('Create Task'),
             ),
@@ -170,10 +120,6 @@ class TaskCreationPageState extends State<TaskCreationPage> {
         ),
       ),
     );
-  }
-
-  void _showEndDatePicker() async {
-    await showEndDatePicker(context, _dueDateController, _repetitionEndDateController);
   }
 
   // Method to handle file picking
@@ -198,4 +144,96 @@ class TaskCreationPageState extends State<TaskCreationPage> {
       _selectedRepeatPeriod = RepeatPeriod.days;
     });
   }
+
+  void createTask() {
+    final Task newTask = Task(
+      id: UniqueKey().toString(),
+      name: _nameController.text,
+      description: _descriptionController.text,
+      parentId: widget.parentId,
+      fields: [],
+      filePaths: [],
+    );
+
+    if (widget.parentId.isNotEmpty) {
+      // Notify the main page about the newly created subtask
+      widget.onTaskCreated(newTask);
+      if (kDebugMode) {
+        print('You created a new subtask!');
+      }
+    } else {
+      // Handle priority field
+      if (_selectedPriority != 0) {
+        PriorityField priorityField =
+            PriorityField(priority: _selectedPriority);
+        newTask.updateTask(fields: [priorityField]);
+      }
+
+      // Handle due date field
+      if (_dueDateController.text.isNotEmpty) {
+        DueDateField dueDateField = createDueDateField(
+          _dueDateController,
+          _dueTimeController,
+        );
+        newTask.updateTask(fields: [dueDateField]);
+      }
+
+      if (!_isRepeating) {
+        // Notify the main page about the newly created task
+        widget.onTaskCreated(newTask);
+      } else {
+        // Generate repeating tasks if needed
+        List<Task> newTasks = generateRepeatingTasks(
+          originalTask: newTask,
+          repetitionEndDateController: _repetitionEndDateController,
+          selectedRepeatPeriod: _selectedRepeatPeriod,
+          repeatInterval: int.parse(_repeatIntervalController.text),
+        );
+
+        for (Task repeatedTask in newTasks) {
+          widget.onTaskCreated(repeatedTask);
+        }
+      }
+    }
+
+    if (kDebugMode) {
+      print('Done on the task creation page... Back to the main task page!');
+    }
+    Navigator.of(context).pop();
+  }
+
+  Widget _buildFields() {
+  return Column(
+    children: [
+      buildDueDateTimeField(context, _dueDateController, _dueTimeController),
+      buildPriorityDropdown(_selectedPriority, (value) {
+        setState(() => _selectedPriority = value!);
+      }),
+      buildRepeatTaskField(
+        isRepeating: _isRepeating,
+        dueDateController: _dueDateController,
+        dueTimeController: _dueTimeController,
+        repetitionEndDateController: _repetitionEndDateController,
+        repeatIntervalController: _repeatIntervalController,
+        selectedRepeatPeriod: _selectedRepeatPeriod,
+        context: context,
+        onRepeatPeriodChanged: (RepeatPeriod? value) {
+          setState(() => _selectedRepeatPeriod = value!);
+        },
+        onRepeatingCheckboxChanged: (bool? value) {
+          setState(() => _isRepeating = value!);
+        },
+      ),
+    ],
+  );
+}
+
+  void showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+      ),
+    );
+  }
+
 }

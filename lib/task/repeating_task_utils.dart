@@ -3,18 +3,21 @@ import 'package:glenn/fields/due_date_field.dart';
 import 'task.dart';
 import 'package:flutter/material.dart';
 
-enum RepeatPeriod { days, weeks, months, years}
+enum RepeatPeriod { days, weeks, months, years }
 
-DateTime incrementCurrentDate(DateTime currentDate, RepeatPeriod repeatPeriod, int customRepeat) {
+DateTime incrementCurrentDate(
+  DateTime currentDate, RepeatPeriod repeatPeriod, int customRepeat) {
   switch (repeatPeriod) {
     case RepeatPeriod.days:
       return currentDate.add(Duration(days: customRepeat));
     case RepeatPeriod.weeks:
-      return currentDate.add(Duration(days: 7*customRepeat));
+      return currentDate.add(Duration(days: 7 * customRepeat));
     case RepeatPeriod.months:
-      return DateTime(currentDate.year, currentDate.month + customRepeat, currentDate.day);
+      return DateTime(
+          currentDate.year, currentDate.month + customRepeat, currentDate.day);
     case RepeatPeriod.years:
-      return DateTime(currentDate.year + customRepeat, currentDate.month, currentDate.day);
+      return DateTime(
+          currentDate.year + customRepeat, currentDate.month, currentDate.day);
     default:
       throw ArgumentError('Invalid RepeatPeriod: $repeatPeriod');
   }
@@ -26,7 +29,6 @@ List<Task> generateRepeatingTasks({
   required RepeatPeriod selectedRepeatPeriod,
   required int repeatInterval,
 }) {
-
   List<Task> repeatingTasks = [];
   originalTask.repeatingId = UniqueKey().toString();
 
@@ -46,20 +48,23 @@ List<Task> generateRepeatingTasks({
     print(endDate);
   }
 
-  while (currentDate.isBefore(endDate) || currentDate.isAtSameMomentAs(endDate)) {
-    
+  while (
+      currentDate.isBefore(endDate) || currentDate.isAtSameMomentAs(endDate)) {
     Task copiedTask = Task.copyWithUniqueID(originalTask);
     DueDateField newDueDateField = DueDateField(dueDateTime: currentDate);
-    newDueDateField.dueTime  = dueTime;
+    newDueDateField.dueTime = dueTime;
     copiedTask.updateTask(fields: [newDueDateField]);
     repeatingTasks.add(copiedTask);
-    currentDate = incrementCurrentDate(currentDate, selectedRepeatPeriod, repeatInterval);
+    currentDate =
+        incrementCurrentDate(currentDate, selectedRepeatPeriod, repeatInterval);
   }
   return repeatingTasks;
 }
 
-void calculateRepeatingInterval(List<Task> repeatingTasks, TextEditingController _repeatIntervalController,
-    RepeatPeriod _selectedRepeatPeriod) {
+void calculateRepeatingInterval(
+    List<Task> repeatingTasks,
+    TextEditingController repeatIntervalController,
+    RepeatPeriod selectedRepeatPeriod) {
   List<DateTime> dueDates = [];
   for (Task task in repeatingTasks) {
     if (task.hasDueDate) {
@@ -92,8 +97,8 @@ void calculateRepeatingInterval(List<Task> repeatingTasks, TextEditingController
     }
 
     // Set the values
-    _selectedRepeatPeriod = repeatPeriod;
-    _repeatIntervalController.text = customRepeat.toString();
+    selectedRepeatPeriod = repeatPeriod;
+    repeatIntervalController.text = customRepeat.toString();
   }
 }
 

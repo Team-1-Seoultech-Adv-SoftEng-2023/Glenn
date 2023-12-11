@@ -1,5 +1,6 @@
 //due_date_field.dart
 import 'package:flutter/material.dart';
+import 'package:glenn/task/task.dart';
 import 'task_field.dart';
 
 class DueDateField extends TaskField {
@@ -45,27 +46,6 @@ class DueDateField extends TaskField {
     super.value =
         '${formatDate(_dueDateTime)} ${formatTime(extractTimeOfDay(_dueDateTime))}';
   }
-
-  static DueDateField createDueDateField(
-      TextEditingController dueDateController,
-      TextEditingController dueTimeController) {
-    List<String> dateParts = dueDateController.text.split('-');
-
-    int year = int.parse(dateParts[0]);
-    int month = int.parse(dateParts[1]);
-    int day = int.parse(dateParts[2]);
-
-    DueDateField dueDateField =
-        DueDateField(dueDateTime: DateTime(year, month, day, 23, 59));
-    if (dueTimeController.text.isNotEmpty) {
-      dueDateField.dueTime = TimeOfDay(
-        hour: int.parse(dueTimeController.text.split(":")[0]),
-        minute: int.parse(dueTimeController.text.split(":")[1]),
-      );
-    }
-
-    return dueDateField;
-  }
 }
 
 String formatDate(DateTime date) {
@@ -79,3 +59,63 @@ String formatTime(TimeOfDay time) {
 TimeOfDay extractTimeOfDay(DateTime dateTime) {
   return TimeOfDay(hour: dateTime.hour, minute: dateTime.minute);
 }
+
+List<Task> sortTasksByDueDate(List<Task> tasks) {
+  // Filter out tasks with empty or null due dates
+  List<Task> tasksWithDueDate = tasks.where((task) => task.getDueDate() != null).toList();
+
+  // Sort tasks by due date
+  tasksWithDueDate.sort((a, b) {
+    if (a.getDueDate() != null && b.getDueDate() != null) {
+      // Compare TimeOfDay instances by converting them to minutes since midnight
+      final int aMinutes = a.getDueDate()!.hour * 60 + a.getDueDate()!.minute;
+      final int bMinutes = b.getDueDate()!.hour * 60 + b.getDueDate()!.minute;
+      return aMinutes.compareTo(bMinutes);
+    } else {
+      return 0;
+    }
+  });
+
+  // Combine tasks with due dates and tasks without due dates
+  List<Task> sortedTasks = [...tasksWithDueDate, ...tasks.where((task) => task.getDueDate() == null).toList()];
+
+  return sortedTasks;
+}
+
+DueDateField createDueDateField(
+      TextEditingController dueDateController,
+      TextEditingController dueTimeController) {
+    
+    DateTime dueDate = formatDateController(dueDateController.text);
+
+    DueDateField dueDateField = DueDateField(dueDateTime: dueDate);
+    dueDateField.dueTime = formatTimeController(dueTimeController.text);
+
+    return dueDateField;
+  }
+
+  DateTime formatDateController (String dateText){
+
+    DateTime date = DateTime.now();
+    if (dateText.isNotEmpty){
+      List<String> dateParts = dateText.split('-');
+      int year = int.parse(dateParts[0]);
+      int month = int.parse(dateParts[1]);
+      int day = int.parse(dateParts[2]);
+
+      date = DateTime(year, month, day, 23, 59);
+    }
+
+    return date;
+  }
+
+  TimeOfDay formatTimeController (String timeText){
+
+    TimeOfDay time = const TimeOfDay(hour: 23, minute: 59);
+    if (timeText.isNotEmpty) {
+      List<int> timeParts = timeText.split(":").map((part) => int.tryParse(part) ?? 0).toList();
+      time = TimeOfDay(hour: timeParts[0], minute: timeParts[1]);
+    }
+
+    return time;
+  }

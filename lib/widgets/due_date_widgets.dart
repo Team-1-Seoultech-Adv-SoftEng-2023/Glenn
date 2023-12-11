@@ -33,49 +33,67 @@ Widget buildDueDateTimeField(
   );
 }
 
-Widget buildDateField(TextEditingController controller, VoidCallback onTap) {
+Widget buildDateField(TextEditingController dateController, VoidCallback onTap) {
   return TextFormField(
-    controller: controller,
+    controller: dateController,
     keyboardType: TextInputType.datetime,
     decoration: const InputDecoration(labelText: 'Date'),
     onTap: onTap,
   );
 }
 
-Widget buildTimeField(TextEditingController controller, VoidCallback onTap) {
+Widget buildTimeField(TextEditingController timeController, VoidCallback onTap) {
   return TextFormField(
-    controller: controller,
+    controller: timeController,
     keyboardType: TextInputType.datetime,
     decoration: const InputDecoration(labelText: 'Time'),
     onTap: onTap,
   );
 }
 
-Widget buildEndDateField(TextEditingController controller, VoidCallback onTap) {
+Widget buildEndDateField(BuildContext context, TextEditingController endDateController, TextEditingController dueDateController) {
   return TextFormField(
-    controller: controller,
+    controller: endDateController,
     keyboardType: TextInputType.datetime,
-    onTap: onTap,
+    decoration: const InputDecoration(labelText: 'End Date'),
+    onTap: () async {
+      DateTime? selectedDate = await showEndDatePickerAndUpdate(context, endDateController, dueDateController);
+
+      if (selectedDate != null) {
+        endDateController.text = formatDate(selectedDate);
+      }
+    },
   );
 }
 
-Future<void> showEndDatePicker(
-  BuildContext context,
-  TextEditingController dueDateController,
-  TextEditingController repetitionEndDateController,
-) async {
+
+Future<DateTime?> showEndDatePickerAndUpdate(
+  BuildContext context, TextEditingController dueDateController, TextEditingController endDateController) async {
+  
+  DateTime? selectedDate = await showDatePicker(
+    context: context,
+    initialDate: DateTime.now(),
+    firstDate: DateTime(2000),
+    lastDate: DateTime(2101),
+  );
+
+  return selectedDate;
+}
+
+Future<DateTime?> showDatePickerAndUpdate(BuildContext context, TextEditingController dueDateController) async {
   DateTime? selectedDate = await showDatePicker(
     context: context,
     initialDate: dueDateController.text.isNotEmpty
         ? DateTime.parse(dueDateController.text)
         : DateTime.now(),
-    firstDate: DateTime.now(),
+    firstDate: DateTime(2000),
     lastDate: DateTime(2101),
   );
 
   if (selectedDate != null) {
-    repetitionEndDateController.text = formatDate(selectedDate);
+    return selectedDate;
   }
+  return null;
 }
 
 Future<void> showTimePickerAndUpdate(BuildContext context, TextEditingController dueTimeController, TextEditingController dueDateController) async {
@@ -86,22 +104,6 @@ Future<void> showTimePickerAndUpdate(BuildContext context, TextEditingController
   if (selectedTime != null) {
     updateDueTimeController(selectedTime, dueTimeController, dueDateController);
   }
-}
-
-Future<DateTime?> showDatePickerAndUpdate(BuildContext context, TextEditingController dueDateController) async {
-  DateTime? selectedDate = await showDatePicker(
-    context: context,
-    initialDate: dueDateController.text.isNotEmpty
-        ? DateTime.parse(dueDateController.text)
-        : DateTime.now(),
-    firstDate: DateTime.now(),
-    lastDate: DateTime(2101),
-  );
-
-  if (selectedDate != null) {
-    return selectedDate;
-  }
-  return null;
 }
 
 void updateDueDateController(DateTime selectedDate, TextEditingController dueDateController, TextEditingController dueTimeController) {
@@ -120,3 +122,65 @@ void updateDueTimeController(TimeOfDay selectedTime, TextEditingController dueTi
   }
 }
 
+bool isValidDate(String dateText) {
+  RegExp dateRegExp = RegExp(r'^\d{4}-\d{2}-\d{2}$');
+
+  if (!dateRegExp.hasMatch(dateText)) {
+    return false; // Invalid format
+  }
+
+  List<int?> dateComponents = dateText.split('-').map(int.tryParse).toList();
+
+  if (dateComponents.contains(null)) {
+    return false; // Non-numeric component
+  }
+
+  int? year = dateComponents[0];
+  int? month = dateComponents[1];
+  int? day = dateComponents[2];
+
+  if (year! < 1990) {
+    return false; // Year is too early
+  }
+
+  if (month! < 1 || month > 12) {
+    return false; // Invalid month
+  }
+
+  if (day! < 1 || day > DateTime(year, month + 1, 0).day) {
+    return false; // Invalid day
+  }
+
+  return true; 
+}
+
+bool isValidTime(String timeText) {
+    RegExp timeRegExp = RegExp(r'(\d{2}:\d{2})');
+  
+    if (!timeRegExp.hasMatch(timeText)) {
+      return false;
+    }
+
+    Match match = timeRegExp.firstMatch(timeText)!;
+    String matchedTime = match.group(1)!;
+    print(matchedTime);
+
+    List<int?> timeComponents = timeText.split(':').map(int.tryParse).toList();
+
+    if (timeComponents.contains(null)) {
+      return false; // Non-numeric component
+    }
+
+    int? hour = timeComponents[0];
+    int? min = timeComponents[1];
+
+    if (hour! > 24 || hour < 0) {
+      return false; 
+    }
+
+    if (min! < 0 || min > 59) {
+      return false; 
+    }
+
+    return true; 
+}

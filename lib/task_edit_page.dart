@@ -133,117 +133,67 @@ class EditTaskPageState extends State<EditTaskPage> {
                   decoration: const InputDecoration(labelText: 'Description'),
                 ),
 
-                Column(
-                  children: [
-                    Visibility(
-                      visible: widget.task.parentId == '',
-                      child: Column(
-                        children: [
-                          buildPriorityDropdown(_selectedPriority, (value) {setState(() {_selectedPriority = value!;});}),
-                          buildDueDateTimeField(context, _dueDateController, _dueTimeController),
-                          buildRepeatTaskField(
-                            isRepeating: _isRepeating,
-                            dueDateController: _dueDateController,
-                            dueTimeController: _dueTimeController,
-                            repetitionEndDateController: _repetitionEndDateController,
-                            repeatIntervalController: _repeatIntervalController,
-                            selectedRepeatPeriod: _selectedRepeatPeriod,
-                            showEndDatePicker: _showEndDatePicker,
-                            onRepeatPeriodChanged: 
-                              (RepeatPeriod? value) {
-                                if (value != null){setState((){_selectedRepeatPeriod = value;});}
-                              },
-                            onRepeatingCheckboxChanged: (bool? value) {
-                                setState(() {_isRepeating = value!;});
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                Visibility(
+                  visible: widget.task.parentId == '',
+                  child: _buildFields(),
                 ),
 
                 ElevatedButton(
                   onPressed: () {
                     // Update the task's attributes when the button is pressed
+                    if (_nameController.text.isEmpty) {
+                      showSnackBar('The task name cannot be empty. Please enter a task name.');
+                    } else if (_dueDateController.text.isNotEmpty && !isValidDate(_dueDateController.text)) {
+                      showSnackBar('Invalid date. Please enter a valid date in the format yyyy-mm-dd.');
+                    } else if (_dueTimeController.text.isNotEmpty && !isValidTime(_dueTimeController.text)) {
+                      showSnackBar('Invalid time. Please enter a valid time in the format HH:mm.');
+                    } else if (_dueTimeController.text.isNotEmpty && _dueDateController.text.isEmpty) {
+                      showSnackBar('Please pick a due date.');
+                    } 
+                    
+                    else if (_isRepeating && _repetitionEndDateController.text.isNotEmpty && !isValidDate(_repetitionEndDateController.text)) {
+                      showSnackBar('Invalid end date. Please enter a valid end date in the format yyyy-mm-dd.');
+                    } else if (_isRepeating && _repetitionEndDateController.text.isEmpty) {
+                      showSnackBar('Invalid end date. Please enter a valid end date in the format yyyy-mm-dd.');
+                    } else if (_isRepeating && _repeatIntervalController.text.isEmpty) {
+                      showSnackBar('Invalid repeat interval. Please enter a valid interval between 1 and 99.');
+                    }else{
+                      
                     setState(() {
-                      widget.task.updateTask(
-                          name: _nameController.text,
-                          description: _descriptionController.text.isNotEmpty
-                              ? _descriptionController.text
-                              : '',
-                          fields: []);
 
-                      if (_selectedPriority != 0) {
-                        PriorityField priorityField =
-                            PriorityField(priority: _selectedPriority);
-                        widget.task.updateTask(fields: [priorityField]);
-                      }
-
-                      // Create a new task object with the provided details
-                      if (_dueDateController.text.isNotEmpty) {
-                        DueDateField dueDateField =
-                            DueDateField.createDueDateField(
-                                _dueDateController, _dueTimeController);
-                        widget.task.updateTask(fields: [dueDateField]);
-                      }
+                      updateTask();
 
                       if (_isRepeating && widget.task.repeatingId.isEmpty) {
-                        final Task newTask = Task(
-                          id: UniqueKey().toString(),
-                          name: _nameController.text,
-                          description: _descriptionController.text,
-                          parentId: '',
-                          fields: [],
-                          filePaths: [],
-                        );
-
-                        if (_selectedPriority != 0) {
-                          PriorityField priorityField =
-                              PriorityField(priority: _selectedPriority);
-                          newTask.updateTask(fields: [priorityField]);
-                        }
-
-                        // Create a new task object with the provided details
-                        if (_dueDateController.text.isNotEmpty) {
-                          DueDateField dueDateField =
-                              DueDateField.createDueDateField(
-                                  _dueDateController, _dueTimeController);
-                          newTask.updateTask(fields: [dueDateField]);
-                        }
-
-                        List<Task> newTasks = generateRepeatingTasks(
-                          originalTask: newTask,
-                          repetitionEndDateController:
-                              _repetitionEndDateController,
-                          selectedRepeatPeriod: _selectedRepeatPeriod,
-                          repeatInterval:
-                              int.parse(_repeatIntervalController.text),
-                        );
-
-                        for (Task newTask in newTasks) {
-                          widget.onTaskCreated(newTask);
-                        }
-
-                        widget.onTaskDeleted(widget.task);
+                        createRepeatingTasks();
                       }
-                      if (!_isRepeating) {
-                        if (widget.repeatingTasks.isNotEmpty) {
+
+                      if (!_isRepeating && widget.repeatingTasks.isNotEmpty) {
+                        
                           for (Task t in widget.repeatingTasks) {
                             if (!t.isComplete && t != widget.task) {
                               widget.onTaskDeleted(t);
                             }
                           }
-                        }
-                        widget.task.repeatingId = '';
-                      } else {
-                        //_isRepeating = false
-                        Navigator.pop(context, widget.task);
-                      }
-                    });
 
-                    // Return the updated task to the previous page
+                        widget.task.repeatingId = '';
+                      } 
+
+                      if (_isRepeating && widget.repeatingTasks.isNotEmpty) {
+                        
+                          for (Task t in widget.repeatingTasks) {
+                            if (!t.isComplete && t != widget.task) {
+                              widget.onTaskDeleted(t);
+                            }
+                          }
+                        
+                          createRepeatingTasks();
+                      } 
+
+
+                    });
                     Navigator.pop(context, widget.task);
+
+                    }
                   },
                   child: const Text('Save'),
                 ),
@@ -308,9 +258,75 @@ class EditTaskPageState extends State<EditTaskPage> {
     }
     Navigator.pop(context);
   }
-  
-  void _showEndDatePicker() async {
-    await showEndDatePicker(context, _dueDateController, _repetitionEndDateController);
+
+  Widget _buildFields() {
+    return Column(
+      children: [
+        buildDueDateTimeField(context, _dueDateController, _dueTimeController),
+        buildPriorityDropdown(_selectedPriority, (value) {
+          setState(() => _selectedPriority = value!);
+        }),
+        buildRepeatTaskField(
+          isRepeating: _isRepeating,
+          dueDateController: _dueDateController,
+          dueTimeController: _dueTimeController,
+          repetitionEndDateController: _repetitionEndDateController,
+          repeatIntervalController: _repeatIntervalController,
+          selectedRepeatPeriod: _selectedRepeatPeriod,
+          context: context,
+          onRepeatPeriodChanged: (RepeatPeriod? value) {
+            setState(() => _selectedRepeatPeriod = value!);
+          },
+          onRepeatingCheckboxChanged: (bool? value) {
+            setState(() => _isRepeating = value!);
+          },
+        ),
+      ],
+    );
   }
 
+  void showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+      ),
+    );
+  }
+
+  void updateTask() {
+    widget.task.updateTask(
+      name: _nameController.text,
+      description: _descriptionController.text.isNotEmpty
+          ? _descriptionController.text
+          : '',
+      fields: [],
+    );
+
+    if (_selectedPriority != 0) {
+      PriorityField priorityField = PriorityField(priority: _selectedPriority);
+      widget.task.updateTask(fields: [priorityField]);
+    }
+
+    if (_dueDateController.text.isNotEmpty) {
+      DueDateField dueDateField =
+          createDueDateField(_dueDateController, _dueTimeController);
+      widget.task.updateTask(fields: [dueDateField]);
+    }
+  }
+
+  void createRepeatingTasks() {
+    final Task newTask = Task.copyWithUniqueID(widget.task);
+
+    final List<Task> newTasks = generateRepeatingTasks(
+      originalTask: newTask,
+      repetitionEndDateController: _repetitionEndDateController,
+      selectedRepeatPeriod: _selectedRepeatPeriod,
+      repeatInterval: int.parse(_repeatIntervalController.text),
+    );
+    for (Task newTask in newTasks) {
+      widget.onTaskCreated(newTask);
+    }
+
+    widget.onTaskDeleted(widget.task);
+  }
 }
