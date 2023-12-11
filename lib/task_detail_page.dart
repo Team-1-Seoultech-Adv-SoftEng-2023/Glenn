@@ -10,6 +10,10 @@ import 'fields/due_date_field.dart';
 import 'fields/priority_field.dart';
 import 'fields/self_care_field.dart';
 
+import 'widgets/priority_widgets.dart';
+import 'widgets/due_date_widgets.dart';
+import 'widgets/repeating_tasks_widgets.dart';
+
 class TaskDetailPage extends StatefulWidget {
   final Task task;
   final List<Task> subtasks;

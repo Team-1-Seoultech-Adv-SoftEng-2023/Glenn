@@ -8,6 +8,11 @@ import 'task/task.dart';
 import 'fields/due_date_field.dart';
 import 'task/repeating_task_utils.dart';
 
+import 'widgets/priority_widgets.dart';
+import 'widgets/due_date_widgets.dart';
+import 'widgets/repeating_tasks_widgets.dart';
+
+
 class TaskCreationPage extends StatefulWidget {
   final Function(Task) onTaskCreated;
   final String parentId;
@@ -28,13 +33,13 @@ class TaskCreationPageState extends State<TaskCreationPage> {
   
   final TextEditingController _dueDateController = TextEditingController();
   final TextEditingController _dueTimeController = TextEditingController();
-
-  int _selectedPriority = 0;
-
+  
   final TextEditingController _repetitionEndDateController = TextEditingController();
+  final TextEditingController _repeatIntervalController =TextEditingController();
+  int _selectedPriority = 0;
   bool _isRepeating = false;
   RepeatPeriod _selectedRepeatPeriod = RepeatPeriod.days;
-  final TextEditingController _repeatIntervalController =TextEditingController();
+
 
   // Method to handle file picking
   void _pickFile() async {
@@ -67,7 +72,11 @@ class TaskCreationPageState extends State<TaskCreationPage> {
 
             Visibility(
               visible: widget.parentId == '',
-              child: _buildPriorityDropdown(),
+              child: buildPriorityDropdown(_selectedPriority, (value) {
+                setState(() {
+                  _selectedPriority = value!;
+                });
+              }),
             ),
 
             Visibility(
@@ -268,7 +277,7 @@ class TaskCreationPageState extends State<TaskCreationPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text('End Date'),
-                  _buildEndDateField(),
+                    buildEndDateField(_repetitionEndDateController, _showEndDatePicker),
                 ],
               ),
               Padding(
@@ -279,15 +288,6 @@ class TaskCreationPageState extends State<TaskCreationPage> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildEndDateField() {
-    return TextFormField(
-      controller: _repetitionEndDateController,
-      keyboardType: TextInputType.datetime,
-      //decoration: InputDecoration(labelText: 'End Date'),
-      onTap: () => _showEndDatePicker(),
     );
   }
 
@@ -308,23 +308,13 @@ class TaskCreationPageState extends State<TaskCreationPage> {
     }
   }
 
-  Widget _buildDateField() {
-    return TextFormField(
-      controller: _dueDateController,
-      keyboardType: TextInputType.datetime,
-      decoration: const InputDecoration(labelText: 'Date'),
-      onTap: () => _showDueDatePicker(),
-    );
-  }
+    Widget _buildDateField() {
+      return buildDateField(_dueDateController, _showDueDatePicker);
+    }
 
-  Widget _buildTimeField() {
-    return TextFormField(
-      controller: _dueTimeController,
-      keyboardType: TextInputType.datetime,
-      decoration: const InputDecoration(labelText: 'Time'),
-      onTap: () => _showTimePicker(),
-    );
-  }
+    Widget _buildTimeField() {
+      return buildTimeField(_dueTimeController, _showTimePicker);
+    }
 
   void _showDueDatePicker() async {
     DateTime? selectedDate = await showDatePicker(
@@ -389,40 +379,6 @@ class TaskCreationPageState extends State<TaskCreationPage> {
     }
       
     return dueDateField;
-  }
-
-  Widget _buildPriorityDropdown() {
-    return DropdownButtonFormField<int>(
-      value: _selectedPriority,
-      items: const [
-        DropdownMenuItem<int>(
-          value: 0,
-          child: Text('None'),
-        ),
-        DropdownMenuItem<int>(
-          value: 1,
-          child: Text('Low'),
-        ),
-        DropdownMenuItem<int>(
-          value: 2,
-          child: Text('Medium'),
-        ),
-        DropdownMenuItem<int>(
-          value: 3,
-          child: Text('High'),
-        ),
-        DropdownMenuItem<int>(
-          value: 4,
-          child: Text('Critical'),
-        ),
-      ],
-      onChanged: (value) {
-        setState(() {
-          _selectedPriority = value!;
-        });
-      },
-      decoration: const InputDecoration(labelText: 'Priority'),
-    );
   }
 
 }
