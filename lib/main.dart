@@ -94,52 +94,56 @@ final List<Task> tasks = [
   ),
   Task(
     id: '8',
-    name: 'Repeating Task 1',
-    description: 'This task repeats every day',
+    name: 'Repeating Task',
+    description: 'This task repeats',
     parentId: '',
     fields: [
       DueDateField(
         dueDateTime: DateTime(2023, 12, 7, 14, 30),
       ),
+      PriorityField(priority: 1),
     ],
     repeatingId: '8',
     filePaths: [],
   ),
   Task(
     id: '9',
-    name: 'Repeating Task 2',
-    description: 'This task repeats every day',
+    name: 'Repeating Task',
+    description: 'This task repeats',
     parentId: '',
     fields: [
       DueDateField(
         dueDateTime: DateTime(2023, 12, 8, 14, 30),
       ),
+      PriorityField(priority: 1),
     ],
     repeatingId: '8',
     filePaths: [],
   ),
   Task(
     id: '10',
-    name: 'Repeating Task 3',
-    description: 'This task repeats every day',
+    name: 'Repeating Task',
+    description: 'This task repeats',
     parentId: '',
     fields: [
       DueDateField(
         dueDateTime: DateTime(2023, 12, 9, 14, 30),
       ),
+      PriorityField(priority: 1),
     ],
     repeatingId: '8',
     filePaths: [],
   ),
   Task(
     id: '11',
-    name: 'Repeating Task 4',
-    description: 'This task repeats every day',
+    name: 'Repeating Task',
+    description: 'This task repeats',
     parentId: '',
     fields: [
       DueDateField(
         dueDateTime: DateTime(2023, 12, 10, 14, 30),
       ),
+      PriorityField(priority: 1),
     ],
     repeatingId: '8',
     filePaths: [],
