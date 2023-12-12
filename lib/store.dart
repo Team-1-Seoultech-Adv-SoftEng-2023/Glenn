@@ -1,6 +1,7 @@
 //store.dart
 import 'package:flutter/material.dart';
-
+import 'package:provider/provider.dart';
+import 'user_provider.dart';
 
 // TODO: Make store page persistant (resets on going back)
 class StoreItem {
@@ -22,8 +23,7 @@ class StorePage extends StatefulWidget {
   final void Function(double) updateOverallScore;
   final GlobalKey<StorePageState> storePageKey;
 
-
-    StorePage({
+  StorePage({
     required this.overallScore,
     required this.updateOverallScore,
     required this.storePageKey,
@@ -34,42 +34,42 @@ class StorePage extends StatefulWidget {
 }
 
 List<StoreItem> storeItems = [
-    StoreItem(
-      name: 'Orange Fancy Cat',
-      sellingPoints: 5,
-      image: 'assets/avatars/cute_cat.png',
-    ),
-    StoreItem(
-      name: 'Wizard Lizard',
-      sellingPoints: 2,
-      image: 'assets/avatars/wizard_lizard.png',
-    ),
-    StoreItem(
-      name: 'Nerd Fairy',
-      sellingPoints: 1,
-      image: 'assets/avatars/nerd_fairy.png',
-    ),
-    StoreItem(
-      name: 'Jeju Platypus',
-      sellingPoints: 1,
-      image: 'assets/avatars/vacation_platypus.png',
-    ),
-    // Add more items as needed
-  ];
+  StoreItem(
+    name: 'Orange Fancy Cat',
+    sellingPoints: 5,
+    image: 'assets/avatars/cute_cat.png',
+  ),
+  StoreItem(
+    name: 'Wizard Lizard',
+    sellingPoints: 2,
+    image: 'assets/avatars/wizard_lizard.png',
+  ),
+  StoreItem(
+    name: 'Nerd Fairy',
+    sellingPoints: 1,
+    image: 'assets/avatars/nerd_fairy.png',
+  ),
+  StoreItem(
+    name: 'Jeju Platypus',
+    sellingPoints: 1,
+    image: 'assets/avatars/vacation_platypus.png',
+  ),
+  // Add more items as needed
+];
 
-  List<StoreItem> ownedItems = [
-    StoreItem(
-      name: 'Pet Rock',
-      sellingPoints: 0,
-      image: 'assets/avatars/pet_rock.png',
-    ),
-    // Add items that the user already owns
-  ];
+List<StoreItem> ownedItems = [
+  StoreItem(
+    name: 'Pet Rock',
+    sellingPoints: 0,
+    image: 'assets/avatars/pet_rock.png',
+  ),
+  // Add items that the user already owns
+];
 
-  StoreItem selectedOwnedItem = ownedItems[0]; 
+StoreItem selectedOwnedItem = ownedItems[0];
 
-
-class StorePageState extends State<StorePage> with SingleTickerProviderStateMixin {
+class StorePageState extends State<StorePage>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   void _purchaseItem(StoreItem item) {
@@ -115,6 +115,8 @@ class StorePageState extends State<StorePage> with SingleTickerProviderStateMixi
 
       widget.updateOverallScore(widget.overallScore);
       _selectOwnedItem(item);
+      Provider.of<UserProvider>(context, listen: false).selectedOwnedItem =
+          item;
 
       // Show a confirmation dialog for successful purchase
       showDialog(
@@ -187,7 +189,6 @@ class StorePageState extends State<StorePage> with SingleTickerProviderStateMixi
     _tabController = TabController(length: 2, vsync: this);
   }
 
-
   @override
   void dispose() {
     _tabController.dispose();
@@ -222,7 +223,7 @@ class StorePageState extends State<StorePage> with SingleTickerProviderStateMixi
                     subtitle: Text('Cost: ${item.sellingPoints} points'),
                     onTap: () {
                       _purchaseItem(item);
-                    },                    
+                    },
                     leading: Image.asset(item.image),
                     trailing: index == 0
                         ? Text(
@@ -241,7 +242,9 @@ class StorePageState extends State<StorePage> with SingleTickerProviderStateMixi
                     title: Text(item.name),
                     subtitle: Text('Owned'),
                     leading: GestureDetector(
-                      onTap: () {_selectOwnedItem(item);},
+                      onTap: () {
+                        _selectOwnedItem(item);
+                      },
                       child: Container(
                         width: 48.0,
                         height: 48.0,
@@ -311,5 +314,4 @@ class StorePageState extends State<StorePage> with SingleTickerProviderStateMixi
       selectedOwnedItem = item;
     });
   }
-
 }

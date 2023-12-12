@@ -35,7 +35,6 @@ void _dummyFunction(Task task, bool isComplete) {
 }
 
 class TaskCardState extends State<TaskCard> {
-
   @override
   void initState() {
     super.initState();
@@ -46,7 +45,7 @@ class TaskCardState extends State<TaskCard> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Congratulations!'),
+          title: const Text('🎉 Congratulations! 🎉'),
           content: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -213,133 +212,136 @@ class TaskCardState extends State<TaskCard> {
 
 //...
 
-@override
-Widget build(BuildContext context) {
-  // Function to find child tasks for the current task
-  List<Task> getChildTasks() {
-    return widget.allTasks
-        .where((t) => t.parentId == widget.task.id)
-        .toList();
-  }
+  @override
+  Widget build(BuildContext context) {
+    // Function to find child tasks for the current task
+    List<Task> getChildTasks() {
+      return widget.allTasks
+          .where((t) => t.parentId == widget.task.id)
+          .toList();
+    }
 
-  bool isParentTaskComplete = widget.task.isComplete;
+    bool isParentTaskComplete = widget.task.isComplete;
 
-  return Card(
-    margin: const EdgeInsets.all(10),
-    child: GestureDetector(
-      onTap: () async {
-        // Pass the callback function to TaskDetailPage
-        await Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => TaskDetailPage(
-              tasks: widget.allTasks,
-              task: widget.task,
-              onTaskUpdated: (updatedTask) {
-                // Handle the updated task here
-                // Optionally, you can update the UI or perform other actions.
-              },
-              onTaskDeleted: widget.onTaskDeleted,
-              onTaskCreated: widget.onTaskCreated,
-              subtasks: getChildTasks(),
-              onUpdateDueDateTime: widget.onUpdateDueDateTime,
-            ),
-          ),
-        );
-      },
-      child: Stack(
-        children: [
-          // Title and subtitle in a column
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Display task name and checkbox in a row
-              Row(
-                children: [
-                  // Conditionally render the checkbox based on the parent task's completion status
-                  if (!isParentTaskComplete)
-                    Checkbox(
-                      value: widget.task.isComplete,
-                      onChanged: (value) {
-                        _showConfirmationDialog(context, value!);
-                      },
-                    ),
-                  Flexible(
-                    child: ListTile(
-                      title: Text(widget.task.name),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (widget.task.fields.isNotEmpty &&
-                              widget.task.fields.any((field) => field is DueDateField))
-                            // Display the Due Date in a more concise format
-                            Row(
-                              children: [
-                                const Text('Due: '),
-                                Text('${formatDate((widget.task.fields.firstWhere((field) => field is DueDateField) as DueDateField).dueDate)}'),
-                                const SizedBox(width: 8),
-                                Text('${formatTime((widget.task.fields.firstWhere((field) => field is DueDateField) as DueDateField).dueTime)}'),
-                              ],
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
+    return Card(
+      margin: const EdgeInsets.all(10),
+      child: GestureDetector(
+        onTap: () async {
+          // Pass the callback function to TaskDetailPage
+          await Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => TaskDetailPage(
+                tasks: widget.allTasks,
+                task: widget.task,
+                onTaskUpdated: (updatedTask) {
+                  // Handle the updated task here
+                  // Optionally, you can update the UI or perform other actions.
+                },
+                onTaskDeleted: widget.onTaskDeleted,
+                onTaskCreated: widget.onTaskCreated,
+                subtasks: getChildTasks(),
+                onUpdateDueDateTime: widget.onUpdateDueDateTime,
               ),
-              // Display child tasks under the main task
-              if (getChildTasks().isNotEmpty && !isParentTaskComplete)
-                Column(
-                  children: <Widget>[
-                    const Text('Sub Tasks:'),
-                    ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: getChildTasks().length,
-                      itemBuilder: (context, index) {
-                        return TaskCard(
-                          task: getChildTasks()[index],
-                          allTasks: widget.allTasks,
-                          onTaskUpdated: (updatedTask) {
-                            // Handle the updated task here
-                            // Optionally, you can update the UI or perform other actions.
-                          },
-                          onTaskDeleted: widget.onTaskDeleted,
-                          onTaskCreated: widget.onTaskCreated,
-                          onUpdateDueDateTime: widget.onUpdateDueDateTime,
-                        );
-                      },
+            ),
+          );
+        },
+        child: Stack(
+          children: [
+            // Title and subtitle in a column
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Display task name and checkbox in a row
+                Row(
+                  children: [
+                    // Conditionally render the checkbox based on the parent task's completion status
+                    if (!isParentTaskComplete)
+                      Checkbox(
+                        value: widget.task.isComplete,
+                        onChanged: (value) {
+                          _showConfirmationDialog(context, value!);
+                        },
+                      ),
+                    Flexible(
+                      child: ListTile(
+                        title: Text(widget.task.name),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (widget.task.fields.isNotEmpty &&
+                                widget.task.fields
+                                    .any((field) => field is DueDateField))
+                              // Display the Due Date in a more concise format
+                              Row(
+                                children: [
+                                  const Text('Due: '),
+                                  Text(
+                                      '${formatDate((widget.task.fields.firstWhere((field) => field is DueDateField) as DueDateField).dueDate)}'),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                      '${formatTime((widget.task.fields.firstWhere((field) => field is DueDateField) as DueDateField).dueTime)}'),
+                                ],
+                              ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),
-            ],
-          ),
-
-          Positioned(
-            top: 0,
-            right: 0,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                // Display priority block
-                if (widget.task.hasPriority)
-                  _buildPriorityBlock(widget.task.getPriority()!),
-
-                // Display the symbol if repeatingId is not an empty string
-                if (widget.task.repeatingId.isNotEmpty)
-                  const Padding(
-                    padding: const EdgeInsets.only(right: 16, top: 8), // Add some left padding
-                    child: Icon(
-                      Icons.repeat, // You can use a different icon as needed
-                      size: 20, // Set the size of the icon
-                      color: Colors.grey, // Set the color of the icon
-                    ),
+                // Display child tasks under the main task
+                if (getChildTasks().isNotEmpty && !isParentTaskComplete)
+                  Column(
+                    children: <Widget>[
+                      const Text('Sub Tasks:'),
+                      ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: getChildTasks().length,
+                        itemBuilder: (context, index) {
+                          return TaskCard(
+                            task: getChildTasks()[index],
+                            allTasks: widget.allTasks,
+                            onTaskUpdated: (updatedTask) {
+                              // Handle the updated task here
+                              // Optionally, you can update the UI or perform other actions.
+                            },
+                            onTaskDeleted: widget.onTaskDeleted,
+                            onTaskCreated: widget.onTaskCreated,
+                            onUpdateDueDateTime: widget.onUpdateDueDateTime,
+                          );
+                        },
+                      ),
+                    ],
                   ),
               ],
             ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-}
 
+            Positioned(
+              top: 0,
+              right: 0,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  // Display priority block
+                  if (widget.task.hasPriority)
+                    _buildPriorityBlock(widget.task.getPriority()!),
+
+                  // Display the symbol if repeatingId is not an empty string
+                  if (widget.task.repeatingId.isNotEmpty)
+                    const Padding(
+                      padding: const EdgeInsets.only(
+                          right: 16, top: 8), // Add some left padding
+                      child: Icon(
+                        Icons.repeat, // You can use a different icon as needed
+                        size: 20, // Set the size of the icon
+                        color: Colors.grey, // Set the color of the icon
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

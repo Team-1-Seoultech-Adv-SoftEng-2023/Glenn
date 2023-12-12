@@ -1,5 +1,9 @@
+// user_progress_screen
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:provider/provider.dart';
+import 'store.dart';
+import 'user_provider.dart';
 
 class UserProgressScreen extends StatefulWidget {
   final double overallScore;
@@ -116,6 +120,35 @@ class _UserProgressScreenState extends State<UserProgressScreen> {
                   gridData: FlGridData(show: true),
                 ),
               ),
+            ),
+            Consumer<UserProvider>(
+              builder: (context, userProvider, child) {
+                // Access the selectedOwnedItem from the UserProvider
+                final StoreItem? selectedOwnedItem =
+                    userProvider.selectedOwnedItem;
+
+                // Check if there is a selectedOwnedItem
+                if (selectedOwnedItem != null) {
+                  return Container(
+                    width: 60.0,
+                    height: 60.0,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Color.fromARGB(255, 218, 218, 218),
+                    ),
+                    child: Center(
+                      child: Image.asset(
+                        selectedOwnedItem.image,
+                        width: 80.0,
+                        height: 80.0,
+                      ),
+                    ),
+                  );
+                } else {
+                  // If no selectedOwnedItem, return an empty container
+                  return Container();
+                }
+              },
             ),
           ],
         ),

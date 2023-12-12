@@ -8,6 +8,8 @@ import 'calendar_view.dart';
 import 'user_progress_screen.dart';
 import 'due_date_list.dart';
 import 'store.dart';
+import 'user_provider.dart';
+import 'package:provider/provider.dart';
 
 // import task and utilities
 import 'task/task.dart';
@@ -31,7 +33,7 @@ final List<Task> tasks = [
     parentId: '',
     fields: [
       DueDateField(
-        dueDateTime: DateTime(2023, 12, 6, 14, 30),
+        dueDateTime: DateTime(2023, 12, 16, 14, 30),
       ),
       PriorityField(priority: 2), // Medium priority
     ],
@@ -72,7 +74,7 @@ final List<Task> tasks = [
     description: 'This task has a past due date',
     parentId: '',
     fields: [
-      DueDateField(dueDateTime: DateTime(2023, 11, 10, 12, 00)),
+      DueDateField(dueDateTime: DateTime(2023, 11, 18, 12, 00)),
     ],
     filePaths: [],
   ),
@@ -99,7 +101,7 @@ final List<Task> tasks = [
     parentId: '',
     fields: [
       DueDateField(
-        dueDateTime: DateTime(2023, 12, 7, 14, 30),
+        dueDateTime: DateTime(2023, 12, 17, 14, 30),
       ),
     ],
     repeatingId: '8',
@@ -144,10 +146,92 @@ final List<Task> tasks = [
     repeatingId: '8',
     filePaths: [],
   ),
+  Task(
+    id: '100',
+    name: 'Completed Task 1',
+    description: 'This is the 1st completed task',
+    parentId: '100',
+    fields: [
+      DueDateField(
+        dueDateTime: DateTime(2023, 12, 13, 14, 30),
+      ),
+    ],
+    filePaths: List.empty(),
+    isComplete: true,
+  ),
+  Task(
+    id: '101',
+    name: 'Completed Task 2',
+    description: 'This is the 2nd completed task',
+    parentId: '191',
+    fields: [
+      DueDateField(
+        dueDateTime: DateTime(2023, 11, 17, 14, 30),
+      ),
+    ],
+    filePaths: List.empty(),
+    isComplete: true,
+  ),
+  Task(
+    id: '102',
+    name: 'Completed Task 3',
+    description: 'This is the 3rd completed task',
+    parentId: '102',
+    fields: [
+      DueDateField(
+        dueDateTime: DateTime(2023, 11, 12, 14, 30),
+      ),
+    ],
+    filePaths: List.empty(),
+    isComplete: true,
+  ),
 ];
 
-List<Map<String, dynamic>> progressHistory = [];
-double overallScore = 10.0;
+//List<Map<String, dynamic>> progressHistory = [];
+List<Map<String, dynamic>> progressHistory = [
+  {
+    'date': DateTime(2023, 8, 15),
+    'scoreChange': -1,
+  },
+  {
+    'date': DateTime(2023, 9, 5),
+    'scoreChange': 1,
+  },
+  {
+    'date': DateTime(2023, 9, 15),
+    'scoreChange': 1,
+  },
+  {
+    'date': DateTime(2023, 10, 16),
+    'scoreChange': 1,
+  },
+  {
+    'date': DateTime(2023, 10, 5),
+    'scoreChange': -1,
+  },
+  {
+    'date': DateTime(2023, 10, 20),
+    'scoreChange': 1,
+  },
+  {
+    'date': DateTime(2023, 11, 5),
+    'scoreChange': 1,
+  },
+  {
+    'date': DateTime(2023, 11, 12),
+    'scoreChange': 1,
+  },
+  {
+    'date': DateTime(2023, 11, 17),
+    'scoreChange': 1,
+  },
+  {
+    'date': DateTime(2023, 12, 13),
+    'scoreChange': 1,
+  },
+];
+
+double overallScore = 6.0;
 
 extension IterableExtensions<E> on Iterable<E> {
   E? get firstOrNull {
@@ -157,10 +241,15 @@ extension IterableExtensions<E> on Iterable<E> {
 
 void main() {
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-  runApp(MyApp(
-    tasks: tasks,
-    navigatorKey: navigatorKey,
-  ));
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => UserProvider(),
+      child: MyApp(
+        tasks: tasks,
+        navigatorKey: navigatorKey,
+      ),
+    ),
+  );
 }
 
 class MyApp extends StatefulWidget {
@@ -190,38 +279,38 @@ class MyAppState extends State<MyApp> {
   }
 
   // Callback function to handle newly created tasks
-void handleTaskCreated(Task newTask) {
-  setState(() {
-    if (kDebugMode) {
-      print('New task created: $newTask');
-    }
-
-    tasks.add(newTask);
-
-    newTask.printTaskDetails();
-
-    incompleteTasks = tasks.where((task) => !task.isComplete).toList();
-
-    final bool isNewTaskSelfCare =
-        newTask.fields.any((field) => field is SelfCareField);
-
-    final bool hasSelfCareTasksForToday = tasks.any((task) {
-      if (task.hasDueDate) {
-        final today = DateTime.now();
-        final taskDueDate = task.getDueDate()!;
-        return taskDueDate.year == today.year &&
-            taskDueDate.month == today.month &&
-            taskDueDate.day == today.day;
+  void handleTaskCreated(Task newTask) {
+    setState(() {
+      if (kDebugMode) {
+        print('New task created: $newTask');
       }
-      return false;
-    });
 
-    if (!isNewTaskSelfCare && !hasSelfCareTasksForToday) {
-      //TODO Throws errors!
-      //_showSelfCareRecommendationPopup(context);
-    }
-  });
-}
+      tasks.add(newTask);
+
+      newTask.printTaskDetails();
+
+      incompleteTasks = tasks.where((task) => !task.isComplete).toList();
+
+      final bool isNewTaskSelfCare =
+          newTask.fields.any((field) => field is SelfCareField);
+
+      final bool hasSelfCareTasksForToday = tasks.any((task) {
+        if (task.hasDueDate) {
+          final today = DateTime.now();
+          final taskDueDate = task.getDueDate()!;
+          return taskDueDate.year == today.year &&
+              taskDueDate.month == today.month &&
+              taskDueDate.day == today.day;
+        }
+        return false;
+      });
+
+      if (!isNewTaskSelfCare && !hasSelfCareTasksForToday) {
+        //TODO Throws errors!
+        //_showSelfCareRecommendationPopup(context);
+      }
+    });
+  }
 
   void handleTaskDeleted(Task deleteTask) {
     setState(() {
@@ -352,32 +441,70 @@ void handleTaskCreated(Task newTask) {
               ],
             ),
           ),
-          body: TabBarView(
+          body: Stack(
             children: [
-              DueDateListView(
-                tasks: widget.tasks,
-                updateTaskCompletionStatus: _updateTaskCompletionStatus,
-                onTaskUpdated: handleTaskUpdated,
-                onTaskCreated: handleTaskCreated,
-                onTaskDeleted: handleTaskDeleted,
-              ),
+              TabBarView(
+                children: [
+                  DueDateListView(
+                    tasks: widget.tasks,
+                    updateTaskCompletionStatus: _updateTaskCompletionStatus,
+                    onTaskUpdated: handleTaskUpdated,
+                    onTaskCreated: handleTaskCreated,
+                    onTaskDeleted: handleTaskDeleted,
+                  ),
 
-              TaskList(
-                tasks: TaskSorter.sortByPriority(widget.tasks),
-                updateTaskCompletionStatus: _updateTaskCompletionStatus,
-                onTaskUpdated: (updatedTask) {
-                  // Handle the updated task here
-                  // Optionally, you can update the UI or perform other actions.
-                },
-                onTaskCreated: handleTaskCreated,
-                onTaskDeleted: handleTaskDeleted,
+                  TaskList(
+                    tasks: TaskSorter.sortByPriority(widget.tasks),
+                    updateTaskCompletionStatus: _updateTaskCompletionStatus,
+                    onTaskUpdated: (updatedTask) {
+                      // Handle the updated task here
+                      // Optionally, you can update the UI or perform other actions.
+                    },
+                    onTaskCreated: handleTaskCreated,
+                    onTaskDeleted: handleTaskDeleted,
+                  ),
+                  CalendarView(tasks: widget.tasks), // Added CalendarView
+                  CompletedTasksPage(
+                    tasks: widget.tasks,
+                    onTaskCreated: handleTaskCreated,
+                    onTaskUpdated: handleTaskUpdated,
+                    onTaskDeleted: handleTaskDeleted,
+                  ),
+                ],
               ),
-              CalendarView(tasks: widget.tasks), // Added CalendarView
-              CompletedTasksPage(
-                tasks: widget.tasks,
-                onTaskCreated: handleTaskCreated,
-                onTaskUpdated: handleTaskUpdated,
-                onTaskDeleted: handleTaskDeleted,
+              // Positioned widget for the image
+              Positioned(
+                bottom: 16.0,
+                left: 16.0,
+                child: Consumer<UserProvider>(
+                  builder: (context, userProvider, child) {
+                    // Access the selectedOwnedItem from the UserProvider
+                    final StoreItem? selectedOwnedItem =
+                        userProvider.selectedOwnedItem;
+
+                    // Check if there is a selectedOwnedItem
+                    if (selectedOwnedItem != null) {
+                      return Container(
+                        width: 56.0,
+                        height: 56.0,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color.fromARGB(255, 218, 218, 218),
+                        ),
+                        child: Center(
+                          child: Image.asset(
+                            selectedOwnedItem.image,
+                            width: 96.0,
+                            height: 96.0,
+                          ),
+                        ),
+                      );
+                    } else {
+                      // If no selectedOwnedItem, return an empty container
+                      return Container();
+                    }
+                  },
+                ),
               ),
             ],
           ),

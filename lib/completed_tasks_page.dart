@@ -41,4 +41,3 @@ class CompletedTasksPage extends StatelessWidget {
     );
   }
 }
-
