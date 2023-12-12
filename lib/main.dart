@@ -31,7 +31,7 @@ final List<Task> tasks = [
     parentId: '',
     fields: [
       DueDateField(
-        dueDateTime: DateTime(2023, 12, 6, 14, 30),
+        dueDateTime: DateTime(2023, 12, 12, 14, 30),
       ),
       PriorityField(priority: 2), // Medium priority
     ],
@@ -144,6 +144,31 @@ final List<Task> tasks = [
     repeatingId: '8',
     filePaths: [],
   ),
+  Task(
+    id: '11',
+    name: 'Repeating Task 4',
+    description: 'This task repeats every day',
+    parentId: '',
+    fields: [
+      DueDateField(
+        dueDateTime: DateTime(2023, 12, 11, 14, 30),
+      ),
+    ],
+    repeatingId: '8',
+    filePaths: [],
+  ),
+  Task(
+    id: '11',
+    name: '12 Task',
+    description: 'This task exists',
+    parentId: '',
+    fields: [
+      DueDateField(
+        dueDateTime: DateTime(2023, 12, 13, 14, 30),
+      ),
+    ],
+    filePaths: [],
+  ),
 ];
 
 List<Map<String, dynamic>> progressHistory = [];
@@ -154,6 +179,8 @@ extension IterableExtensions<E> on Iterable<E> {
     return isEmpty ? null : first;
   }
 }
+
+GlobalKey<DueDateListViewState> dueDateListViewKey = GlobalKey<DueDateListViewState>();
 
 void main() {
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -190,38 +217,41 @@ class MyAppState extends State<MyApp> {
   }
 
   // Callback function to handle newly created tasks
-void handleTaskCreated(Task newTask) {
-  setState(() {
-    if (kDebugMode) {
-      print('New task created: $newTask');
-    }
-
-    tasks.add(newTask);
-
-    newTask.printTaskDetails();
-
-    incompleteTasks = tasks.where((task) => !task.isComplete).toList();
-
-    final bool isNewTaskSelfCare =
-        newTask.fields.any((field) => field is SelfCareField);
-
-    final bool hasSelfCareTasksForToday = tasks.any((task) {
-      if (task.hasDueDate) {
-        final today = DateTime.now();
-        final taskDueDate = task.getDueDate()!;
-        return taskDueDate.year == today.year &&
-            taskDueDate.month == today.month &&
-            taskDueDate.day == today.day;
+  void handleTaskCreated(Task newTask) {
+    setState(() {
+      if (kDebugMode) {
+        print('New task created: $newTask');
       }
-      return false;
-    });
 
-    if (!isNewTaskSelfCare && !hasSelfCareTasksForToday) {
-      //TODO Throws errors!
-      //_showSelfCareRecommendationPopup(context);
-    }
-  });
-}
+      tasks.add(newTask);
+
+      newTask.printTaskDetails();
+
+      incompleteTasks = tasks.where((task) => !task.isComplete).toList();
+
+      final bool isNewTaskSelfCare =
+          newTask.fields.any((field) => field is SelfCareField);
+
+      final bool hasSelfCareTasksForToday = tasks.any((task) {
+        if (task.hasDueDate) {
+          final today = DateTime.now();
+          final taskDueDate = task.getDueDate()!;
+          return taskDueDate.year == today.year &&
+              taskDueDate.month == today.month &&
+              taskDueDate.day == today.day;
+        }
+        return false;
+      });
+
+      if (!isNewTaskSelfCare && !hasSelfCareTasksForToday) {
+        //TODO Throws errors!
+        //_showSelfCareRecommendationPopup(context);
+      }
+
+      // Reload the page when a new task is created
+      _reloadPage();
+    });
+  }
 
   void handleTaskDeleted(Task deleteTask) {
     setState(() {
@@ -238,6 +268,22 @@ void handleTaskCreated(Task newTask) {
         tasks[index] = updatedTask;
       }
     });
+  }
+
+  // Function to reload the page
+  void _reloadPage() {
+    final context = widget.navigatorKey.currentState?.overlay?.context;
+    if (context != null) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => MyApp(
+            tasks: tasks,
+            navigatorKey: widget.navigatorKey,
+          ),
+        ),
+      );
+      dueDateListViewKey.currentState?.setState(() {});
+    }
   }
 
   @override
@@ -355,6 +401,7 @@ void handleTaskCreated(Task newTask) {
           body: TabBarView(
             children: [
               DueDateListView(
+                key: dueDateListViewKey,
                 tasks: widget.tasks,
                 updateTaskCompletionStatus: _updateTaskCompletionStatus,
                 onTaskUpdated: handleTaskUpdated,
