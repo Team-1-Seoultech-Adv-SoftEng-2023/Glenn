@@ -1,4 +1,5 @@
 //task_list.dart
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'task.dart';
 import 'task_card.dart';
@@ -52,7 +53,9 @@ class _TaskListState extends State<TaskList> {
 
   @override
   Widget build(BuildContext context) {
-    print("TaskList rebuilding");
+    if (kDebugMode) {
+      print("TaskList rebuilding");
+    }
     final mainTasks =
         incompleteTasks.where((task) => task.parentId == '').toList();
     return ListView.builder(
@@ -70,7 +73,9 @@ class _TaskListState extends State<TaskList> {
           onTaskDeleted: widget.onTaskDeleted,
           onUpdateDueDateTime: (dueDateField) {
             // Handle the update logic here
-            print('Due date and time updated: ${dueDateField.value}');
+            if (kDebugMode) {
+              print('Due date and time updated: ${dueDateField.value}');
+            }
           },
           updateTaskCompletionStatus: _updateTaskCompletionStatus,
         );

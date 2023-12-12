@@ -1,23 +1,29 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:glenn/main.dart';
 import 'task_edit_page.dart';
 import 'package:open_file/open_file.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'task/task.dart';
 import 'fields/due_date_field.dart';
+import 'fields/priority_field.dart';
+import 'fields/self_care_field.dart';
 
 class TaskDetailPage extends StatefulWidget {
   final Task task;
   final List<Task> subtasks;
+  final List<Task> tasks;
   final Function(Task) onTaskUpdated;
   final Function(Task) onTaskCreated;
   final Function(Task) onTaskDeleted;
   final Function(DueDateField) onUpdateDueDateTime;
 
-  TaskDetailPage({
+  const TaskDetailPage({
     Key? key,
     required this.task,
     required this.subtasks,
+    required this.tasks,
     required this.onTaskUpdated,
     required this.onTaskCreated,
     required this.onTaskDeleted,
@@ -25,10 +31,11 @@ class TaskDetailPage extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _TaskDetailPageState createState() => _TaskDetailPageState();
+  TaskDetailPageState createState() => TaskDetailPageState();
+  
 }
 
-class _TaskDetailPageState extends State<TaskDetailPage> {
+class TaskDetailPageState extends State<TaskDetailPage> {
   List<String> attachedFiles = [];
 
   @override
@@ -43,28 +50,11 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
       appBar: AppBar(
         title: const Text('Task Detail'),
         actions: <Widget>[
-          IconButton(
+         if (!widget.task.isComplete)
+         IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () async {
-              final updatedTask = await Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => EditTaskPage(
-                    task: widget.task,
-                    onTaskUpdated: (updatedTask) {},
-                    onTaskDeleted: (deleteTask) {
-                      widget.onTaskDeleted(deleteTask);
-                    },
-                    onTaskCreated: (newTask) {
-                      widget.onTaskCreated(newTask);
-                    },
-                  ),
-                ),
-              );
-              if (updatedTask != null) {
-                setState(() {
-                  widget.task.name = updatedTask.name;
-                });
-              }
+              await _showConfirmationDialog(context);
             },
           ),
         ],
@@ -91,98 +81,41 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
               },
             ),
           ),
-          if (widget.task.fields.isNotEmpty)
-            Container(
-              padding: const EdgeInsets.all(10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  ...widget.task.fields.map((field) {
-                    if (field is DueDateField) {
-                      return ListTile(
-                        title: Text('Due Date'),
-                        subtitle: Row(
-                          children: [
-                            Text('Date: ${_formatDate(field.dueDate)}'),
-                            const SizedBox(width: 8),
-                            Text('Time: ${_formatTime(field.dueTime)}'),
-                          ],
-                        ),
-                      );
-                    } else {
-                      return ListTile(
-                        title: Text(field.name),
-                        subtitle: Text(field.value),
-                      );
-                    }
-                  }).toList(),
-                ],
-              ),
-            ),
-          if (widget.subtasks.isNotEmpty)
-            Column(
-              children: <Widget>[
-                const Text('Subtasks:'),
-                ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: widget.subtasks.length,
-                  itemBuilder: (context, index) {
-                    final subtask = widget.subtasks[index];
-                    return ListTile(
-                      title: Text(subtask.name),
-                      subtitle: Text(subtask.description),
-                    );
-                  },
-                ),
-              ],
-            ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              const Text('Attached Files:'),
-              if (attachedFiles.isEmpty)
-                ListTile(
-                  title: Text('No attached files'),
-                ),
-              if (attachedFiles.isNotEmpty)
-                ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: attachedFiles.length,
-                  itemBuilder: (context, index) {
-                    final filePath = attachedFiles[index];
-                    return ListTile(
-                      title: InkWell(
-                        child: Text(
-                          filePath.isEmpty ? 'No attached files' : filePath.split('/').last,
-                          style: TextStyle(
-                            color: filePath.isEmpty ? Colors.grey : Colors.blue,
-                            decoration: filePath.isEmpty ? TextDecoration.none : TextDecoration.underline,
-                          ),
-                        ),
-                        onTap: () {
-                          if (filePath.isNotEmpty) {
-                            _openFile(filePath);
-                          }
-                        },
-                      ),
-                    );
-                  },
-                ),
-            ],
-          ),
+          if (widget.task.fields.isNotEmpty) _buildFieldContainer(),
+          if (widget.subtasks.isNotEmpty) _buildSubtasksSection(),
         ],
       ),
     );
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+
+  Widget _buildDueDateField(DueDateField field) {
+    return ListTile(
+      title: const Text('Due Date'),
+      subtitle: Row(
+        children: [
+          Text('Date: ${formatDate(field.dueDate)}'),
+          const SizedBox(width: 8),
+          Text('Time: ${formatTime(field.dueTime)}'),
+        ],
+      ),
+    );
   }
 
-  String _formatTime(TimeOfDay time) {
-    return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+  Widget _buildPriorityField(PriorityField priorityField) {
+    return ListTile(
+      title: const Text('Priority'),
+      subtitle: Text(priorityField.value),
+    );
   }
 
+  Widget _buildSelfCareField(SelfCareField selfCareField) {
+    return ListTile(
+      title: const Text('Self Care'),
+      subtitle: Text(selfCareField.value),
+    );
+  }
+  
 void _openFile(String filePath) {
   if (filePath.isNotEmpty) {
     if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
@@ -200,5 +133,169 @@ void launchURL(Uri uri) async {
   } else {
     throw 'Could not launch $uri';
   }
+}
+
+Widget _buildSubtasksSection() {
+    // Show subtasks only if there are subtasks and the task is not complete
+    if (widget.subtasks.isNotEmpty && !widget.task.isComplete) {
+      return Column(
+        children: <Widget>[
+          const Text('Subtasks:'),
+          ListView.builder(
+            shrinkWrap: true,
+            itemCount: widget.subtasks.length,
+            itemBuilder: (context, index) {
+              final subtask = widget.subtasks[index];
+              return ListTile(
+                title: Text(subtask.name),
+                subtitle: Text(subtask.description),
+              );
+            },
+          ),
+        ],
+      );
+    } else {
+      return Container(); // Empty container when no subtasks or task is complete
+    }
+  }
+Widget _buildAttachedFilesField() {
+  return ListTile(
+    title: const Text('Attached Files'),
+    subtitle: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: attachedFiles.map((filePath) {
+        return InkWell(
+          onTap: !widget.task.isComplete
+              ? () {
+                  if (filePath.isNotEmpty) {
+                    _openFile(filePath);
+                  }
+                }
+              : null,
+          child: Text(
+            filePath.isEmpty ? 'No attached files' : filePath.split('/').last,
+            style: TextStyle(
+              color: widget.task.isComplete ? Colors.black : Colors.blue,
+              decoration: widget.task.isComplete ? TextDecoration.none : TextDecoration.underline,
+            ),
+          ),
+        );
+      }).toList(),
+    ),
+  );
+}
+
+// Modify _buildFieldContainer to include _buildAttachedFilesField
+Widget _buildFieldContainer() {
+  return Container(
+    padding: const EdgeInsets.all(10),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        ...widget.task.fields.map((field) {
+          if (field is PriorityField) {
+            return _buildPriorityField(field);
+          } else if (field is DueDateField) {
+            return _buildDueDateField(field);
+          } else if (field is SelfCareField) {
+            return _buildSelfCareField(field);
+          } else {
+            return ListTile(
+              title: Text(field.name),
+              subtitle: Text(field.value),
+            );
+          }
+        }).toList(),
+        _buildAttachedFilesField(), // Include attached files field
+      ],
+    ),
+  );
+}
+
+Future<void> _showConfirmationDialog(BuildContext context) async {
+  List<Task> repeatingTasks = [];
+  Task task = widget.task;
+  
+  bool shouldEditTask = true;
+  if (widget.task.repeatingId != ''){
+    shouldEditTask = await showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text("Edit series"),
+        content: const Text("Do you want to edit the series?"),
+        actions: <Widget>[
+          TextButton(
+            child: const Text("Cancel"),
+            onPressed: () {
+              Navigator.of(context).pop(false);
+            },
+          ),
+          TextButton(
+            child: const Text("No"),
+            onPressed: () {
+              Navigator.of(context).pop(true);
+            },
+          ),
+          TextButton(
+            child: const Text("Yes"),
+            onPressed: () {
+              repeatingTasks = widget.tasks.where((task) {return task.repeatingId == widget.task.repeatingId;}).toList();
+              sortTasksByDueDate(repeatingTasks);
+              task = repeatingTasks.firstWhere((task) => !task.isComplete, orElse: () => widget.task);
+              Navigator.of(context).pop(true);
+            },
+          ),
+        ],
+      );
+    },
+  );
+  }
+
+  if (shouldEditTask) {
+    // User confirmed, navigate to edit page
+    final updatedTask = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => EditTaskPage(
+          repeatingTasks: repeatingTasks,
+          task: task,
+          onTaskUpdated: (updatedTask) {},
+          onTaskDeleted: (deleteTask) {
+            widget.onTaskDeleted(deleteTask);
+          },
+          onTaskCreated: (newTask) { widget.onTaskCreated(newTask);}, 
+        ),
+      ),
+    );
+
+    if (updatedTask != null) {
+      setState(() {
+        widget.task.name = updatedTask.name;
+      });
+    }
+  }
+}
+
+
+List<Task> sortTasksByDueDate(List<Task> tasks) {
+  // Filter out tasks with empty or null due dates
+  List<Task> tasksWithDueDate = tasks.where((task) => task.getDueDate() != null).toList();
+
+  // Sort tasks by due date
+  tasksWithDueDate.sort((a, b) {
+    if (a.getDueDate() != null && b.getDueDate() != null) {
+      // Compare TimeOfDay instances by converting them to minutes since midnight
+      final int aMinutes = a.getDueDate()!.hour * 60 + a.getDueDate()!.minute;
+      final int bMinutes = b.getDueDate()!.hour * 60 + b.getDueDate()!.minute;
+      return aMinutes.compareTo(bMinutes);
+    } else {
+      return 0;
+    }
+  });
+
+  // Combine tasks with due dates and tasks without due dates
+  List<Task> sortedTasks = [...tasksWithDueDate, ...tasks.where((task) => task.getDueDate() == null).toList()];
+
+  return sortedTasks;
 }
 }

@@ -31,7 +31,22 @@ class DueDateListView extends StatelessWidget {
     DateTime now = DateTime.now();
 
     for (Task task in tasks) {
-      // ... (your existing code)
+      if (task.hasDueDate) {
+        DateTime dueDate = task.getDueDate()!;
+        if (dueDate.isBefore(now)) {
+          pastTasks.add(task); // Tasks in the past
+        } else if (dueDate.isBefore(now.add(const Duration(days: 7)))) {
+          todayTasks.add(task);
+        } else if (dueDate.isBefore(now.add(const Duration(days: 30)))) {
+          thisWeekTasks.add(task);
+        } else if (dueDate.isBefore(now.add(const Duration(days: 30)))) {
+          thisMonthTasks.add(task);
+        } else {
+          laterTasks.add(task);
+        }
+      } else {
+        noDueDateTasks.add(task);
+      }
     }
 
     return CategoryListView(
@@ -43,7 +58,7 @@ class DueDateListView extends StatelessWidget {
         laterTasks,
         noDueDateTasks,
       ],
-      categoryNames: [
+      categoryNames: const [
         "Past",
         "Today",
         "This Week",

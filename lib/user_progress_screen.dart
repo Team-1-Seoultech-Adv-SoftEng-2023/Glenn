@@ -63,7 +63,7 @@ class _UserProgressScreenState extends State<UserProgressScreen> {
                   maxY: _calculateMaxY(),
                   titlesData: FlTitlesData(
                     show: true,
-                    leftTitles: AxisTitles(
+                    leftTitles: const AxisTitles(
                         sideTitles: SideTitles(
                       showTitles: true,
                       interval: 1,

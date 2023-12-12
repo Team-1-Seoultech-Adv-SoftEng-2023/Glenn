@@ -39,7 +39,7 @@ class PriorityField extends TaskField {
   }
 
   // Add this method
-  static int _stringToPriority(String priorityString) {
+  static int stringToPriority(String priorityString) {
     switch (priorityString.toLowerCase()) {
       case 'none':
         return 0;

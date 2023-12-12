@@ -1,5 +1,6 @@
 //main.dart
 //import main pages
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'task_creation_page.dart'; // Import the task_creation_page.dart file
 import 'completed_tasks_page.dart'; // Import the CompletedTasksPage widget
@@ -30,23 +31,21 @@ final List<Task> tasks = [
     parentId: '',
     fields: [
       DueDateField(
-        dueDate: DateTime(2023, 12, 6),
-        dueTime: TimeOfDay(hour: 14, minute: 30),
+        dueDateTime: DateTime(2023, 12, 6, 14, 30),
       ),
       PriorityField(priority: 2), // Medium priority
     ],
-    filePaths: ['https://drive.google.com/file/d/1B6FtjriF8MyP0qZsXAdAxzoDPCuG4tnp/view?usp=drive_link'] ,
+    filePaths: [
+      'https://drive.google.com/file/d/1B6FtjriF8MyP0qZsXAdAxzoDPCuG4tnp/view?usp=drive_link'
+    ],
   ),
   Task(
     id: '2',
-    name: 'Task with Due Date Only',
+    name: 'Task with a future Due Date Only',
     description: 'https://www.youtube.com/',
     parentId: '',
     fields: [
-      DueDateField(
-        dueDate: DateTime(2023, 12, 24),
-        dueTime: TimeOfDay(hour: 10, minute: 0),
-      ),
+      DueDateField(dueDateTime: DateTime(2023, 12, 24, 10, 00)),
     ],
     filePaths: [],
   ),
@@ -73,17 +72,81 @@ final List<Task> tasks = [
     description: 'This task has a past due date',
     parentId: '',
     fields: [
+      DueDateField(dueDateTime: DateTime(2023, 11, 10, 12, 00)),
+    ],
+    filePaths: [],
+  ),
+  Task(
+    id: '6',
+    name: 'Subtask 1',
+    description: 'This is a subtask',
+    parentId: '1',
+    fields: [],
+    filePaths: List.empty(),
+  ),
+  Task(
+    id: '7',
+    name: 'Subtask 2',
+    description: 'This is a second subtask',
+    parentId: '1',
+    fields: [],
+    filePaths: List.empty(),
+  ),
+  Task(
+    id: '8',
+    name: 'Repeating Task 1',
+    description: 'This task repeats every day',
+    parentId: '',
+    fields: [
       DueDateField(
-        dueDate: DateTime(2023, 12, 10),
-        dueTime: const TimeOfDay(hour: 12, minute: 0),
+        dueDateTime: DateTime(2023, 12, 7, 14, 30),
       ),
     ],
+    repeatingId: '8',
+    filePaths: [],
+  ),
+  Task(
+    id: '9',
+    name: 'Repeating Task 2',
+    description: 'This task repeats every day',
+    parentId: '',
+    fields: [
+      DueDateField(
+        dueDateTime: DateTime(2023, 12, 8, 14, 30),
+      ),
+    ],
+    repeatingId: '8',
+    filePaths: [],
+  ),
+  Task(
+    id: '10',
+    name: 'Repeating Task 3',
+    description: 'This task repeats every day',
+    parentId: '',
+    fields: [
+      DueDateField(
+        dueDateTime: DateTime(2023, 12, 9, 14, 30),
+      ),
+    ],
+    repeatingId: '8',
+    filePaths: [],
+  ),
+  Task(
+    id: '11',
+    name: 'Repeating Task 4',
+    description: 'This task repeats every day',
+    parentId: '',
+    fields: [
+      DueDateField(
+        dueDateTime: DateTime(2023, 12, 10, 14, 30),
+      ),
+    ],
+    repeatingId: '8',
     filePaths: [],
   ),
 ];
 
 List<Map<String, dynamic>> progressHistory = [];
-
 double overallScore = 10.0;
 
 extension IterableExtensions<E> on Iterable<E> {
@@ -109,14 +172,14 @@ class MyApp extends StatefulWidget {
     Key? key,
     required this.tasks,
     required this.navigatorKey,
-  }) : storePageKey = GlobalKey<StorePageState>(),
-   super(key: key);
+  })  : storePageKey = GlobalKey<StorePageState>(),
+        super(key: key);
 
   @override
-  _MyAppState createState() => _MyAppState();
+  MyAppState createState() => MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class MyAppState extends State<MyApp> {
   List<Task> incompleteTasks = [];
 
   // Callback function to update overallScore
@@ -127,34 +190,38 @@ class _MyAppState extends State<MyApp> {
   }
 
   // Callback function to handle newly created tasks
-  void handleTaskCreated(Task newTask) {
-    setState(() {
-      if (newTask != null) {
-        print('New task created: $newTask');
-        tasks.add(newTask);
-        incompleteTasks = tasks.where((task) => !task.isComplete).toList();
+void handleTaskCreated(Task newTask) {
+  setState(() {
+    if (kDebugMode) {
+      print('New task created: $newTask');
+    }
 
-        final bool isNewTaskSelfCare =
-            newTask.fields.any((field) => field is SelfCareField);
+    tasks.add(newTask);
 
-        final bool hasSelfCareTasksForToday = tasks.any((task) {
-          if (task.hasDueDate) {
-            final today = DateTime.now();
-            final taskDueDate = task.getDueDate()!;
-            return taskDueDate.year == today.year &&
-                taskDueDate.month == today.month &&
-                taskDueDate.day == today.day;
-          }
-          return false;
-        });
+    newTask.printTaskDetails();
 
-        if (!isNewTaskSelfCare && !hasSelfCareTasksForToday) {
-          // Do not pop the context here
-          _showSelfCareRecommendationPopup(context);
-        }
+    incompleteTasks = tasks.where((task) => !task.isComplete).toList();
+
+    final bool isNewTaskSelfCare =
+        newTask.fields.any((field) => field is SelfCareField);
+
+    final bool hasSelfCareTasksForToday = tasks.any((task) {
+      if (task.hasDueDate) {
+        final today = DateTime.now();
+        final taskDueDate = task.getDueDate()!;
+        return taskDueDate.year == today.year &&
+            taskDueDate.month == today.month &&
+            taskDueDate.day == today.day;
       }
+      return false;
     });
-  }
+
+    if (!isNewTaskSelfCare && !hasSelfCareTasksForToday) {
+      //TODO Throws errors!
+      //_showSelfCareRecommendationPopup(context);
+    }
+  });
+}
 
   void handleTaskDeleted(Task deleteTask) {
     setState(() {
@@ -184,7 +251,9 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       task.isComplete = isComplete;
 
-      print("Updated");
+      if (kDebugMode) {
+        print("Updated");
+      }
     });
   }
 
@@ -210,9 +279,8 @@ class _MyAppState extends State<MyApp> {
 
     // Set the due date of the self-care task to today
     selfCareTask.fields.add(DueDateField(
-      dueDate: DateTime.now(),
-      dueTime: TimeOfDay(hour: 23, minute: 59), // Adjust the time as needed
-    ));
+        dueDateTime: DateTime(DateTime.now().year, DateTime.now().month,
+            DateTime.now().day, 23, 59)));
 
     return [selfCareTask];
   }
@@ -240,7 +308,7 @@ class _MyAppState extends State<MyApp> {
             child: ListView(
               padding: EdgeInsets.zero,
               children: [
-                Container(
+                const SizedBox(
                   height: 135, // Set the desired height for the drawer header
                   child: DrawerHeader(
                     decoration: BoxDecoration(
@@ -250,7 +318,7 @@ class _MyAppState extends State<MyApp> {
                   ),
                 ),
                 ListTile(
-                  title: Text('Progress'),
+                  title: const Text('Progress'),
                   onTap: () {
                     widget.navigatorKey.currentState?.pop(); // Close the drawer
                     widget.navigatorKey.currentState?.push(
@@ -264,7 +332,7 @@ class _MyAppState extends State<MyApp> {
                   },
                 ),
                 ListTile(
-                  title: Text('Store'),
+                  title: const Text('Store'),
                   onTap: () {
                     // Handle menu item 2 click
                     widget.navigatorKey.currentState?.pop(); // Close the drawer
@@ -273,7 +341,8 @@ class _MyAppState extends State<MyApp> {
                         builder: (context) => StorePage(
                           overallScore: overallScore,
                           updateOverallScore: updateOverallScore,
-                          storePageKey: widget.storePageKey,  // Pass the callback function
+                          storePageKey:
+                              widget.storePageKey, // Pass the callback function
                         ),
                       ),
                     );
@@ -324,7 +393,7 @@ class _MyAppState extends State<MyApp> {
                 );
               }
             },
-            child: Icon(Icons.add),
+            child: const Icon(Icons.add),
           ),
         ),
       ),

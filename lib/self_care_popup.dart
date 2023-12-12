@@ -14,15 +14,15 @@ class SelfCarePopup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
+          const Text(
             "It looks like you need to practice more self-care! Would you like to add one to your todo list this week?",
             style: TextStyle(fontSize: 18),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           Column(
             children: selfCareTasks.map((task) {
               return SelfCareTaskItem(
@@ -56,7 +56,7 @@ class SelfCareTaskItem extends StatelessWidget {
           // Close the modal bottom sheet
           Navigator.of(context).pop();
         },
-        child: Text("Add"),
+        child: const Text("Add"),
       ),
     );
   }

@@ -47,7 +47,7 @@ class _CollapsibleTaskListState extends State<CollapsibleTaskList> {
   Widget build(BuildContext context) {
     return ExpansionPanelList(
       elevation: 1,
-      expandedHeaderPadding: EdgeInsets.all(0),
+      expandedHeaderPadding: const EdgeInsets.all(0),
       expansionCallback: (int index, bool isExpanded) {
         toggleExpansion();
       },
@@ -59,7 +59,7 @@ class _CollapsibleTaskListState extends State<CollapsibleTaskList> {
             );
           },
           body: AnimatedContainer(
-            duration: Duration(milliseconds: 500),
+            duration: const Duration(milliseconds: 500),
             height: isExpanded ? 300.0 : 0.0,
             child: TaskList(
               tasks: widget.tasks,

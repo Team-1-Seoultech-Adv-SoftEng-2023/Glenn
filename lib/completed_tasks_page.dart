@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'task/task.dart';
 import 'task/task_card.dart';
-// Import the Task class and any other necessary imports from the main.dart file
 
 class CompletedTasksPage extends StatelessWidget {
   final List<Task> tasks;
@@ -10,12 +9,12 @@ class CompletedTasksPage extends StatelessWidget {
   final Function(Task) onTaskDeleted; // Add the callback
 
   const CompletedTasksPage({
-    super.key,
+    Key? key,
     required this.tasks,
     required this.onTaskCreated,
     required this.onTaskUpdated,
     required this.onTaskDeleted,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -42,3 +41,4 @@ class CompletedTasksPage extends StatelessWidget {
     );
   }
 }
+
