@@ -40,9 +40,9 @@ class DueDateListViewState extends State<DueDateListView> {
     for (Task task in widget.tasks) {
       if (task.hasDueDate) {
         DateTime dueDate = task.getDueDate()!;
-        if (dueDate.isBefore(now)) {
+        if (dueDate.isBefore(now.subtract(const Duration(days: 1)))) {
           pastTasks.add(task); // Tasks in the past
-        } else if (dueDate.isBefore(now.add(const Duration(days: 1)))) {
+        } else if (dueDate.isBefore(now.add(const Duration(days: 0)))) {
           todayTasks.add(task);
         } else if (dueDate.isBefore(now.add(const Duration(days: 7)))) {
           thisWeekTasks.add(task);

@@ -182,14 +182,20 @@ extension IterableExtensions<E> on Iterable<E> {
 
 GlobalKey<DueDateListViewState> dueDateListViewKey = GlobalKey<DueDateListViewState>();
 
+
+
 void main() {
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-  runApp(MyApp(
-    tasks: tasks,
-    navigatorKey: navigatorKey,
-  ));
+  runApp(
+    DefaultTabController(
+      length: 4,
+      child: MyApp(
+        tasks: tasks,
+        navigatorKey: navigatorKey,
+      ),
+    ),
+  );
 }
-
 class MyApp extends StatefulWidget {
   final List<Task> tasks;
   final GlobalKey<NavigatorState> navigatorKey;
@@ -271,6 +277,7 @@ class MyAppState extends State<MyApp> {
   }
 
   // Function to reload the page
+   // Function to reload the page
   void _reloadPage() {
     final context = widget.navigatorKey.currentState?.overlay?.context;
     if (context != null) {
@@ -282,6 +289,8 @@ class MyAppState extends State<MyApp> {
           ),
         ),
       );
+      DefaultTabController.of(context)?.animateTo(1); // Switch to the priority tab
+      DefaultTabController.of(context)?.animateTo(0); // Switch back to the original tab
       dueDateListViewKey.currentState?.setState(() {});
     }
   }
@@ -331,14 +340,12 @@ class MyAppState extends State<MyApp> {
     return [selfCareTask];
   }
 
-  @override
+  @override@override
   Widget build(BuildContext context) {
     return MaterialApp(
       navigatorKey: widget.navigatorKey,
       debugShowCheckedModeBanner: false,
-      home: DefaultTabController(
-        length: 4,
-        child: Scaffold(
+      home: Scaffold(
           appBar: AppBar(
             title: const Text('Task List'),
             bottom: const TabBar(
@@ -443,7 +450,6 @@ class MyAppState extends State<MyApp> {
             child: const Icon(Icons.add),
           ),
         ),
-      ),
     );
   }
 }
