@@ -35,9 +35,9 @@ class DueDateListView extends StatelessWidget {
         DateTime dueDate = task.getDueDate()!;
         if (dueDate.isBefore(now)) {
           pastTasks.add(task); // Tasks in the past
-        } else if (dueDate.isBefore(now.add(Duration(days: 7)))) {
+        } else if (dueDate.isBefore(now.add(Duration(days: 1)))) {
           todayTasks.add(task);
-        } else if (dueDate.isBefore(now.add(Duration(days: 30)))) {
+        } else if (dueDate.isBefore(now.add(Duration(days: 7)))) {
           thisWeekTasks.add(task);
         } else if (dueDate.isBefore(now.add(Duration(days: 30)))) {
           thisMonthTasks.add(task);
