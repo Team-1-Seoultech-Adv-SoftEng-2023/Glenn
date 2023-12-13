@@ -40,12 +40,9 @@ void main() {
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   runApp(
     MaterialApp(
-      home: DefaultTabController(
-        length: 4,
-        child: MyApp(
-          tasks: tasks,
-          navigatorKey: navigatorKey,
-        ),
+      home: MyApp(
+        tasks: tasks,
+        navigatorKey: navigatorKey,
       ),
     ),
   );
@@ -66,8 +63,12 @@ class MyApp extends StatefulWidget {
   @override
   MyAppState createState() => MyAppState();
 }
+class MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  GlobalKey<DueDateListViewState> dueDateListViewKey =
+      GlobalKey<DueDateListViewState>();
 
-class MyAppState extends State<MyApp> {
+
   List<Task> incompleteTasks = [];
 
   // Callback function to update overallScore
@@ -115,7 +116,7 @@ class MyAppState extends State<MyApp> {
       }
 
       // Reload the page when a new task is created
-      // _reloadPage();
+      _reloadPage();
     });
   }
 
@@ -136,21 +137,29 @@ class MyAppState extends State<MyApp> {
     });
   }
 
-  // Function to reload the page
-  void _reloadPage() {
-    final context = widget.navigatorKey.currentState?.overlay?.context;
-    if (context != null) {
-      DefaultTabController.of(context)
-          ?.animateTo(1); // Switch to the priority tab
-      DefaultTabController.of(context)
-          ?.animateTo(0); // Switch back to the original tab
-      dueDateListViewKey.currentState?.setState(() {});
+  void _handleTabChange() {
+    if (_tabController.index == 1) {
+      // Handle tab change to Priority tab
+    } else if (_tabController.index == 0) {
+      // Handle tab change to Due Date tab
+      // _reloadPage();
     }
+  }
+  
+
+  void _reloadPage() {
+    setState(() {
+      _tabController.index = 1; // Switch to the Priority tab
+      _tabController.index = 0; // Switch back to the Due Date tab
+      dueDateListViewKey.currentState?.setState(() {});
+    });
   }
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 4, vsync: this);
+    _tabController.addListener(_handleTabChange);
     // Filter the initial list of tasks to show only incomplete tasks
     incompleteTasks = widget.tasks.where((task) => !task.isComplete).toList();
   }
@@ -221,7 +230,8 @@ Widget generateSelfCareRecommendationContent(BuildContext context, Function hand
       home: Scaffold(
         appBar: AppBar(
           title: const Text('Task List'),
-          bottom: const TabBar(
+          bottom: TabBar(
+            controller: _tabController,
             tabs: [
               Tab(text: 'Due Date'),
               Tab(text: 'Priority'),
@@ -279,6 +289,7 @@ Widget generateSelfCareRecommendationContent(BuildContext context, Function hand
           ),
         ),
         body: TabBarView(
+          controller: _tabController,
           children: [
             DueDateListView(
               key: dueDateListViewKey,
