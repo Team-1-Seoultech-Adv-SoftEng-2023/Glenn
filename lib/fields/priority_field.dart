@@ -7,7 +7,7 @@ class PriorityField extends TaskField {
     required int priority,
   })  : assert(priority >= 0 && priority <= 4, 'Priority must be between 0 and 4'),
         _priority = priority,
-        super(name: 'Priority', value: _priorityToString(priority));
+        super(name: 'Priority', value: priorityToString(priority));
 
   int get priority => _priority;
 
@@ -18,10 +18,10 @@ class PriorityField extends TaskField {
   }
 
   void updateValue() {
-    super.value = _priorityToString(_priority);
+    super.value = priorityToString(_priority);
   }
 
-  static String _priorityToString(int priority) {
+  static String priorityToString(int priority) {
     switch (priority) {
       case 0:
         return 'None';
@@ -52,7 +52,8 @@ class PriorityField extends TaskField {
       case 'critical':
         return 4;
       default:
-        return 0; // Default to 'None' if the string is not recognized
+        return 0; 
     }
   }
+
 }

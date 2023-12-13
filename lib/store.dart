@@ -1,13 +1,12 @@
 //store.dart
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-
-// TODO: Make store page persistant (resets on going back)
 class StoreItem {
   final String name;
   final int sellingPoints;
   bool isOwned;
-  final String image; // Add an image property
+  final String image;
 
   StoreItem({
     required this.name,
@@ -23,7 +22,7 @@ class StorePage extends StatefulWidget {
   final GlobalKey<StorePageState> storePageKey;
 
 
-    StorePage({
+    StorePage({super.key, 
     required this.overallScore,
     required this.updateOverallScore,
     required this.storePageKey,
@@ -78,7 +77,7 @@ class StorePageState extends State<StorePage> with SingleTickerProviderStateMixi
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Confirm Purchase'),
+          title: const Text('Confirm Purchase'),
           content: Column(
             children: [
               Image.asset(
@@ -91,7 +90,7 @@ class StorePageState extends State<StorePage> with SingleTickerProviderStateMixi
               onPressed: () {
                 Navigator.pop(context); // Close the confirmation dialog
               },
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
@@ -100,7 +99,7 @@ class StorePageState extends State<StorePage> with SingleTickerProviderStateMixi
                 // Proceed with the purchase
                 _completePurchase(item);
               },
-              child: Text('Purchase'),
+              child: const Text('Purchase'),
             ),
           ],
         );
@@ -121,14 +120,14 @@ class StorePageState extends State<StorePage> with SingleTickerProviderStateMixi
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text('Purchase Successful'),
+            title: const Text('Purchase Successful'),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Image.asset(
                     item.image), // Display the image in the success dialog
                 Text('Item ${item.name} purchased!'),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Text('Remaining points: ${widget.overallScore}'),
               ],
             ),
@@ -137,7 +136,7 @@ class StorePageState extends State<StorePage> with SingleTickerProviderStateMixi
                 onPressed: () {
                   Navigator.pop(context); // Close the dialog
                 },
-                child: Text('OK'),
+                child: const Text('OK'),
               ),
             ],
           );
@@ -147,11 +146,11 @@ class StorePageState extends State<StorePage> with SingleTickerProviderStateMixi
       // Update isOwned property to true
       setState(() {
         item.isOwned = true;
-        // TODO: Implement additional logic for item purchase (e.g., update user inventory)
-        // You may want to navigate to a success page or perform other actions
         ownedItems.add(item);
-        print(
+        if (kDebugMode) {
+          print(
             'Item ${item.name} purchased! Remaining points: ${widget.overallScore}');
+        }
       });
 
       // Remove the purchased item from the storeItems list
@@ -164,7 +163,7 @@ class StorePageState extends State<StorePage> with SingleTickerProviderStateMixi
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text('Insufficient Points'),
+            title: const Text('Insufficient Points'),
             content:
                 Text('You do not have enough points to purchase ${item.name}. Keep completing tasks on time to earn more points!'),
             actions: [
@@ -172,7 +171,7 @@ class StorePageState extends State<StorePage> with SingleTickerProviderStateMixi
                 onPressed: () {
                   Navigator.pop(context); // Close the dialog
                 },
-                child: Text('OK'),
+                child: const Text('OK'),
               ),
             ],
           );
@@ -198,10 +197,10 @@ class StorePageState extends State<StorePage> with SingleTickerProviderStateMixi
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Score'),
+        title: const Text('Score'),
         bottom: TabBar(
           controller: _tabController,
-          tabs: [
+          tabs: const [
             Tab(text: 'Purchase'),
             Tab(text: 'Owned'),
           ],
@@ -239,7 +238,7 @@ class StorePageState extends State<StorePage> with SingleTickerProviderStateMixi
                   final item = ownedItems[index];
                   return ListTile(
                     title: Text(item.name),
-                    subtitle: Text('Owned'),
+                    subtitle: const Text('Owned'),
                     leading: GestureDetector(
                       onTap: () {_selectOwnedItem(item);},
                       child: Container(
@@ -248,7 +247,7 @@ class StorePageState extends State<StorePage> with SingleTickerProviderStateMixi
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: selectedOwnedItem == item
-                              ? Color.fromARGB(255, 218, 218, 218)
+                              ? const Color.fromARGB(255, 218, 218, 218)
                               : Colors.transparent,
                         ),
                         child: Center(
@@ -271,30 +270,28 @@ class StorePageState extends State<StorePage> with SingleTickerProviderStateMixi
             child: Container(
               width: 56.0,
               height: 56.0,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 shape: BoxShape.circle,
                 color: Color.fromARGB(255, 218, 218, 218),
               ),
               child: Center(
-                child: selectedOwnedItem != null
-                    ? Image.asset(
-                        selectedOwnedItem!.image,
+                child: Image.asset(
+                        selectedOwnedItem.image,
                         width: 96.0,
                         height: 96.0,
                       )
-                    : SizedBox(), // Display nothing if no owned item is selected
               ),
             ),
           ),
         ],
       ),
       bottomNavigationBar: BottomAppBar(
-        child: Container(
+        child: SizedBox(
           height: 56.0,
           child: Row(
             children: [
               IconButton(
-                icon: Icon(Icons.arrow_back),
+                icon: const Icon(Icons.arrow_back),
                 onPressed: () {
                   Navigator.of(context).pop(); // Use pop instead of push
                 },

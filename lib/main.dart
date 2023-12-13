@@ -106,7 +106,6 @@ class MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
       });
 
       if (!isNewTaskSelfCare && !hasSelfCareTasksForToday) {
-        //TODO Throws errors!
         print("recommending task");
         _showSelfCareRecommendationPopup(context);
       } else {
@@ -238,7 +237,7 @@ Widget generateSelfCareRecommendationContent(BuildContext context, Function hand
           title: const Text('Task List'),
           bottom: TabBar(
             controller: _tabController,
-            tabs: [
+            tabs: const [
               Tab(text: 'Due Date'),
               Tab(text: 'Priority'),
               Tab(text: 'Calendar'),

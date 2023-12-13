@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
@@ -12,10 +13,10 @@ class UserProgressScreen extends StatefulWidget {
   });
 
   @override
-  _UserProgressScreenState createState() => _UserProgressScreenState();
+  UserProgressScreenState createState() => UserProgressScreenState();
 }
 
-class _UserProgressScreenState extends State<UserProgressScreen> {
+class UserProgressScreenState extends State<UserProgressScreen> {
   String selectedInterval = 'Week'; // Default interval
 
   @override
@@ -31,7 +32,7 @@ class _UserProgressScreenState extends State<UserProgressScreen> {
           children: [
             Text(
               'Overall Score: ${widget.overallScore}',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             const Text(
@@ -113,7 +114,7 @@ class _UserProgressScreenState extends State<UserProgressScreen> {
                       tooltipBgColor: const Color.fromARGB(255, 237, 238, 240),
                     ),
                   ),
-                  gridData: FlGridData(show: true),
+                  gridData: const FlGridData(show: true),
                 ),
               ),
             ),
@@ -133,7 +134,9 @@ class _UserProgressScreenState extends State<UserProgressScreen> {
   }
 
   String _getXAxisLabel(int value) {
-    print(value);
+    if (kDebugMode) {
+      print(value);
+    }
     if (selectedInterval == 'Week') {
       return _getDayLabel(value - 1);
     } else if (selectedInterval == 'Month') {
@@ -213,7 +216,7 @@ class _UserProgressScreenState extends State<UserProgressScreen> {
       final endOfWeek = currentDate
           .add(Duration(days: DateTime.sunday - currentDate.weekday + 1));
 
-      final numberOfDays = 7;
+      const numberOfDays = 7;
 
       result = List.generate(numberOfDays, (index) {
         final currentDay = startOfWeek.add(Duration(days: index));

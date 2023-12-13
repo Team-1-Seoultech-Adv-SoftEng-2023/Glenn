@@ -326,7 +326,7 @@ Widget build(BuildContext context) {
                 // Display the symbol if repeatingId is not an empty string
                 if (widget.task.repeatingId.isNotEmpty)
                   const Padding(
-                    padding: const EdgeInsets.only(right: 16, top: 8), // Add some left padding
+                    padding: EdgeInsets.only(right: 16, top: 8), // Add some left padding
                     child: Icon(
                       Icons.repeat, // You can use a different icon as needed
                       size: 20, // Set the size of the icon

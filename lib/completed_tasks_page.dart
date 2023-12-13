@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'task/task.dart';
 import 'task/task_card.dart';
@@ -33,7 +34,9 @@ class CompletedTasksPage extends StatelessWidget {
             onTaskDeleted: onTaskDeleted,
             onUpdateDueDateTime: (dueDateField) {
               // Handle the update logic here
-              print('Due date and time updated: ${dueDateField.value}');
+              if (kDebugMode) {
+                print('Due date and time updated: ${dueDateField.value}');
+              }
             },
           );
         },
