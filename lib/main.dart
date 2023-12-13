@@ -8,6 +8,7 @@ import 'calendar_view.dart';
 import 'user_progress_screen.dart';
 import 'due_date_list.dart';
 import 'store.dart';
+import 'popup.dart';
 
 // import task and utilities
 import 'task/task.dart';
@@ -180,22 +181,24 @@ extension IterableExtensions<E> on Iterable<E> {
   }
 }
 
-GlobalKey<DueDateListViewState> dueDateListViewKey = GlobalKey<DueDateListViewState>();
-
-
+GlobalKey<DueDateListViewState> dueDateListViewKey =
+    GlobalKey<DueDateListViewState>();
 
 void main() {
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   runApp(
-    DefaultTabController(
-      length: 4,
-      child: MyApp(
-        tasks: tasks,
-        navigatorKey: navigatorKey,
+    MaterialApp(
+      home: DefaultTabController(
+        length: 4,
+        child: MyApp(
+          tasks: tasks,
+          navigatorKey: navigatorKey,
+        ),
       ),
     ),
   );
 }
+
 class MyApp extends StatefulWidget {
   final List<Task> tasks;
   final GlobalKey<NavigatorState> navigatorKey;
@@ -239,7 +242,7 @@ class MyAppState extends State<MyApp> {
           newTask.fields.any((field) => field is SelfCareField);
 
       final bool hasSelfCareTasksForToday = tasks.any((task) {
-        if (task.hasDueDate) {
+        if (task.hasDueDate && task.isSelfCare) {
           final today = DateTime.now();
           final taskDueDate = task.getDueDate()!;
           return taskDueDate.year == today.year &&
@@ -251,7 +254,12 @@ class MyAppState extends State<MyApp> {
 
       if (!isNewTaskSelfCare && !hasSelfCareTasksForToday) {
         //TODO Throws errors!
-        //_showSelfCareRecommendationPopup(context);
+        print("recommending task");
+        _showSelfCareRecommendationPopup(context);
+      } else {
+        print("no self care recommendation");
+        print(isNewTaskSelfCare);
+        print(hasSelfCareTasksForToday);
       }
 
       // Reload the page when a new task is created
@@ -277,7 +285,6 @@ class MyAppState extends State<MyApp> {
   }
 
   // Function to reload the page
-   // Function to reload the page
   void _reloadPage() {
     final context = widget.navigatorKey.currentState?.overlay?.context;
     if (context != null) {
@@ -289,8 +296,10 @@ class MyAppState extends State<MyApp> {
           ),
         ),
       );
-      DefaultTabController.of(context)?.animateTo(1); // Switch to the priority tab
-      DefaultTabController.of(context)?.animateTo(0); // Switch back to the original tab
+      DefaultTabController.of(context)
+          ?.animateTo(1); // Switch to the priority tab
+      DefaultTabController.of(context)
+          ?.animateTo(0); // Switch back to the original tab
       dueDateListViewKey.currentState?.setState(() {});
     }
   }
@@ -313,13 +322,23 @@ class MyAppState extends State<MyApp> {
   }
 
   void _showSelfCareRecommendationPopup(BuildContext context) {
-    showModalBottomSheet(
+    showDialog(
       context: context,
       builder: (BuildContext context) {
-        return SelfCarePopup(
-          selfCareTasks: generateSelfCareTasks(),
-          onTaskCreated:
-              handleTaskCreated, // Pass the handleTaskCreated function
+        return CustomPopup(
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Hello, this is a custom widget inside the popup!'),
+              SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context); // Close the popup
+                },
+                child: Text('Close'),
+              ),
+            ],
+          ),
         );
       },
     );
@@ -340,116 +359,113 @@ class MyAppState extends State<MyApp> {
     return [selfCareTask];
   }
 
-  @override@override
+  @override
+  @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      navigatorKey: widget.navigatorKey,
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-          appBar: AppBar(
-            title: const Text('Task List'),
-            bottom: const TabBar(
-              tabs: [
-                Tab(text: 'Due Date'),
-                Tab(text: 'Priority'),
-                Tab(text: 'Calendar'),
-                Tab(text: 'Completed'),
-              ],
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Task List'),
+        bottom: const TabBar(
+          tabs: [
+            Tab(text: 'Due Date'),
+            Tab(text: 'Priority'),
+            Tab(text: 'Calendar'),
+            Tab(text: 'Completed'),
+          ],
+        ),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const SizedBox(
+              height: 135, // Set the desired height for the drawer header
+              child: DrawerHeader(
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                ),
+                child: Text('Menu', style: TextStyle(fontSize: 20)),
+              ),
             ),
-          ),
-          drawer: Drawer(
-            child: ListView(
-              padding: EdgeInsets.zero,
-              children: [
-                const SizedBox(
-                  height: 135, // Set the desired height for the drawer header
-                  child: DrawerHeader(
-                    decoration: BoxDecoration(
-                      color: Colors.blue,
-                    ),
-                    child: Text('Menu', style: TextStyle(fontSize: 20)),
-                  ),
-                ),
-                ListTile(
-                  title: const Text('Progress'),
-                  onTap: () {
-                    widget.navigatorKey.currentState?.pop(); // Close the drawer
-                    widget.navigatorKey.currentState?.push(
-                      MaterialPageRoute(
-                        builder: (context) => UserProgressScreen(
-                          overallScore: overallScore,
-                          progressHistory: progressHistory,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                ListTile(
-                  title: const Text('Store'),
-                  onTap: () {
-                    // Handle menu item 2 click
-                    widget.navigatorKey.currentState?.pop(); // Close the drawer
-                    widget.navigatorKey.currentState?.push(
-                      MaterialPageRoute(
-                        builder: (context) => StorePage(
-                          overallScore: overallScore,
-                          updateOverallScore: updateOverallScore,
-                          storePageKey:
-                              widget.storePageKey, // Pass the callback function
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                // Add more menu items as needed
-              ],
-            ),
-          ),
-          body: TabBarView(
-            children: [
-              DueDateListView(
-                key: dueDateListViewKey,
-                tasks: widget.tasks,
-                updateTaskCompletionStatus: _updateTaskCompletionStatus,
-                onTaskUpdated: handleTaskUpdated,
-                onTaskCreated: handleTaskCreated,
-                onTaskDeleted: handleTaskDeleted,
-              ),
-
-              TaskList(
-                tasks: TaskSorter.sortByPriority(widget.tasks),
-                updateTaskCompletionStatus: _updateTaskCompletionStatus,
-                onTaskUpdated: (updatedTask) {
-                  // Handle the updated task here
-                  // Optionally, you can update the UI or perform other actions.
-                },
-                onTaskCreated: handleTaskCreated,
-                onTaskDeleted: handleTaskDeleted,
-              ),
-              CalendarView(tasks: widget.tasks), // Added CalendarView
-              CompletedTasksPage(
-                tasks: widget.tasks,
-                onTaskCreated: handleTaskCreated,
-                onTaskUpdated: handleTaskUpdated,
-                onTaskDeleted: handleTaskDeleted,
-              ),
-            ],
-          ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              if (widget.navigatorKey.currentState != null) {
-                widget.navigatorKey.currentState!.push(
+            ListTile(
+              title: const Text('Progress'),
+              onTap: () {
+                widget.navigatorKey.currentState?.pop(); // Close the drawer
+                widget.navigatorKey.currentState?.push(
                   MaterialPageRoute(
-                    builder: (context) => TaskCreationPage(
-                      onTaskCreated: handleTaskCreated,
+                    builder: (context) => UserProgressScreen(
+                      overallScore: overallScore,
+                      progressHistory: progressHistory,
                     ),
                   ),
                 );
-              }
-            },
-            child: const Icon(Icons.add),
-          ),
+              },
+            ),
+            ListTile(
+              title: const Text('Store'),
+              onTap: () {
+                // Handle menu item 2 click
+                widget.navigatorKey.currentState?.pop(); // Close the drawer
+                widget.navigatorKey.currentState?.push(
+                  MaterialPageRoute(
+                    builder: (context) => StorePage(
+                      overallScore: overallScore,
+                      updateOverallScore: updateOverallScore,
+                      storePageKey:
+                          widget.storePageKey, // Pass the callback function
+                    ),
+                  ),
+                );
+              },
+            ),
+            // Add more menu items as needed
+          ],
         ),
+      ),
+      body: TabBarView(
+        children: [
+          DueDateListView(
+            key: dueDateListViewKey,
+            tasks: widget.tasks,
+            updateTaskCompletionStatus: _updateTaskCompletionStatus,
+            onTaskUpdated: handleTaskUpdated,
+            onTaskCreated: handleTaskCreated,
+            onTaskDeleted: handleTaskDeleted,
+          ),
+
+          TaskList(
+            tasks: TaskSorter.sortByPriority(widget.tasks),
+            updateTaskCompletionStatus: _updateTaskCompletionStatus,
+            onTaskUpdated: (updatedTask) {
+              // Handle the updated task here
+              // Optionally, you can update the UI or perform other actions.
+            },
+            onTaskCreated: handleTaskCreated,
+            onTaskDeleted: handleTaskDeleted,
+          ),
+          CalendarView(tasks: widget.tasks), // Added CalendarView
+          CompletedTasksPage(
+            tasks: widget.tasks,
+            onTaskCreated: handleTaskCreated,
+            onTaskUpdated: handleTaskUpdated,
+            onTaskDeleted: handleTaskDeleted,
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          if (widget.navigatorKey.currentState != null) {
+            widget.navigatorKey.currentState!.push(
+              MaterialPageRoute(
+                builder: (context) => TaskCreationPage(
+                  onTaskCreated: handleTaskCreated,
+                ),
+              ),
+            );
+          }
+        },
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }
