@@ -5,6 +5,7 @@ import '../main.dart';
 import '../task_detail_page.dart';
 
 import '../fields/due_date_field.dart';
+import '../popup.dart';
 
 class TaskCard extends StatefulWidget {
   final Task task;
@@ -44,26 +45,28 @@ class TaskCardState extends State<TaskCard> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('🎉 Congratulations! 🎉'),
+        return CustomPopup(
           content: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                  'You completed the task on time. Keep up the good work!'),
-              const SizedBox(height: 8),
-              Text('Your score is now: $overallScore'),
+              const Text('🎉 Congratulations! 🎉'),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                      'You completed the task on time. Keep up the good work!'),
+                  const SizedBox(height: 8),
+                  Text('Your score is now: $overallScore'),
+                ],
+              ),
+              TextButton(
+                child: const Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
             ],
           ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
         );
       },
     );
@@ -95,30 +98,36 @@ class TaskCardState extends State<TaskCard> {
     DateTime dueDate = task.getDueDate() ?? DateTime.now();
 
     // Check if the task is completed before the due date
-    return now.isBefore(dueDate);
+    return now.isBefore(dueDate.add(const Duration(days: 1)));
   }
 
   Future<void> _showConfirmationDialog(BuildContext context, bool value) async {
     bool shouldUpdateTask = await showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Confirm Task Completion"),
-          content: const Text("Do you want to mark this task as complete?"),
-          actions: <Widget>[
-            TextButton(
-              child: const Text("Cancel"),
-              onPressed: () {
-                Navigator.of(context).pop(false);
-              },
-            ),
-            TextButton(
-              child: const Text("Confirm"),
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              },
-            ),
-          ],
+        return CustomPopup(
+          content: Column(
+            children: [
+              const Text("Do you want to mark this task as complete?"),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    child: const Text("Cancel"),
+                    onPressed: () {
+                      Navigator.of(context).pop(false);
+                    },
+                  ),
+                  TextButton(
+                    child: const Text("Confirm"),
+                    onPressed: () {
+                      Navigator.of(context).pop(true);
+                    },
+                  ),
+                ],
+              )
+            ],
+          ),
         );
       },
     );

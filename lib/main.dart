@@ -87,6 +87,7 @@ void main() {
     ChangeNotifierProvider(
       create: (context) => UserProvider(),
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         home: MyApp(
           tasks: tasks,
           navigatorKey: navigatorKey,
@@ -194,18 +195,18 @@ class MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
   }
 
   void _reloadPage() {
-  setState(() {
-    _tabController.index = 1; // Switch to the Priority tab
-    dueDateListViewKey.currentState?.setState(() {});
-  });
-
-  Future.delayed(Duration(milliseconds: 2), () {
     setState(() {
-      _tabController.index = 0; // Switch back to the Due Date tab
+      _tabController.index = 1; // Switch to the Priority tab
       dueDateListViewKey.currentState?.setState(() {});
     });
-  });
-}
+
+    Future.delayed(Duration(milliseconds: 2), () {
+      setState(() {
+        _tabController.index = 1; // Switch to the Priority tab
+        dueDateListViewKey.currentState?.setState(() {});
+      });
+    });
+  }
 
   @override
   void initState() {
@@ -258,7 +259,8 @@ class MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
 
               // Create a new task with the due date set to midnight of the current day
               DateTime now = DateTime.now();
-              DateTime midnight = DateTime(now.year, now.month, now.day, 23, 59);
+              DateTime midnight =
+                  DateTime(now.year, now.month, now.day, 23, 59);
               Task newTask = Task.copyWithUniqueID(recommendedTask);
               newTask.updateTask(
                 fields: [
