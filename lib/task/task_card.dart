@@ -337,6 +337,16 @@ class TaskCardState extends State<TaskCard> {
                     ),
 >>>>>>> adc6368042e710b50441c830cbf661c66190a758
                   ),
+                // Display the symbol if is self care is not an empty string
+                if (widget.task.isSelfCare)
+                  const Padding(
+                    padding: const EdgeInsets.only(right: 16, top: 8), // Add some left padding
+                    child: Icon(
+                      Icons.wb_sunny, // You can use a different icon as needed
+                      size: 20, // Set the size of the icon
+                      color: Colors.grey, // Set the color of the icon
+                    ),
+                  ),
               ],
             ),
 
