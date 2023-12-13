@@ -107,6 +107,10 @@ class Task {
     return fields.any((field) => field is DueDateField);
   }
 
+  bool get isSelfCare {
+    return fields.any((field) => field is SelfCareField);
+  }
+
   DateTime? getDueDate() {
     final dueDateField = fields.whereType<DueDateField>().firstOrNull;
 

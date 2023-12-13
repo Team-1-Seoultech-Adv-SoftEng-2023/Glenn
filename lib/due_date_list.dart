@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'task/task.dart';
 import 'category_list_view.dart';
 
-class DueDateListView extends StatelessWidget {
+class DueDateListView extends StatefulWidget {
+  final Key key;
   final List<Task> tasks;
   final Function(Task, bool) updateTaskCompletionStatus;
   final Function(Task) onTaskUpdated;
@@ -11,14 +12,19 @@ class DueDateListView extends StatelessWidget {
   final Function(Task) onTaskDeleted;
 
   DueDateListView({
-    super.key, 
     required this.tasks,
     required this.updateTaskCompletionStatus,
     required this.onTaskUpdated,
     required this.onTaskCreated,
     required this.onTaskDeleted,
+    required this.key,
   });
 
+  @override
+  DueDateListViewState createState() => DueDateListViewState();
+}
+
+class DueDateListViewState extends State<DueDateListView> {
   @override
   Widget build(BuildContext context) {
     // Organize tasks into categories
@@ -31,14 +37,14 @@ class DueDateListView extends StatelessWidget {
 
     DateTime now = DateTime.now();
 
-    for (Task task in tasks) {
+    for (Task task in widget.tasks) {
       if (task.hasDueDate) {
         DateTime dueDate = task.getDueDate()!;
-        if (dueDate.isBefore(now)) {
+        if (dueDate.isBefore(now.subtract(const Duration(days: 1)))) {
           pastTasks.add(task); // Tasks in the past
-        } else if (dueDate.isBefore(now.add(const Duration(days: 7)))) {
+        } else if (dueDate.isBefore(now.add(const Duration(days: 0)))) {
           todayTasks.add(task);
-        } else if (dueDate.isBefore(now.add(const Duration(days: 30)))) {
+        } else if (dueDate.isBefore(now.add(const Duration(days: 7)))) {
           thisWeekTasks.add(task);
         } else if (dueDate.isBefore(now.add(const Duration(days: 30)))) {
           thisMonthTasks.add(task);
@@ -67,10 +73,11 @@ class DueDateListView extends StatelessWidget {
         "Later",
         "No Due Date",
       ],
-      updateTaskCompletionStatus: updateTaskCompletionStatus,
-      onTaskUpdated: onTaskUpdated,
-      onTaskCreated: onTaskCreated,
-      onTaskDeleted: onTaskDeleted,
+      updateTaskCompletionStatus: widget.updateTaskCompletionStatus,
+      onTaskUpdated: widget.onTaskUpdated,
+      onTaskCreated: widget.onTaskCreated,
+      onTaskDeleted: widget.onTaskDeleted,
+      defaultTab: 1, // Set the default tab index (e.g., 1 for "Today")
     );
   }
 }

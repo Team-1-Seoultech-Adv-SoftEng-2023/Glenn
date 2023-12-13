@@ -10,6 +10,7 @@ class CollapsibleTaskList extends StatefulWidget {
   final Function(Task) onTaskDeleted;
   final Function(Task, bool) updateTaskCompletionStatus;
   final String name;
+  final bool expandByDefault; // New parameter
 
   const CollapsibleTaskList({
     Key? key,
@@ -19,6 +20,7 @@ class CollapsibleTaskList extends StatefulWidget {
     required this.onTaskCreated,
     required this.onTaskDeleted,
     required this.name,
+    this.expandByDefault = true, // Set the default value
   }) : super(key: key);
 
   @override
@@ -31,8 +33,8 @@ class CollapsibleTaskListState extends State<CollapsibleTaskList> {
   @override
   void initState() {
     super.initState();
-    // Check if tasks list is not empty, then expand by default
-    isExpanded = widget.tasks.isNotEmpty;
+    // Use the provided expandByDefault parameter
+    isExpanded = widget.expandByDefault && widget.tasks.isNotEmpty;
   }
 
   void toggleExpansion() {

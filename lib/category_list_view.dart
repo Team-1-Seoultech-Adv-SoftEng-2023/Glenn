@@ -10,6 +10,7 @@ class CategoryListView extends StatelessWidget {
   final Function(Task) onTaskUpdated;
   final Function(Task) onTaskCreated;
   final Function(Task) onTaskDeleted;
+  final int defaultTab;
 
   const CategoryListView({super.key, 
     required this.taskCategories,
@@ -18,6 +19,7 @@ class CategoryListView extends StatelessWidget {
     required this.onTaskUpdated,
     required this.onTaskCreated,
     required this.onTaskDeleted,
+    this.defaultTab = 0,
   });
 
   @override
@@ -26,13 +28,13 @@ class CategoryListView extends StatelessWidget {
       child: Column(
         children: List.generate(
           taskCategories.length,
-          (index) => _buildTaskCategory(categoryNames[index], taskCategories[index]),
+          (index) => _buildTaskCategory(categoryNames[index], taskCategories[index], index == defaultTab),
         ),
       ),
     );
   }
 
-  Widget _buildTaskCategory(String categoryName, List<Task> tasks) {
+  Widget _buildTaskCategory(String categoryName, List<Task> tasks, bool expandedByDefault) {
     return CollapsibleTaskList(
       tasks: tasks,
       updateTaskCompletionStatus: updateTaskCompletionStatus,
@@ -40,6 +42,7 @@ class CategoryListView extends StatelessWidget {
       onTaskCreated: onTaskCreated,
       onTaskDeleted: onTaskDeleted,
       name: categoryName,
+      expandByDefault: expandedByDefault,
     );
   }
 }
