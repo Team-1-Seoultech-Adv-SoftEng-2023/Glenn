@@ -288,6 +288,7 @@ class TaskCardState extends State<TaskCard> {
                     ),
                   ],
                 ),
+<<<<<<< HEAD
                 // Display child tasks under the main task
                 if (getChildTasks().isNotEmpty && !isParentTaskComplete)
                   Column(
@@ -311,6 +312,30 @@ class TaskCardState extends State<TaskCard> {
                         },
                       ),
                     ],
+=======
+            ],
+          ),
+
+          Positioned(
+            top: 0,
+            right: 0,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                // Display priority block
+                if (widget.task.hasPriority)
+                  _buildPriorityBlock(widget.task.getPriority()!),
+
+                // Display the symbol if repeatingId is not an empty string
+                if (widget.task.repeatingId.isNotEmpty)
+                  const Padding(
+                    padding: EdgeInsets.only(right: 16, top: 8), // Add some left padding
+                    child: Icon(
+                      Icons.repeat, // You can use a different icon as needed
+                      size: 20, // Set the size of the icon
+                      color: Colors.grey, // Set the color of the icon
+                    ),
+>>>>>>> adc6368042e710b50441c830cbf661c66190a758
                   ),
               ],
             ),

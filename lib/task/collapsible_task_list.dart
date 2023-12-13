@@ -24,10 +24,10 @@ class CollapsibleTaskList extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _CollapsibleTaskListState createState() => _CollapsibleTaskListState();
+  CollapsibleTaskListState createState() => CollapsibleTaskListState();
 }
 
-class _CollapsibleTaskListState extends State<CollapsibleTaskList> {
+class CollapsibleTaskListState extends State<CollapsibleTaskList> {
   late bool isExpanded;
 
   @override

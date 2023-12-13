@@ -5,7 +5,7 @@ import 'store.dart'; // Import your store.dart file
 class CustomPopup extends StatelessWidget {
   final Widget content;
 
-  CustomPopup({required this.content});
+  const CustomPopup({super.key, required this.content});
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +48,7 @@ class CustomPopup extends StatelessWidget {
                 onPressed: () {
                   Navigator.pop(context); // Close the popup
                 },
-                child: Text('Close'),
+                child: const Text('Close'),
               ),
           ),
         ],

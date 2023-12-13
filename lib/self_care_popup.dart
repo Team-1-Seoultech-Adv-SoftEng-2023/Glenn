@@ -8,7 +8,8 @@ class SelfCarePopup extends StatelessWidget {
   final Function(Task) onTaskCreated; // Add this line
 
   SelfCarePopup(
-      {required this.selfCareTasks,
+      {super.key, 
+      required this.selfCareTasks,
       required this.onTaskCreated}); // Update the constructor
 
   @override
@@ -42,7 +43,8 @@ class SelfCareTaskItem extends StatelessWidget {
   final Function(Task) onTaskCreated; // Add this line
 
   SelfCareTaskItem(
-      {required this.task,
+      {super.key, 
+      required this.task,
       required this.onTaskCreated}); // Update the constructor
 
   @override

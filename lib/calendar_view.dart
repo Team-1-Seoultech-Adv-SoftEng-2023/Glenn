@@ -9,10 +9,10 @@ class CalendarView extends StatefulWidget {
   const CalendarView({super.key, required this.tasks});
 
   @override
-  _CalendarViewState createState() => _CalendarViewState();
+  CalendarViewState createState() => CalendarViewState();
 }
 
-class _CalendarViewState extends State<CalendarView> {
+class CalendarViewState extends State<CalendarView> {
   late DateTime _selectedDay;
   Map<DateTime, List<Task>> _events = {};
   CalendarFormat _calendarFormat = CalendarFormat.month;
