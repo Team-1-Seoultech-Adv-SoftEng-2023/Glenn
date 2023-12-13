@@ -24,7 +24,6 @@ import 'task/self_care_tasks.dart';
 import 'self_care_popup.dart';
 import 'dart:math'; // Import the dart:math library for Random
 
-
 List<Map<String, dynamic>> progressHistory = [];
 double overallScore = 10.0;
 
@@ -184,140 +183,144 @@ class MyAppState extends State<MyApp> {
             children: [
               Text('Hello, this is a custom widget inside the popup!'),
               SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context); // Close the popup
-                },
-                child: Text('Close'),
-              ),
             ],
           ),
         );
       },
     );
   }
+  
+Widget generateSelfCareRecommendationContent(BuildContext context, Function handleTaskCreated) {
+    Task recommendedTask = selfCareTasks[0]; // You can customize how to choose the recommended task
 
-  List<Task> generateSelfCareTasks() {
-    final Random random = Random();
-    final int randomIndex = random.nextInt(selfCareTasks.length);
-
-    // Create a new self-care task
-    Task selfCareTask = Task.copy(selfCareTasks[randomIndex]);
-
-    // Set the due date of the self-care task to today
-    selfCareTask.fields.add(DueDateField(
-        dueDateTime: DateTime(DateTime.now().year, DateTime.now().month,
-            DateTime.now().day, 23, 59)));
-
-    return [selfCareTask];
-  }
-
-  @override
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text("You don't have any self-care tasks today! Would you like to add one?"),
+        ListTile(
+          title: Text(recommendedTask.name),
+          subtitle: Text(recommendedTask.description),
+          trailing: ElevatedButton(
+            onPressed: () {
+              // Handle the task creation when the "Add" button is clicked
+              handleTaskCreated(recommendedTask);
+              Navigator.pop(context); // Close the popup
+            },
+            child: Text('Add'),
+          ),
+        ),
+      ],
+    );
+}
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Task List'),
-        bottom: const TabBar(
-          tabs: [
-            Tab(text: 'Due Date'),
-            Tab(text: 'Priority'),
-            Tab(text: 'Calendar'),
-            Tab(text: 'Completed'),
-          ],
+    return MaterialApp(
+      navigatorKey: widget.navigatorKey,
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Task List'),
+          bottom: const TabBar(
+            tabs: [
+              Tab(text: 'Due Date'),
+              Tab(text: 'Priority'),
+              Tab(text: 'Calendar'),
+              Tab(text: 'Completed'),
+            ],
+          ),
         ),
-      ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
+        drawer: Drawer(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              const SizedBox(
+                height: 135, // Set the desired height for the drawer header
+                child: DrawerHeader(
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                  ),
+                  child: Text('Menu', style: TextStyle(fontSize: 20)),
+                ),
+              ),
+              ListTile(
+                title: const Text('Progress'),
+                onTap: () {
+                  widget.navigatorKey.currentState?.pop(); // Close the drawer
+                  widget.navigatorKey.currentState?.push(
+                    MaterialPageRoute(
+                      builder: (context) => UserProgressScreen(
+                        overallScore: overallScore,
+                        progressHistory: progressHistory,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                title: const Text('Store'),
+                onTap: () {
+                  // Handle menu item 2 click
+                  widget.navigatorKey.currentState?.pop(); // Close the drawer
+                  widget.navigatorKey.currentState?.push(
+                    MaterialPageRoute(
+                      builder: (context) => StorePage(
+                        overallScore: overallScore,
+                        updateOverallScore: updateOverallScore,
+                        storePageKey:
+                            widget.storePageKey, // Pass the callback function
+                      ),
+                    ),
+                  );
+                },
+              ),
+              // Add more menu items as needed
+            ],
+          ),
+        ),
+        body: TabBarView(
           children: [
-            const SizedBox(
-              height: 135, // Set the desired height for the drawer header
-              child: DrawerHeader(
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                ),
-                child: Text('Menu', style: TextStyle(fontSize: 20)),
-              ),
+            DueDateListView(
+              key: dueDateListViewKey,
+              tasks: widget.tasks,
+              updateTaskCompletionStatus: _updateTaskCompletionStatus,
+              onTaskUpdated: handleTaskUpdated,
+              onTaskCreated: handleTaskCreated,
+              onTaskDeleted: handleTaskDeleted,
             ),
-            ListTile(
-              title: const Text('Progress'),
-              onTap: () {
-                widget.navigatorKey.currentState?.pop(); // Close the drawer
-                widget.navigatorKey.currentState?.push(
-                  MaterialPageRoute(
-                    builder: (context) => UserProgressScreen(
-                      overallScore: overallScore,
-                      progressHistory: progressHistory,
-                    ),
-                  ),
-                );
+
+            TaskList(
+              tasks: TaskSorter.sortByPriority(widget.tasks),
+              updateTaskCompletionStatus: _updateTaskCompletionStatus,
+              onTaskUpdated: (updatedTask) {
+                // Handle the updated task here
+                // Optionally, you can update the UI or perform other actions.
               },
+              onTaskCreated: handleTaskCreated,
+              onTaskDeleted: handleTaskDeleted,
             ),
-            ListTile(
-              title: const Text('Store'),
-              onTap: () {
-                // Handle menu item 2 click
-                widget.navigatorKey.currentState?.pop(); // Close the drawer
-                widget.navigatorKey.currentState?.push(
-                  MaterialPageRoute(
-                    builder: (context) => StorePage(
-                      overallScore: overallScore,
-                      updateOverallScore: updateOverallScore,
-                      storePageKey:
-                          widget.storePageKey, // Pass the callback function
-                    ),
-                  ),
-                );
-              },
+            CalendarView(tasks: widget.tasks), // Added CalendarView
+            CompletedTasksPage(
+              tasks: widget.tasks,
+              onTaskCreated: handleTaskCreated,
+              onTaskUpdated: handleTaskUpdated,
+              onTaskDeleted: handleTaskDeleted,
             ),
-            // Add more menu items as needed
           ],
         ),
-      ),
-      body: TabBarView(
-        children: [
-          DueDateListView(
-            key: dueDateListViewKey,
-            tasks: widget.tasks,
-            updateTaskCompletionStatus: _updateTaskCompletionStatus,
-            onTaskUpdated: handleTaskUpdated,
-            onTaskCreated: handleTaskCreated,
-            onTaskDeleted: handleTaskDeleted,
-          ),
-
-          TaskList(
-            tasks: TaskSorter.sortByPriority(widget.tasks),
-            updateTaskCompletionStatus: _updateTaskCompletionStatus,
-            onTaskUpdated: (updatedTask) {
-              // Handle the updated task here
-              // Optionally, you can update the UI or perform other actions.
-            },
-            onTaskCreated: handleTaskCreated,
-            onTaskDeleted: handleTaskDeleted,
-          ),
-          CalendarView(tasks: widget.tasks), // Added CalendarView
-          CompletedTasksPage(
-            tasks: widget.tasks,
-            onTaskCreated: handleTaskCreated,
-            onTaskUpdated: handleTaskUpdated,
-            onTaskDeleted: handleTaskDeleted,
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          if (widget.navigatorKey.currentState != null) {
-            widget.navigatorKey.currentState!.push(
-              MaterialPageRoute(
-                builder: (context) => TaskCreationPage(
-                  onTaskCreated: handleTaskCreated,
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            if (widget.navigatorKey.currentState != null) {
+              widget.navigatorKey.currentState!.push(
+                MaterialPageRoute(
+                  builder: (context) => TaskCreationPage(
+                    onTaskCreated: handleTaskCreated,
+                  ),
                 ),
-              ),
-            );
-          }
-        },
-        child: const Icon(Icons.add),
+              );
+            }
+          },
+          child: const Icon(Icons.add),
+        ),
       ),
     );
   }
