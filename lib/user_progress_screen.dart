@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-// user_progress_screen
-=======
 import 'package:flutter/foundation.dart';
->>>>>>> adc6368042e710b50441c830cbf661c66190a758
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:provider/provider.dart';

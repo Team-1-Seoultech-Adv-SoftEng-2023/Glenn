@@ -1,14 +1,11 @@
 //store.dart
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
 import 'package:provider/provider.dart';
 import 'user_provider.dart';
 
 // TODO: Make store page persistant (resets on going back)
-=======
 
->>>>>>> adc6368042e710b50441c830cbf661c66190a758
 class StoreItem {
   final String name;
   final int sellingPoints;
@@ -28,12 +25,8 @@ class StorePage extends StatefulWidget {
   final void Function(double) updateOverallScore;
   final GlobalKey<StorePageState> storePageKey;
 
-<<<<<<< HEAD
   StorePage({
-=======
-
-    StorePage({super.key, 
->>>>>>> adc6368042e710b50441c830cbf661c66190a758
+    super.key,
     required this.overallScore,
     required this.updateOverallScore,
     required this.storePageKey,
@@ -162,7 +155,7 @@ class StorePageState extends State<StorePage>
         ownedItems.add(item);
         if (kDebugMode) {
           print(
-            'Item ${item.name} purchased! Remaining points: ${widget.overallScore}');
+              'Item ${item.name} purchased! Remaining points: ${widget.overallScore}');
         }
       });
 
@@ -177,8 +170,8 @@ class StorePageState extends State<StorePage>
         builder: (context) {
           return AlertDialog(
             title: const Text('Insufficient Points'),
-            content:
-                Text('You do not have enough points to purchase ${item.name}. Keep completing tasks on time to earn more points!'),
+            content: Text(
+                'You do not have enough points to purchase ${item.name}. Keep completing tasks on time to earn more points!'),
             actions: [
               TextButton(
                 onPressed: () {
@@ -289,12 +282,11 @@ class StorePageState extends State<StorePage>
                 color: Color.fromARGB(255, 218, 218, 218),
               ),
               child: Center(
-                child: Image.asset(
-                        selectedOwnedItem.image,
-                        width: 96.0,
-                        height: 96.0,
-                      )
-              ),
+                  child: Image.asset(
+                selectedOwnedItem.image,
+                width: 96.0,
+                height: 96.0,
+              )),
             ),
           ),
         ],

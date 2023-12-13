@@ -12,13 +12,13 @@ class CustomPopup extends StatelessWidget {
     // Determine the image asset based on selectedOwnedItem
     String imageAsset = selectedOwnedItem.image;
 
-    return Dialog(
+    return AlertDialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16.0),
       ),
       elevation: 0.0,
       backgroundColor: Colors.transparent,
-      child: Column(
+      content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           // Custom Paint for the speech bubble
@@ -43,13 +43,12 @@ class CustomPopup extends StatelessWidget {
           // Close button
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: 
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context); // Close the popup
-                },
-                child: const Text('Close'),
-              ),
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context); // Close the popup
+              },
+              child: const Text('Close'),
+            ),
           ),
         ],
       ),
@@ -67,7 +66,8 @@ class SpeechBubblePainter extends CustomPainter {
 
     final path = Path()
       ..moveTo(size.width / 2, size.height)
-      ..quadraticBezierTo(size.width / 2, size.height + 15, size.width / 2 + 15, size.height)
+      ..quadraticBezierTo(
+          size.width / 2, size.height + 15, size.width / 2 + 15, size.height)
       ..lineTo(size.width, size.height)
       ..lineTo(size.width, 0)
       ..lineTo(0, 0)
