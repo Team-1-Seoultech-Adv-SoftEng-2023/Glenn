@@ -147,12 +147,18 @@ class MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
   
 
   void _reloadPage() {
+  setState(() {
+    _tabController.index = 1; // Switch to the Priority tab
+    dueDateListViewKey.currentState?.setState(() {});
+  });
+
+  Future.delayed(Duration(milliseconds: 1), () {
     setState(() {
-      _tabController.index = 1; // Switch to the Priority tab
       _tabController.index = 0; // Switch back to the Due Date tab
       dueDateListViewKey.currentState?.setState(() {});
     });
-  }
+  });
+}
 
   @override
   void initState() {
