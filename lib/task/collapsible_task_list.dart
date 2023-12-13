@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'task.dart';
 import 'task_list.dart';
+import 'task_card.dart';
 
 class CollapsibleTaskList extends StatefulWidget {
   final List<Task> tasks;
@@ -33,7 +34,6 @@ class CollapsibleTaskListState extends State<CollapsibleTaskList> {
   @override
   void initState() {
     super.initState();
-    // Use the provided expandByDefault parameter
     isExpanded = widget.expandByDefault && widget.tasks.isNotEmpty;
   }
 
@@ -43,33 +43,46 @@ class CollapsibleTaskListState extends State<CollapsibleTaskList> {
     });
   }
 
+  // Function to handle task completion
+  void handleTaskCompletion(Task completedTask) {
+    setState(() {
+      // Remove the completed task from the list
+      widget.tasks.removeWhere((task) => task == completedTask);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return ExpansionPanelList(
-      elevation: 1,
-      expandedHeaderPadding: const EdgeInsets.all(0),
-      expansionCallback: (int index, bool isExpanded) {
-        toggleExpansion();
-      },
+    return ExpansionTile(
+      title: Text(widget.name),
+      initiallyExpanded: widget.expandByDefault,
       children: [
-        ExpansionPanel(
-          headerBuilder: (BuildContext context, bool isExpanded) {
-            return ListTile(
-              title: Text(widget.name),
-            );
-          },
-          body: AnimatedContainer(
-            duration: const Duration(milliseconds: 500),
-            height: isExpanded ? 300.0 : 0.0,
-            child: TaskList(
-              tasks: widget.tasks,
-              updateTaskCompletionStatus: widget.updateTaskCompletionStatus,
-              onTaskUpdated: widget.onTaskUpdated,
-              onTaskCreated: widget.onTaskCreated,
-              onTaskDeleted: widget.onTaskDeleted,
-            ),
+        Container(
+          constraints: BoxConstraints(
+            maxHeight: 300,
           ),
-          isExpanded: isExpanded,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: widget.tasks.length,
+            itemBuilder: (context, index) {
+              final task = widget.tasks[index];
+              return TaskCard(
+                task: task,
+                allTasks: widget.tasks,
+                onTaskUpdated: widget.onTaskUpdated,
+                onTaskCreated: widget.onTaskCreated,
+                onTaskDeleted: (deletedTask) {
+                  widget.onTaskDeleted(deletedTask);
+                  // Handle task completion in CollapsibleTaskList
+                  handleTaskCompletion(deletedTask);
+                },
+                onUpdateDueDateTime: (dueDateField) {
+                  print('Due date and time updated: ${dueDateField.value}');
+                },
+                updateTaskCompletionStatus: widget.updateTaskCompletionStatus,
+              );
+            },
+          ),
         ),
       ],
     );
