@@ -115,7 +115,7 @@ class MyAppState extends State<MyApp> {
       }
 
       // Reload the page when a new task is created
-      _reloadPage();
+      // _reloadPage();
     });
   }
 
@@ -140,14 +140,6 @@ class MyAppState extends State<MyApp> {
   void _reloadPage() {
     final context = widget.navigatorKey.currentState?.overlay?.context;
     if (context != null) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => MyApp(
-            tasks: tasks,
-            navigatorKey: widget.navigatorKey,
-          ),
-        ),
-      );
       DefaultTabController.of(context)
           ?.animateTo(1); // Switch to the priority tab
       DefaultTabController.of(context)
@@ -172,21 +164,22 @@ class MyAppState extends State<MyApp> {
       }
     });
   }
-
+  
   void _showSelfCareRecommendationPopup(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return CustomPopup(
-        content: generateSelfCareRecommendationContent(context, handleTaskCreated),
-      );
-    },
-  );
-}
+    showDialog(
+      context: widget.navigatorKey.currentState?.overlay?.context ?? context,
+      builder: (BuildContext context) {
+        return CustomPopup(
+          content: generateSelfCareRecommendationContent(context, handleTaskCreated),
+        );
+      },
+    );
+  }
+
 
 
 Widget generateSelfCareRecommendationContent(BuildContext context, Function handleTaskCreated) {
-    Task recommendedTask = selfCareTasks[0]; // You can customize how to choose the recommended task
+    Task recommendedTask = selfCareTasks[Random().nextInt(selfCareTasks.length)];
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -198,8 +191,20 @@ Widget generateSelfCareRecommendationContent(BuildContext context, Function hand
           trailing: ElevatedButton(
             onPressed: () {
               // Handle the task creation when the "Add" button is clicked
-              handleTaskCreated(recommendedTask);
               Navigator.pop(context); // Close the popup
+
+              // Create a new task with the due date set to midnight of the current day
+              DateTime now = DateTime.now();
+              DateTime midnight = DateTime(now.year, now.month, now.day, 0, 0);
+              Task newTask = Task.copyWithUniqueID(recommendedTask);
+              newTask.updateTask(
+                fields: [
+                  DueDateField(dueDateTime: midnight), // Set due date to current day
+                  ...recommendedTask.fields, // Add other fields from the recommended task
+                ],
+              );
+
+              handleTaskCreated(newTask);
             },
             child: Text('Add'),
           ),
