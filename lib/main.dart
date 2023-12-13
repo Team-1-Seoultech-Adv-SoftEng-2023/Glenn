@@ -220,6 +220,7 @@ class MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
   void _updateTaskCompletionStatus(Task task, bool isComplete) {
     setState(() {
       task.isComplete = isComplete;
+      incompleteTasks.remove(task);
 
       if (kDebugMode) {
         print("Updated");
@@ -353,7 +354,7 @@ class MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
               children: [
                 DueDateListView(
                   key: dueDateListViewKey,
-                  tasks: widget.tasks,
+                  tasks: incompleteTasks,
                   updateTaskCompletionStatus: _updateTaskCompletionStatus,
                   onTaskUpdated: handleTaskUpdated,
                   onTaskCreated: handleTaskCreated,

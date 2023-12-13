@@ -357,6 +357,17 @@ class TaskCardState extends State<TaskCard> {
                         color: Colors.grey, // Set the color of the icon
                       ),
                     ),
+                    if (widget.task.isComplete)
+                    const Padding(
+                      padding: const EdgeInsets.only(
+                          right: 16, top: 30), // Add some left padding
+                      child: Icon(
+                        Icons
+                            .check_box, // You can use a different icon as needed
+                        size: 20, // Set the size of the icon
+                        color: Color.fromARGB(255, 125, 192, 109), // Set the color of the icon
+                      ),
+                    ),
                 ],
               ),
             ),

@@ -54,6 +54,7 @@ class CollapsibleTaskListState extends State<CollapsibleTaskList> {
   @override
   Widget build(BuildContext context) {
     return ExpansionTile(
+      key: UniqueKey(), // Use a unique key to force the widget to rebuild
       title: Text(widget.name),
       initiallyExpanded: widget.expandByDefault,
       children: [
