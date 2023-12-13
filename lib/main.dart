@@ -210,7 +210,7 @@ Widget generateSelfCareRecommendationContent(BuildContext context, Function hand
 
               // Create a new task with the due date set to midnight of the current day
               DateTime now = DateTime.now();
-              DateTime midnight = DateTime(now.year, now.month, now.day, 0, 0);
+              DateTime midnight = DateTime(now.year, now.month, now.day, 23, 59);
               Task newTask = Task.copyWithUniqueID(recommendedTask);
               newTask.updateTask(
                 fields: [
