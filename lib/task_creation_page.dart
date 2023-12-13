@@ -1,6 +1,7 @@
 //task_creation_page.dart
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:glenn/fields/reminder_date_field.dart';
 
 import 'task/task.dart';
 import 'fields/due_date_field.dart';
@@ -127,6 +128,7 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                                 )
                               : TimeOfDay.now(),
                         ),
+                      ReminderDateField(hasReminder: true),
                       if (_isRepeating && widget.parentId == '')
                         RepeatingTaskField(
                           repeatPeriod: _selectedRepeatPeriod,

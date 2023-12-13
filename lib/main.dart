@@ -1,6 +1,8 @@
 //main.dart
 //import main pages
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart'; // for notifciations
+
 import 'task_creation_page.dart'; // Import the task_creation_page.dart file
 import 'completed_tasks_page.dart'; // Import the CompletedTasksPage widget
 import 'calendar_view.dart';
@@ -20,6 +22,9 @@ import 'fields/self_care_field.dart';
 import 'task/self_care_tasks.dart';
 import 'self_care_popup.dart';
 import 'dart:math'; // Import the dart:math library for Random
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
 
 // Define the tasks list with sample data
 final List<Task> tasks = [
@@ -92,8 +97,21 @@ extension IterableExtensions<E> on Iterable<E> {
   }
 }
 
-void main() {
+void main() async {
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  WidgetsFlutterBinding.ensureInitialized();
+
+  const AndroidInitializationSettings initializationSettingsAndroid =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+
+  final InitializationSettings initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid,
+  );
+
+  await flutterLocalNotificationsPlugin.initialize(
+    initializationSettings,
+  );
+
   runApp(MyApp(
     tasks: tasks,
     navigatorKey: navigatorKey,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'task_creation_page.dart';
 import 'fields/due_date_field.dart';
+import 'fields/reminder_date_field.dart';
 import 'task/task.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -80,6 +81,25 @@ class _EditTaskPageState extends State<EditTaskPage> {
     Navigator.pop(context);
   }
 
+  // Function to toggle tasks reminder
+  void _toggleReminder() {
+    final index =
+        widget.task.fields.indexWhere((field) => field is ReminderDateField);
+
+    setState(() {
+      if (index != -1) {
+        final reminderField = widget.task.fields[index] as ReminderDateField;
+        print('Before Toggle: ${reminderField.hasReminder}');
+        reminderField.hasReminder = !reminderField.hasReminder;
+        print('After Toggle: ${reminderField.hasReminder}');
+      } else {
+        // If ReminderDateField doesn't exist, add it with hasReminder set to true
+        widget.task.fields.add(ReminderDateField(hasReminder: true));
+        print('ReminderDateField added with hasReminder set to true');
+      }
+    });
+  }
+
   // Function to handle file attachment
   void _attachFile() async {
     // Check storage permission before proceeding
@@ -137,6 +157,8 @@ class _EditTaskPageState extends State<EditTaskPage> {
               } else if (value == 'delete_task') {
                 // Call the function to handle task deletion
                 _deleteTask();
+              } else if (value == 'toggle_reminder') {
+                _toggleReminder();
               }
             },
             itemBuilder: (BuildContext context) {
@@ -148,6 +170,10 @@ class _EditTaskPageState extends State<EditTaskPage> {
                 const PopupMenuItem<String>(
                   value: 'attach_file',
                   child: Text('Attach File'),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'toggle_reminder',
+                  child: Text('Toggle reminder'),
                 ),
                 const PopupMenuItem<String>(
                   value: 'delete_task',

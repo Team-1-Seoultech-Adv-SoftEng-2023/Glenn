@@ -13,7 +13,6 @@ class Task {
   bool isComplete;
   bool isCompletedOnTime; // Add this property
   List<String> filePaths;
-  DateTime? reminderDate;
 
   @override
   bool operator ==(Object other) =>
@@ -32,7 +31,6 @@ class Task {
     this.isComplete = false,
     this.isCompletedOnTime = true, // Initialize as incomplete
     this.filePaths = const [],
-    this.reminderDate,
   });
 
   Task.copy(Task original)
@@ -43,7 +41,6 @@ class Task {
         fields = List.from(original.fields),
         isComplete = original.isComplete,
         isCompletedOnTime = original.isCompletedOnTime,
-        reminderDate = original.reminderDate,
         filePaths = original.filePaths;
 
 // Method to launch URL if the description contains one
