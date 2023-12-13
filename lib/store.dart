@@ -168,7 +168,7 @@ class StorePageState extends State<StorePage>
           return AlertDialog(
             title: Text('Insufficient Points'),
             content:
-                Text('You do not have enough points to purchase ${item.name}.'),
+                Text('You do not have enough points to purchase ${item.name}. Keep completing tasks on time to earn more points!'),
             actions: [
               TextButton(
                 onPressed: () {
