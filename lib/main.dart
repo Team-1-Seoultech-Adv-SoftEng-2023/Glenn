@@ -174,22 +174,17 @@ class MyAppState extends State<MyApp> {
   }
 
   void _showSelfCareRecommendationPopup(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return CustomPopup(
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Hello, this is a custom widget inside the popup!'),
-              SizedBox(height: 16),
-            ],
-          ),
-        );
-      },
-    );
-  }
-  
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return CustomPopup(
+        content: generateSelfCareRecommendationContent(context, handleTaskCreated),
+      );
+    },
+  );
+}
+
+
 Widget generateSelfCareRecommendationContent(BuildContext context, Function handleTaskCreated) {
     Task recommendedTask = selfCareTasks[0]; // You can customize how to choose the recommended task
 
@@ -212,6 +207,7 @@ Widget generateSelfCareRecommendationContent(BuildContext context, Function hand
       ],
     );
 }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
