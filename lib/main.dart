@@ -195,6 +195,15 @@ class MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
   }
 
   void _reloadPage() {
+<<<<<<< HEAD
+=======
+  setState(() {
+    _tabController.index = 1; // Switch to the Priority tab
+    dueDateListViewKey.currentState?.setState(() {});
+  });
+
+  Future.delayed(Duration(milliseconds: 2), () {
+>>>>>>> dev
     setState(() {
       _tabController.index = 1; // Switch to the Priority tab
       dueDateListViewKey.currentState?.setState(() {});
@@ -259,7 +268,7 @@ class MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
 
               // Create a new task with the due date set to midnight of the current day
               DateTime now = DateTime.now();
-              DateTime midnight = DateTime(now.year, now.month, now.day, 0, 0);
+              DateTime midnight = DateTime(now.year, now.month, now.day, 23, 59);
               Task newTask = Task.copyWithUniqueID(recommendedTask);
               newTask.updateTask(
                 fields: [
@@ -289,7 +298,7 @@ class MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
           title: const Text('Task List'),
           bottom: TabBar(
             controller: _tabController,
-            tabs: [
+            tabs: const [
               Tab(text: 'Due Date'),
               Tab(text: 'Priority'),
               Tab(text: 'Calendar'),

@@ -297,6 +297,68 @@ class TaskCardState extends State<TaskCard> {
                     ),
                   ],
                 ),
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+                // Display child tasks under the main task
+                if (getChildTasks().isNotEmpty && !isParentTaskComplete)
+                  Column(
+                    children: <Widget>[
+                      const Text('Sub Tasks:'),
+                      ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: getChildTasks().length,
+                        itemBuilder: (context, index) {
+                          return TaskCard(
+                            task: getChildTasks()[index],
+                            allTasks: widget.allTasks,
+                            onTaskUpdated: (updatedTask) {
+                              // Handle the updated task here
+                              // Optionally, you can update the UI or perform other actions.
+                            },
+                            onTaskDeleted: widget.onTaskDeleted,
+                            onTaskCreated: widget.onTaskCreated,
+                            onUpdateDueDateTime: widget.onUpdateDueDateTime,
+                          );
+                        },
+                      ),
+                    ],
+=======
+            ],
+          ),
+
+          Positioned(
+            top: 0,
+            right: 0,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                // Display priority block
+                if (widget.task.hasPriority)
+                  _buildPriorityBlock(widget.task.getPriority()!),
+
+                // Display the symbol if repeatingId is not an empty string
+                if (widget.task.repeatingId.isNotEmpty)
+                  const Padding(
+                    padding: EdgeInsets.only(right: 16, top: 8), // Add some left padding
+                    child: Icon(
+                      Icons.repeat, // You can use a different icon as needed
+                      size: 20, // Set the size of the icon
+                      color: Colors.grey, // Set the color of the icon
+                    ),
+>>>>>>> adc6368042e710b50441c830cbf661c66190a758
+                  ),
+                // Display the symbol if is self care is not an empty string
+                if (widget.task.isSelfCare)
+                  const Padding(
+                    padding: const EdgeInsets.only(right: 16, top: 8), // Add some left padding
+                    child: Icon(
+                      Icons.wb_sunny, // You can use a different icon as needed
+                      size: 20, // Set the size of the icon
+                      color: Colors.grey, // Set the color of the icon
+                    ),
+                  ),
+>>>>>>> dev
               ],
             ),
 
