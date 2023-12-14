@@ -50,42 +50,48 @@ class CollapsibleTaskListState extends State<CollapsibleTaskList> {
       widget.tasks.removeWhere((task) => task == completedTask);
     });
   }
-
-  @override
-  Widget build(BuildContext context) {
-    return ExpansionTile(
-      key: UniqueKey(), // Use a unique key to force the widget to rebuild
-      title: Text(widget.name),
-      initiallyExpanded: widget.expandByDefault,
-      children: [
-        Container(
-          constraints: BoxConstraints(
-            maxHeight: 300,
-          ),
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: widget.tasks.length,
-            itemBuilder: (context, index) {
-              final task = widget.tasks[index];
-              return TaskCard(
-                task: task,
-                allTasks: widget.tasks,
-                onTaskUpdated: widget.onTaskUpdated,
-                onTaskCreated: widget.onTaskCreated,
-                onTaskDeleted: (deletedTask) {
-                  widget.onTaskDeleted(deletedTask);
-                  // Handle task completion in CollapsibleTaskList
-                  handleTaskCompletion(deletedTask);
-                },
-                onUpdateDueDateTime: (dueDateField) {
-                  print('Due date and time updated: ${dueDateField.value}');
-                },
-                updateTaskCompletionStatus: widget.updateTaskCompletionStatus,
-              );
-            },
-          ),
+@override
+Widget build(BuildContext context) {
+  return ExpansionTile(
+    key: UniqueKey(), // Use a unique key to force the widget to rebuild
+    title: Text(widget.name),
+    initiallyExpanded: widget.expandByDefault,
+    children: [
+      Container(
+        constraints: BoxConstraints(
+          maxHeight: 400,
         ),
-      ],
-    );
-  }
+        child: ListView.builder(
+          shrinkWrap: true,
+          itemCount: widget.tasks.length,
+          itemBuilder: (context, index) {
+            final task = widget.tasks[index];
+
+            // Skip tasks with a non-empty parentId
+            if (task.parentId != '') {
+              return Container();
+            }
+
+            return TaskCard(
+              task: task,
+              allTasks: widget.tasks,
+              onTaskUpdated: widget.onTaskUpdated,
+              onTaskCreated: widget.onTaskCreated,
+              onTaskDeleted: (deletedTask) {
+                widget.onTaskDeleted(deletedTask);
+                // Handle task completion in CollapsibleTaskList
+                handleTaskCompletion(deletedTask);
+              },
+              onUpdateDueDateTime: (dueDateField) {
+                print('Due date and time updated: ${dueDateField.value}');
+              },
+              updateTaskCompletionStatus: widget.updateTaskCompletionStatus,
+            );
+          },
+        ),
+      ),
+    ],
+  );
+}
+
 }

@@ -25,52 +25,9 @@ import 'fields/self_care_field.dart';
 import 'task/self_care_tasks.dart';
 import 'self_care_popup.dart';
 import 'dart:math'; // Import the dart:math library for Random
+import 'task/progress_history.dart';
 
-//List<Map<String, dynamic>> progressHistory = [];
-List<Map<String, dynamic>> progressHistory = [
-  {
-    'date': DateTime(2023, 8, 15),
-    'scoreChange': -1,
-  },
-  {
-    'date': DateTime(2023, 9, 5),
-    'scoreChange': 1,
-  },
-  {
-    'date': DateTime(2023, 9, 15),
-    'scoreChange': 1,
-  },
-  {
-    'date': DateTime(2023, 10, 16),
-    'scoreChange': 1,
-  },
-  {
-    'date': DateTime(2023, 10, 5),
-    'scoreChange': -1,
-  },
-  {
-    'date': DateTime(2023, 10, 20),
-    'scoreChange': 1,
-  },
-  {
-    'date': DateTime(2023, 11, 5),
-    'scoreChange': 1,
-  },
-  {
-    'date': DateTime(2023, 11, 12),
-    'scoreChange': 1,
-  },
-  {
-    'date': DateTime(2023, 11, 17),
-    'scoreChange': 1,
-  },
-  {
-    'date': DateTime(2023, 12, 13),
-    'scoreChange': 1,
-  },
-];
-
-double overallScore = 10.0;
+double overallScore = 4.0;
 
 extension IterableExtensions<E> on Iterable<E> {
   E? get firstOrNull {
@@ -119,6 +76,7 @@ class MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
       GlobalKey<DueDateListViewState>();
 
   List<Task> incompleteTasks = [];
+  List<Task> subTasks = [];
 
   // Callback function to update overallScore
   void updateOverallScore(double newScore) {
@@ -140,8 +98,13 @@ class MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
 
       incompleteTasks = tasks.where((task) => !task.isComplete).toList();
 
+      subTasks = tasks.where((t) => t.parentId != '').toList();
+
       final bool isNewTaskSelfCare =
           newTask.fields.any((field) => field is SelfCareField);
+
+      final bool isRepeatedTask =
+          newTask.repeatingId != '' && newTask.repeatingId != newTask.id;
 
       final bool hasSelfCareTasksForToday = tasks.any((task) {
         if (task.hasDueDate && task.isSelfCare) {
@@ -154,13 +117,8 @@ class MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
         return false;
       });
 
-      if (!isNewTaskSelfCare && !hasSelfCareTasksForToday) {
-        print("recommending task");
+      if (!isNewTaskSelfCare && !hasSelfCareTasksForToday && !isRepeatedTask) {
         _showSelfCareRecommendationPopup(context);
-      } else {
-        print("no self care recommendation");
-        print(isNewTaskSelfCare);
-        print(hasSelfCareTasksForToday);
       }
 
       // Reload the page when a new task is created
@@ -215,12 +173,15 @@ class MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
     _tabController.addListener(_handleTabChange);
     // Filter the initial list of tasks to show only incomplete tasks
     incompleteTasks = widget.tasks.where((task) => !task.isComplete).toList();
+    subTasks = tasks.where((t) => t.parentId != '').toList();
   }
 
   void _updateTaskCompletionStatus(Task task, bool isComplete) {
     setState(() {
       task.isComplete = isComplete;
-      incompleteTasks.remove(task);
+      if (task.parentId == '') {
+        incompleteTasks.remove(task);
+      }
 
       if (kDebugMode) {
         print("Updated");
@@ -354,7 +315,7 @@ class MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
               children: [
                 DueDateListView(
                   key: dueDateListViewKey,
-                  tasks: incompleteTasks,
+                  tasks: [...incompleteTasks, ...subTasks],
                   updateTaskCompletionStatus: _updateTaskCompletionStatus,
                   onTaskUpdated: handleTaskUpdated,
                   onTaskCreated: handleTaskCreated,

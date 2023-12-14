@@ -6,6 +6,7 @@ import '../task_detail_page.dart';
 
 import '../fields/due_date_field.dart';
 import '../popup.dart';
+import 'progress_history.dart';
 
 class TaskCard extends StatefulWidget {
   final Task task;
@@ -298,29 +299,33 @@ class TaskCardState extends State<TaskCard> {
                   ],
                 ),
                 // Display child tasks under the main task
-                if (getChildTasks().isNotEmpty && !isParentTaskComplete)
-                  Column(
-                    children: <Widget>[
-                      const Text('Sub Tasks:'),
-                      ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: getChildTasks().length,
-                        itemBuilder: (context, index) {
-                          return TaskCard(
-                            task: getChildTasks()[index],
-                            allTasks: widget.allTasks,
-                            onTaskUpdated: (updatedTask) {
-                              // Handle the updated task here
-                              // Optionally, you can update the UI or perform other actions.
-                            },
-                            onTaskDeleted: widget.onTaskDeleted,
-                            onTaskCreated: widget.onTaskCreated,
-                            onUpdateDueDateTime: widget.onUpdateDueDateTime,
-                          );
-                        },
-                      ),
-                    ],
-                  ),
+                // Display child tasks under the main task
+if (getChildTasks().isNotEmpty && !isParentTaskComplete)
+  Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: <Widget>[
+      const Text('Sub Tasks:'),
+      ListView.builder(
+        shrinkWrap: true,
+        itemCount: getChildTasks().length,
+        itemBuilder: (context, index) {
+          return TaskCard(
+            task: getChildTasks()[index],
+            allTasks: widget.allTasks,
+            onTaskUpdated: (updatedTask) {
+              // Handle the updated task here
+              // Optionally, you can update the UI or perform other actions.
+            },
+            onTaskDeleted: widget.onTaskDeleted,
+            onTaskCreated: widget.onTaskCreated,
+            onUpdateDueDateTime: widget.onUpdateDueDateTime,
+            updateTaskCompletionStatus: widget.updateTaskCompletionStatus,
+          );
+        },
+      ),
+    ],
+  ),
+
               ],
             ),
 

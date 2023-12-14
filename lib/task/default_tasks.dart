@@ -7,12 +7,12 @@ import '../fields/priority_field.dart';
 final List<Task> tasks = [
   Task(
     id: '1',
-    name: 'Task with Due Date and Priority',
+    name: 'Buy Groceries',
     description: 'This task has both due date and priority',
     parentId: '',
     fields: [
       DueDateField(
-        dueDateTime: DateTime(2023, 12, 12, 14, 30),
+        dueDateTime: DateTime(2023, 12, 14, 14, 30),
       ),
       PriorityField(priority: 2), // Medium priority
     ],
@@ -22,17 +22,17 @@ final List<Task> tasks = [
   ),
   Task(
     id: '2',
-    name: 'Task with a future Due Date Only',
+    name: 'Watch this funny video!',
     description: 'https://www.youtube.com/',
     parentId: '',
     fields: [
-      DueDateField(dueDateTime: DateTime(2023, 12, 24, 10, 00)),
+      DueDateField(dueDateTime: DateTime(2023, 12, 14, 10, 00)),
     ],
     filePaths: [],
   ),
   Task(
     id: '3',
-    name: 'Task with Priority Only',
+    name: 'Pay Bills!',
     description: 'This task has only a priority',
     parentId: '',
     fields: [
@@ -42,14 +42,34 @@ final List<Task> tasks = [
   ),
   Task(
     id: '4',
-    name: 'Task with No Due Date or Priority',
+    name: 'Project Assignment!',
     description: 'This task has neither due date nor priority',
     parentId: '',
-    fields: [],
+    fields: [
+      DueDateField(dueDateTime: DateTime(2023, 12, 18, 10, 00)),
+    ],
+  ),
+  Task(
+    id: '400',
+    name: 'Complete Report!',
+    description: 'write in docs',
+    parentId: '4',
+    fields: [
+      DueDateField(dueDateTime: DateTime(2023, 12, 18, 10, 00)),
+    ],
+  ),
+  Task(
+    id: '401',
+    name: 'Write Code!',
+    description: 'This task has neither due date nor priority',
+    parentId: '4',
+    fields: [
+      DueDateField(dueDateTime: DateTime(2023, 12, 18, 10, 00)),
+    ],
   ),
   Task(
     id: '5',
-    name: 'Task with Past Due Date',
+    name: 'Take out the trash',
     description: 'This task has a past due date',
     parentId: '',
     fields: [
@@ -59,7 +79,7 @@ final List<Task> tasks = [
   ),
   Task(
     id: '6',
-    name: 'Subtask 1',
+    name: 'Buy Milk',
     description: 'This is a subtask',
     parentId: '1',
     fields: [],
@@ -67,37 +87,11 @@ final List<Task> tasks = [
   ),
   Task(
     id: '7',
-    name: 'Subtask 2',
+    name: 'Get Eggs',
     description: 'This is a second subtask',
     parentId: '1',
     fields: [],
     filePaths: List.empty(),
-  ),
-  Task(
-    id: '8',
-    name: 'Repeating Task',
-    description: 'This task repeats',
-    parentId: '',
-    fields: [
-      DueDateField(
-        dueDateTime: DateTime(2023, 12, 7, 14, 30),    
-      ),PriorityField(priority: 1),
-    ],
-    repeatingId: '8',
-    filePaths: [],
-  ),
-  Task(
-    id: '9',
-    name: 'Repeating Task',
-    description: 'This task repeats',
-    parentId: '',
-    fields: [
-      DueDateField(
-        dueDateTime: DateTime(2023, 12, 8, 14, 30),
-      ), PriorityField(priority: 1),
-    ],
-    repeatingId: '8',
-    filePaths: [],
   ),
   Task(
     id: '10',
@@ -106,48 +100,36 @@ final List<Task> tasks = [
     parentId: '',
     fields: [
       DueDateField(
-        dueDateTime: DateTime(2023, 12, 9, 14, 30),
-      ), PriorityField(priority: 1),
-    ],
-    repeatingId: '8',
-    filePaths: [],
-  ),
-  Task(
-    id: '11',
-    name: 'Repeating Task',
-    description: 'This task repeats',
-    parentId: '',
-    fields: [
-      DueDateField(
-        dueDateTime: DateTime(2023, 12, 10, 14, 30),
-      ), PriorityField(priority: 1),
-    ],
-    repeatingId: '8',
-    filePaths: [],
-  ),
-  Task(
-    id: '11',
-    name: 'Repeating Task',
-    description: 'This task repeats',
-    parentId: '',
-    fields: [
-      DueDateField(
-        dueDateTime: DateTime(2023, 12, 11, 14, 30),
-      ), PriorityField(priority: 1),
-    ],
-    repeatingId: '8',
-    filePaths: [],
-  ),
-  Task(
-    id: '11',
-    name: '12 Task',
-    description: 'This task exists',
-    parentId: '',
-    fields: [
-      DueDateField(
         dueDateTime: DateTime(2023, 12, 13, 14, 30),
-      ),
+      ), PriorityField(priority: 1),
     ],
+    repeatingId: '10',
+    filePaths: [],
+  ),
+  Task(
+    id: '11',
+    name: 'Repeating Task',
+    description: 'This task repeats',
+    parentId: '',
+    fields: [
+      DueDateField(
+        dueDateTime: DateTime(2023, 12, 14, 14, 30),
+      ), PriorityField(priority: 1),
+    ],
+    repeatingId: '10',
+    filePaths: [],
+  ),
+  Task(
+    id: '11',
+    name: 'Repeating Task',
+    description: 'This task repeats',
+    parentId: '',
+    fields: [
+      DueDateField(
+        dueDateTime: DateTime(2023, 12, 15, 14, 30),
+      ), PriorityField(priority: 1),
+    ],
+    repeatingId: '10',
     filePaths: [],
   ),
 ];

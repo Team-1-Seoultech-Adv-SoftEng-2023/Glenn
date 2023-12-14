@@ -8,6 +8,7 @@ import 'task/task.dart';
 import 'fields/due_date_field.dart';
 import 'fields/priority_field.dart';
 import 'fields/self_care_field.dart';
+
 class TaskDetailPage extends StatefulWidget {
   final Task task;
   final List<Task> subtasks;
@@ -30,7 +31,6 @@ class TaskDetailPage extends StatefulWidget {
 
   @override
   TaskDetailPageState createState() => TaskDetailPageState();
-  
 }
 
 class TaskDetailPageState extends State<TaskDetailPage> {
@@ -48,13 +48,13 @@ class TaskDetailPageState extends State<TaskDetailPage> {
       appBar: AppBar(
         title: const Text('Task Detail'),
         actions: <Widget>[
-         if (!widget.task.isComplete)
-         IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () async {
-              await _showConfirmationDialog(context);
-            },
-          ),
+          if (!widget.task.isComplete)
+            IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: () async {
+                await _showConfirmationDialog(context);
+              },
+            ),
         ],
       ),
       body: Column(
@@ -109,6 +109,8 @@ class TaskDetailPageState extends State<TaskDetailPage> {
   Widget _buildSubtasksSection() {
     // Show subtasks only if there are subtasks and the task is not complete
     if (widget.subtasks.isNotEmpty && !widget.task.isComplete) {
+      print(widget.subtasks);
+      print("\n\n\n\n");
       return Column(
         children: <Widget>[
           const Text('Subtasks:'),
@@ -126,6 +128,9 @@ class TaskDetailPageState extends State<TaskDetailPage> {
         ],
       );
     } else {
+      print("\n\n\nNON\n\n\n\n");
+      print(widget.task.isComplete);
+      print(widget.subtasks.isNotEmpty);
       return Container(); // Empty container when no subtasks or task is complete
     }
   }
